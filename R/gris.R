@@ -1,37 +1,28 @@
-library(dplyr)
-
-v1 <- data_frame(x = c(0, 1, 0.5), y = c(0, 0, 1), bid = 1, oid = 1)
-v2 <- data_frame(x = c(1, 1, 0.5), y = c(0, 1, 1), bid = 2, oid = 1)
-
-v3 <- v1 %>% mutate(x = x + 2, oid = 2)
-v4 <- v2 %>% mutate(x = x + 2, oid = 2)
-v0 <- data_frame(x = c(0.1, 0.4, 0.2), y = c(0.05, 0.05, 0.12), bid = 3, oid = 1)
-
-v <- bind_rows(v1,  v2, v0,  v3, v4) %>% mutate(id = seq(n()))
 
 ##' x is a tbl_df
 mpolypath <- function(x, g = 1, ...) {
   x1 <- x %>% mutate(mg = g) %>%  group_by(mg) %>% do(rbind(., NA_real_))
   polypath(x1[-nrow(x1), ], ...)
 }
-pl <- function(x, col = NULL, debug = FALSE, ...) {
-  plot(dplyr::select(x, x, y), type = "n")
+mlinepath <- function(x, g = 1, ..., col = "black") {
+
+  x1 <- split(x, g)
+  col <- rep(col, length(x1))
+  er <- lapply(seq_along(x1), function(x) lines(x1[[x]], col = col[x],  ...))
+  invisible(er)
+}
+pl <- function(x, col = NULL, debug = FALSE, asp = NULL,  ..., type = "p") {
+  plot(dplyr::select(x, x, y), type = "n", asp = asp)
   uoid <- unique(x$oid)
   if (is.null(col)) col <- sample(grey(seq_along(uoid)/length(uoid)))
   col <- rep(col, length(uoid))
   for (i in seq(length(uoid))) {
     asub <- x %>% filter(oid == uoid[i])
-    mpolypath(asub, g = asub$bid, col = col[i], rule = "evenodd", ...)
+    if (type == "p") mpolypath(asub, g = asub$oid, col = col[i], rule = "evenodd", ...)
+    if (type == "l") mlinepath(asub, g = asub$oid, col = col[i])
     }
 }
 
-ts <- pl(v, debug = TRUE)
-
-pl(v, col = c("grey", "aliceblue"))
-
-
-library(rworldmap)
-data(countriesLow)
 dv <- function(x, ...) {
   g <- geometry(x)
   d <- as.data.frame(x)
@@ -48,7 +39,3 @@ dv <- function(x, ...) {
   x
 }
 
-load("inst/extdata/brokeCountries")
-dpc <- dv(brokeCountries)
-
-pl(dpc)
