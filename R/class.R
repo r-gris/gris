@@ -1,3 +1,14 @@
+
+#' @importFrom dplyr data_frame select summarise_each funs bind_rows
+nextent_vertices <- function(object) {
+
+  if (missing(object)) return(data_frame())
+  x <- object
+  ignore <- c("bid__00", "oid__00", "id")
+  for (i in seq_along(ignore)) x <- x %>% select(-matches(ignore[i]))
+  bind_rows(x %>%  summarise_each(funs(min)),
+            x %>%  summarise_each(funs(max)))
+}
 ## classes
 ## domain (extent + projection)
 ##
@@ -11,21 +22,14 @@ setClass("domain", slots = list(extent = "tbl_df", projection = "character"),
 setClass("objects", slots = list(vertices = "tbl_df", domain = "domain"),
          prototype = list())
 
-dom <- new("domain", extent = nextent_vertices(v))
-obj <- new("objects", domain = dom, vertices = v)
+#dom <- new("domain", extent = nextent_vertices(v))
+#obj <- new("objects", domain = dom, vertices = v)
 ## methods
 ## plot
 vertices_default <- function(object) {
   slot(object, "vertices")
 }
-nextent_vertices <- function(object) {
-  x <- object
-  if (missing(x)) return(data_frame())
-  ignore <- c("bid__00", "oid__00", "id")
-  for (i in seq_along(ignore)) x <- x %>% select(-matches(ignore[i]))
-  bind_rows(x %>%  summarise_each(funs(min)),
-            x %>%  summarise_each(funs(max)))
-}
+
 nextent_objects <- function(object) nextent_vertices(vertices(object))
 
 nextent_raster <- function(object) {
