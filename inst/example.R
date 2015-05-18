@@ -1,17 +1,17 @@
 library(dplyr)
 source("R/gris.R")
-v1 <- data_frame(x = c(0, 1, 0.5), y = c(0, 0, 1), bid__00 = 1, oid__00 = 1)
-v2 <- data_frame(x = c(1, 1, 0.5), y = c(0, 1, 1), bid__00 = 2, oid__00 = 1)
+v1 <- data_frame(x = c(0, 1, 0.5), y = c(0, 0, 1), .br0 = 1, .ob0 = 1)
+v2 <- data_frame(x = c(1, 1, 0.5), y = c(0, 1, 1), .br0 = 2, .ob0 = 1)
 
-v3 <- v1 %>% mutate(x = x + 2, bid__00 = 4, oid__00 = 2)
-v4 <- v2 %>% mutate(x = x + 2, bid__00 = 5, oid__00 = 2)
-v0 <- data_frame(x = c(0.1, 0.4, 0.2), y = c(0.05, 0.05, 0.12), bid__00 = 3, oid__00 = 1)
+v3 <- v1 %>% mutate(x = x + 2, .br0 = 4, .ob0 = 2)
+v4 <- v2 %>% mutate(x = x + 2, .br0 = 5, .ob0 = 2)
+v0 <- data_frame(x = c(0.1, 0.4, 0.2), y = c(0.05, 0.05, 0.12), .br0 = 3, .ob0 = 1)
 
 v <- bind_rows(v1,  v2, v0,  v3, v4) %>% mutate(id = seq(n()))
 
 
 verts <- v %>% select(id, x, y)
-branch <- v %>% distinct(bid__00) %>% transmute(id = bid__00)
+branch <- v %>% distinct(.br0) %>% transmute(id = .br0)
 ##ts <- pl(v, debug = TRUE)
 
 pl(v, col = c("grey", "aliceblue"))
@@ -30,16 +30,17 @@ dpc <- dv(brokeCountries)
 pl(dpc)
 
 
+
 library(geometry)
 cols <- rainbow(255, alpha = 0.5)
-for (jj in unique(dpc$oid__00)) {
-  ab <- filter(dpc, oid__00 == jj)  ##%>% filter(bid__00 == 1)
+for (jj in unique(dpc$.ob0)) {
+  ab <- filter(dpc, .ob0 == jj)  ##%>% filter(.br0 == 1)
   ##pl(ab, col = "red")
   del <- delaunayn(cbind(ab$x, ab$y))
   ##apply(del, 1, function(x) polypath(cbind(ab$x[x], ab$y[x])))
 
    centr <- data_frame(x = ab$x[t(del)], y = ab$y[t(del)], t = rep(seq(nrow(del)), each = 3)) %>% group_by(t) %>% summarize(x = mean(x), y = mean(y))
-   x1 <- ab %>% mutate(mg = bid__00) %>%  group_by(mg) %>% do(rbind(., NA_real_))
+   x1 <- ab %>% mutate(mg = .br0) %>%  group_by(mg) %>% do(rbind(., NA_real_))
    inside <- which(point.in.polygon(centr$x, centr$y, x1$x, x1$y) == 1)
    col <- sample(cols, 1)
    apply(del[inside, ], 1, function(x) polypath(cbind(ab$x[x], ab$y[x]), col = col, border = NA))
@@ -55,14 +56,14 @@ for (jj in unique(dpc$oid__00)) {
 
 
 ## deldir
-for (jj in unique(dpc$oid__00)) {
-  ab <- filter(dpc, oid__00 == jj)  ##%>% filter(bid__00 == 1)
+for (jj in unique(dpc$.ob0)) {
+  ab <- filter(dpc, .ob0 == jj)  ##%>% filter(.br0 == 1)
   ##pl(ab, col = "red")
   del <- deldir(ab$x, ab$y)
   tril <- triang.list(del)
   centr <- matrix(0, length(tril), ncol = 2)
   for (i in seq_along(tril)) {centr[i, 1] <- mean(tril[[i]]$x); centr[i, 2] <- mean(tril[[i]]$y)}
-  x1 <- ab %>% mutate(mg = bid__00) %>%  group_by(mg) %>% do(rbind(., NA_real_))
+  x1 <- ab %>% mutate(mg = .br0) %>%  group_by(mg) %>% do(rbind(., NA_real_))
   inside <- point.in.polygon(centr[,1], centr[,2], x1$x, x1$y)
   for (i in seq_along(tril)) if (inside[i]) polypath(tril[[i]]$x, tril[[i]]$y)
 }
