@@ -1,0 +1,13 @@
+Package: gris
+Type: Package
+Title: Geometric Data
+Version: 0.0.1
+Date: 2015-05-19
+Author: Michael D. Sumner
+Maintainer: Michael D. Sumner <mdsumner@gmail.com>
+Description: Geometric data model for R.
+License: GPL-3
+ByteCompile: Yes
+LazyData: TRUE
+Depends: dplyr
+Imports: dplyr
