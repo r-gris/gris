@@ -18,12 +18,7 @@ v <- v %>% select(-.ob0)
 ## subset by name
 o %>% filter(Name == "p") %>% inner_join(b, by = c(id = ".ob0")) %>% inner_join(v, by = c(.br0 = ".br0"))
 
-sbs <- function(x, subset, ...) {
-  o <- subset
-  b <- x$b %>% semi_join(o, by = c(".ob0" = "id"))
-  v <- x$v %>%  semi_join(b, by = c(".br0" = ".br0"))
-  list(o = o, b = b, v = v)
-}
+
 
 sbs(list(o = o, b = b, v = v), filter(o, Name == "p"))
 
@@ -39,3 +34,5 @@ o[] <- lapply(o, function(x) {if(isTRUE(all.equal(attr(x, 'levels'), character(0
 sbs(list(o = o, b = b, v = dpc), filter(o, SOVEREIGNT == "Australia"))
 
 
+x <- list(o = o, b = b, v = dpc)
+library(cgalgris)
