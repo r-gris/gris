@@ -8,9 +8,25 @@ Build objects from other packages.
 ```{r}
 library(maptools)
 data(wrld_simpl)
-x <- bld(wrld_simpl)
-pl(sbs(x, filter(x$o, NAME %in% c("Australia", "Indonesia")))$v)
+dat <- bld(wrld_simpl)
+dat1 <- sbs(dat, filter(dat$o, NAME %in% c("Australia", "Indonesia")))
+pl(dat1$v)
 ```
+
+Triangulate with CGAL via [cgalgris](https://github.com/mdsumner/cgalgris). 
+
+```{r}
+library(cgalgris)
+## Delaunay triangulation (unconstrained)
+dat$vi <- tri_xy(dat$v$x, dat$v$y) + 1  ## plus 1 for R indexing
+
+## centroids of triangles
+centr <- data_frame(x = x$v$x[x$vi], y = x$v$y[x$vi], t = rep(seq(length(x$vi/3)), each = 3)) %>% group_by(t) %>% summarize(x = mean(x), y = mean(y))
+   x1 <- ab %>% mutate(mg = .br0) %>%  group_by(mg) %>% do(rbind(., NA_real_))
+   inside <- which(point.in.polygon(centr$x, centr$y, x1$x, x1$y) == 1)
+   col <- sample(cols, 1)
+   apply(del[inside, ], 1, function(x) polypath(cbind(ab$x[x], ab$y[x]), col = col, border = NA))
+
 
 Build up the objects from scratch. 
 
