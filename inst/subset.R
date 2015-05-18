@@ -22,7 +22,7 @@ o %>% filter(Name == "p") %>% inner_join(b, by = c(id = ".ob0")) %>% inner_join(
 
 sbs(list(o = o, b = b, v = v), filter(o, Name == "p"))
 
-dpc <- build(brokeCountries)
+dpc <- bld(brokeCountries)
 b <- dpc %>% distinct(.br0) %>% select(.br0, .ob0)
 o <- b %>% distinct(.ob0) %>% mutate(id = .ob0) %>% select(id)
 df <- as.data.frame(brokeCountries)

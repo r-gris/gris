@@ -26,7 +26,7 @@ mlinepath <- function(x, g = 1, ..., col = "black") {
 pl <- function(x, col = NULL, debug = FALSE, asp = NULL,  ..., type = "p") {
   plot(dplyr::select(x, x, y), type = "n", asp = asp, ...)
   uoid <- unique(x$.ob0)
-  if (is.null(col)) col <- sample(grey(seq_along(uoid)/length(uoid)))
+  if (is.null(col)) col <- sample(grey(seq_along(uoid)/(length(uoid)+1)))
   col <- rep(col, length(uoid))
   for (i in seq(length(uoid))) {
     asub <- x %>% filter(.ob0 == uoid[i]) %>% select(x, y, .ob0, .br0)
@@ -35,10 +35,6 @@ pl <- function(x, col = NULL, debug = FALSE, asp = NULL,  ..., type = "p") {
   }
   invisible(NULL)
 }
-
-
-
-
 
 #' Subset for a vertex/branch/object object
 #'
@@ -60,7 +56,8 @@ sbs <- function(x, subset, ...) {
 #' @param x SpatialPolygonsDataFrame
 #' @param ... ignored
 #' @return list of \code{v} vertex, \code{b} branch and \code{o} object tables
-build <- function(x, ...) {
+#' @export
+bld <- function(x, ...) {
   g <- geometry(x)
   d <- as.data.frame(x)
   x <- vector("list", nrow(d))
@@ -78,6 +75,7 @@ build <- function(x, ...) {
   b <- x %>% distinct(.br0) %>% select(.br0, .ob0)
   ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
   d[] <-  lapply(d, function(x) {if(isTRUE(all.equal(attr(x, 'levels'), character(0)))) {attr(x, 'levels') <- NULL}; x})
+  d$id <- 1:nrow(d)
   list(v = x, b = b, o = d)
 }
 

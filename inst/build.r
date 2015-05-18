@@ -1,6 +1,6 @@
 source("R/gris.R")
 
-v <- build(brokeCountries)
+v <- bld(brokeCountries)
 o <- as_data_frame(bind_cols(data_frame(object = unique(d$.ob0)), as_data_frame(as.list(as.data.frame(brokeCountries)[,4, drop = FALSE]))))
 obj <- list(vert = v, obj = o)
 class(obj) <- c("gris", "list")
