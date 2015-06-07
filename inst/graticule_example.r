@@ -1,0 +1,8 @@
+library(rworldmap)
+data(countriesLow)
+wm <- spTransform(subset(countriesLow, SOVEREIGNT == "Australia"), CRS("+proj=laea +lon_0=170"))
+plot(wm, add = TRUE)
+gr <- graticule(seq(50, 211, length = 32), -41:10, tile = TRUE, nverts = 1, gris = TRUE, proj = "+proj=laea +lon_0=170")
+pl(gr$o  %>% inner_join(gr$oXb)  %>% inner_join(gr$b)  %>% inner_join(gr$bXv)  %>% inner_join(gr$v))
+plot(wm, add = TRUE)
+plot(wm, add = TRUE, col = "hotpink")
