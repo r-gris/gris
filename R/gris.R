@@ -29,7 +29,7 @@ pl <- function(x, col = NULL, debug = FALSE, asp = NULL,  ..., type = "p") {
   if (is.null(col)) col <- sample(grey(seq_along(uoid)/(length(uoid)+1)))
   col <- rep(col, length(uoid))
   for (i in seq(length(uoid))) {
-    asub <- x %>% filter(.ob0 == uoid[i]) %>% select(x, y, .ob0, .br0)
+    asub <- x %>% dplyr::filter(.ob0 == uoid[i]) %>% dplyr::select(x, y, .ob0, .br0)
     if (type == "p") mpolypath(asub, g = asub$.br0, col = col[i], rule = "evenodd", ...)
     if (type == "l") mlinepath(asub, g = asub$.br0, col = col[i])
   }
@@ -59,7 +59,7 @@ sbs <- function(x, subset, ...) {
 #' @export
 #' @importFrom sp geometry
 bld <- function(x, ...) {
-  g <- geometry(x)
+  g <- sp::geometry(x)
   d <- as.data.frame(x)
   x <- vector("list", nrow(d))
   d <- d %>% dplyr::mutate(nbranches = 0)
@@ -93,27 +93,28 @@ bld <- function(x, ...) {
 #     data_frame(labptx = obj@labpt[1], labpty = obj@labpt[2], area = obj@area, hole = obj@hole, ringDir = obj@ringDir)
 #   }
 
+
 #' @export
 bld2 <- function(x, ...) {
-  g <- geometry(x)
+  g <- sp::geometry(x)
  o <- as_data_frame(as.data.frame(x))
  o <- o %>% mutate(.ob0 = row_number())
   x <- vector("list", nrow(o))
   for (i in seq_along(x)) {
     rawcoords <- lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
       m <- g@polygons[[i]]@Polygons[[xi]]@coords
-      data_frame(x = m[,1], y = m[,2], .br0 = xi)
+      dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
     })
    ## d$nbranches[i] <- length(rawcoords)
     l <- do.call(bind_rows, rawcoords)
     if (i > 1) l$.br0 <- l$.br0 + max(x[[i-1]]$.br0)
-    l <- l %>% mutate(.ob0 = i)
+    l <- l %>% dplyr::mutate(.ob0 = i)
     x[[i]] <- l
   }
   v <- do.call(bind_rows, x) %>% mutate(.vx0 = row_number())
   b <- v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
-  bXv <- b %>% inner_join(v) %>% dplyr::select(.br0, .vx0)
-  oXb <- o %>% inner_join(b) %>% dplyr::select(.ob0, .br0)
+  bXv <- b %>% dplyr::inner_join(v) %>% dplyr::select(.br0, .vx0)
+  oXb <- o %>% dplyr::inner_join(b) %>% dplyr::select(.ob0, .br0)
   ## clean up
   b <- b %>% dplyr::select(.br0)
   v <- v %>% dplyr::select(-.br0, -.ob0)
