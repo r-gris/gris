@@ -11,3 +11,4 @@ ByteCompile: Yes
 LazyData: TRUE
 Depends: dplyr
 Imports: dplyr
+VignetteBuilder: knitr

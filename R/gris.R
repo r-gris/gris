@@ -61,22 +61,72 @@ bld <- function(x, ...) {
   g <- geometry(x)
   d <- as.data.frame(x)
   x <- vector("list", nrow(d))
+  d <- d %>% dplyr::mutate(nbranches = 0)
   for (i in seq(nrow(d))) {
-    l <- do.call(bind_rows, lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
+
+    rawcoords <- lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
       m <- g@polygons[[i]]@Polygons[[xi]]@coords
       data_frame(x = m[,1], y = m[,2], .br0 = xi)
-    }))
+    })
+    d$nbranches[i] <- length(rawcoords)
+    l <- do.call(bind_rows, rawcoords)
     if (i > 1) l$.br0 <- l$.br0 + max(x[[i-1]]$.br0)
     l$.ob0 <- i
     x[[i]] <- l
   }
   x <- do.call(bind_rows, x)
   x$id <- seq(nrow(x))
-  b <- x %>% distinct(.br0) %>% select(.br0, .ob0)
+  b <- x %>% dplyr::distinct(.br0) %>% dplyr::select(.br0, .ob0)
   ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
-  d[] <-  lapply(d, function(x) {if(isTRUE(all.equal(attr(x, 'levels'), character(0)))) {attr(x, 'levels') <- NULL}; x})
-  d$id <- 1:nrow(d)
+  d <-  as_data_frame(lapply(d, function(x) {if(isTRUE(all.equal(attr(x, 'levels'), character(0)))) {attr(x, 'levels') <- NULL}; x}))
+  d <- d %>% dplyr::mutate(id = row_number())
   list(v = x, b = b, o = d)
+}
+
+#   getCoords <- function(xi) {
+#     m <- g@polygons[[i]]@Polygons[[xi]]@coords
+#     data_frame(x = m[,1], y = m[,2])
+#   }
+#   getBranchs <- function(xi) {
+#     obj <- g@polygons[[i]]@Polygons[[xi]]
+#     data_frame(labptx = obj@labpt[1], labpty = obj@labpt[2], area = obj@area, hole = obj@hole, ringDir = obj@ringDir)
+#   }
+
+#' @export
+bld2 <- function(x, ...) {
+  g <- geometry(x)
+ o <- as_data_frame(as.data.frame(x))
+ o <- o %>% mutate(.ob0 = row_number())
+  x <- vector("list", nrow(o))
+  for (i in seq_along(x)) {
+    rawcoords <- lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
+      m <- g@polygons[[i]]@Polygons[[xi]]@coords
+      data_frame(x = m[,1], y = m[,2], .br0 = xi)
+    })
+   ## d$nbranches[i] <- length(rawcoords)
+    l <- do.call(bind_rows, rawcoords)
+    if (i > 1) l$.br0 <- l$.br0 + max(x[[i-1]]$.br0)
+    l <- l %>% mutate(.ob0 = i)
+    x[[i]] <- l
+  }
+  v <- do.call(bind_rows, x) %>% mutate(.vx0 = row_number())
+  b <- v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
+  bXv <- b %>% inner_join(v) %>% dplyr::select(.br0, .vx0)
+  oXb <- o %>% inner_join(b) %>% dplyr::select(.ob0, .br0)
+  ## clean up
+  b <- b %>% dplyr::select(.br0)
+  v <- v %>% dplyr::select(-.br0, -.ob0)
+
+  ## normalize vertices
+  v <-  v  %>% distinct(x, y)
+  bXv <- bXv  %>% semi_join(v)
+  ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
+  o <-  as_data_frame(lapply(o, function(x) {if(isTRUE(all.equal(attr(x, 'levels'), character(0)))) {attr(x, 'levels') <- NULL}; x}))
+  list(v = v,
+       bXv = bXv,
+       b = b,
+       oXb = oXb,
+       o = o)
 }
 
 
