@@ -119,9 +119,10 @@ bld2 <- function(x, ...) {
   b <- b %>% dplyr::select(.br0)
   v <- v %>% dplyr::select(-.br0, -.ob0)
 
-  ## normalize vertices
-  v <-  v  %>% distinct(x, y)
-  bXv <- bXv  %>% semi_join(v)
+  ## no normalize vertices yet
+  ## 
+  ##v <-  v  %>% distinct(x, y)
+  ##bXv <- bXv  %>% semi_join(v)
   ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
   o <-  as_data_frame(lapply(o, function(x) {if(isTRUE(all.equal(attr(x, 'levels'), character(0)))) {attr(x, 'levels') <- NULL}; x}))
   list(v = v,
