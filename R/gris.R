@@ -57,6 +57,7 @@ sbs <- function(x, subset, ...) {
 #' @param ... ignored
 #' @return list of \code{v} vertex, \code{b} branch and \code{o} object tables
 #' @export
+#' @importFrom sp geometry
 bld <- function(x, ...) {
   g <- geometry(x)
   d <- as.data.frame(x)
