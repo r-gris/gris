@@ -94,17 +94,98 @@ bld <- function(x, ...) {
 #   }
 
 
+#' gris
+#'
+#' @param x
+#' @param ...
+#'
+#' @return gris
 #' @export
+#'
+gris <- function(x, ...) {
+  UseMethod("gris")
+}
+
+#' Convert Spatial* objects to gris
+#'
+#' Description of it
+#'
+#' Details are
+#' @param x Spatial* object
+#' @param ... not used
+#'
+#' @return gris
+#' @export
+#' @rdname sp2gris
+gris.SpatialPolygonsDataFrame <- function(x, ...) {
+  x <- bld2(x, ...)
+  class(x) <- c("gris", "list")
+  x
+}
+
+#' @rdname sp2gris
+gris.SpatialLinesDataFrame <- function(x, ...) {
+  x <- bld2(x, ...)
+  class(x) <- c("gris", "list")
+  x
+}
+
+#' @rdname sp2gris
+gris.SpatialPointsDataFrame <- function(x, ...) {
+  x <- bld2(x, ...)
+  class(x) <- c("gris", "list")
+  x
+}
+
+topotype <- function(x) {
+  "basic gris"
+}
+
+
+#' print
+#'
+#' @param x
+#'
+#' @param ...
+#' @param n
+#' @param width
+#'
+#' @export
+print.gris <- function(x, ..., n = NULL, width = NULL) {
+  cat("gris object", "\n", sep = "")
+  print(x$o)
+  cat("\n")
+  cat("gris topology ", topotype(x), "\n", sep = "")
+  cat("\n")
+  cat("gris vertices", "\n", sep = "")
+  print(x$v)
+  cat("\n")
+  invisible(x)
+}
+
+
 bld2 <- function(x, ...) {
+  x0 <- x  ## need for test lower down, must fix
   g <- sp::geometry(x)
  o <- as_data_frame(as.data.frame(x))
  o <- o %>% mutate(.ob0 = row_number())
+ if (inherits(x0, "SpatialPoints")) mcoords <- coordinates(g)
   x <- vector("list", nrow(o))
   for (i in seq_along(x)) {
-    rawcoords <- lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
+
+
+    if (inherits(x0, "SpatialPolygons")) rawcoords <- lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
       m <- g@polygons[[i]]@Polygons[[xi]]@coords
       dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
     })
+
+    if (inherits(x0, "SpatialLines")) rawcoords <- lapply(seq_along(g@lines[[i]]@Lines), function(xi) {
+      m <- g@lines[[i]]@Lines[[xi]]@coords
+      dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
+    })
+    ## obviously this could be much faster without the loop
+    if (inherits(x0, "SpatialPoints")) rawcoords <- list(dplyr::data_frame(x = mcoords[i,1], mcoords[i,2], .br0 = i))
+
    ## d$nbranches[i] <- length(rawcoords)
     l <- do.call(bind_rows, rawcoords)
     if (i > 1) l$.br0 <- l$.br0 + max(x[[i-1]]$.br0)
@@ -120,7 +201,7 @@ bld2 <- function(x, ...) {
   v <- v %>% dplyr::select(-.br0, -.ob0)
 
   ## no normalize vertices yet
-  ## 
+  ##
   ##v <-  v  %>% distinct(x, y)
   ##bXv <- bXv  %>% semi_join(v)
   ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
