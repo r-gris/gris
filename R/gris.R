@@ -36,6 +36,60 @@ pl <- function(x, col = NULL, debug = FALSE, asp = NULL,  ..., type = "p") {
   invisible(NULL)
 }
 
+
+#' Plot
+#'
+#' @param x
+#' @param y
+#' @param ...
+#'
+#' @return x, invisibly
+#' @export
+#'
+plot.gris <- function(x, y, ...) {
+  ## forget y
+  largs <- list(x = x$v %>% select(x, y),   ...)
+  if (is.null(largs$add) || !largs$add) {
+    otype <- largs$type
+    largs$type <- "n"
+    do.call(plot, largs)
+    largs$type <- otype
+  }
+
+  uoid <- unique(x$o$.ob0)
+  if (is.null(largs$col)) largs$col <- sample(grey(seq_along(uoid)/(length(uoid)+1)))
+  col <- rep(largs$col, length(uoid))
+  type <- largs$type
+  largs$type <- NULL
+  for (i in seq(length(uoid))) {
+    ##asub <- x %>% dplyr::filter(.ob0 == uoid[i]) %>% dplyr::select(x, y, .ob0, .br0)
+    asub <- x$o %>% filter(.ob0 == uoid[i]) %>%
+      inner_join(x$oXb, by = ".ob0") %>%
+      inner_join(x$b, by = ".br0") %>%
+      inner_join(x$bXv, by = ".br0") %>%
+      inner_join(x$v, by = ".vx0") %>%
+      select(x, y, .br0)
+
+    largs$col <- col[i]
+
+    if (type == "pp") {
+      largs$rule <- "evenodd"
+      #mpolypath(asub, g = asub$.br0, col = col[i], rule = "evenodd", ...)
+      x1 <- asub %>% mutate(mg = .br0) %>%  group_by(mg) %>% do(rbind(., NA_real_))
+      largs$x <- x1[-nrow(x1), ]
+      largs$y <- NULL
+      ##polypath(x1[-nrow(x1), ], ...)
+
+      #browser()
+      do.call(polypath, largs)
+    }
+    ## lines slightly more complicated, need the 2-vertex segment model
+  ##if (type == "l") mlinepath(asub, g = asub$.br0, col = col[i])
+  if (type == "p") do.call(points, largs)
+  }
+  invisible(x)
+}
+
 #' Subset for a vertex/branch/object object
 #'
 #' @param x list of \code{v} vertex, \code{b} branch and \code{o} object tables
@@ -123,7 +177,9 @@ gris.SpatialPolygonsDataFrame <- function(x, ...) {
   x
 }
 
+
 #' @rdname sp2gris
+#' @export
 gris.SpatialLinesDataFrame <- function(x, ...) {
   x <- bld2(x, ...)
   class(x) <- c("gris", "list")
@@ -131,6 +187,7 @@ gris.SpatialLinesDataFrame <- function(x, ...) {
 }
 
 #' @rdname sp2gris
+#' @export
 gris.SpatialPointsDataFrame <- function(x, ...) {
   x <- bld2(x, ...)
   class(x) <- c("gris", "list")
@@ -184,7 +241,7 @@ bld2 <- function(x, ...) {
       dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
     })
     ## obviously this could be much faster without the loop
-    if (inherits(x0, "SpatialPoints")) rawcoords <- list(dplyr::data_frame(x = mcoords[i,1], mcoords[i,2], .br0 = i))
+    if (inherits(x0, "SpatialPoints")) rawcoords <- list(dplyr::data_frame(x = mcoords[i,1], y = mcoords[i,2], .br0 = i))
 
    ## d$nbranches[i] <- length(rawcoords)
     l <- do.call(bind_rows, rawcoords)
