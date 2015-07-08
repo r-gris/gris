@@ -86,6 +86,7 @@ print.gris <- function(x, ..., n = NULL, width = NULL) {
 plot.gris <- function(x, y, ...) {
   ## forget y
   largs <- list(x = x$v %>% select(x, y),   ...)
+  if (is.null(largs$type)) largs$type <- "pp"  ## default to polygon for now
   if (is.null(largs$add) || !largs$add) {
     otype <- largs$type
     largs$type <- "n"
@@ -222,8 +223,8 @@ bld2 <- function(x, ...) {
   }
   v <- do.call(bind_rows, x) %>% mutate(.vx0 = row_number())
   b <- v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
-  bXv <- b %>% dplyr::inner_join(v) %>% dplyr::select(.br0, .vx0)
-  oXb <- o %>% dplyr::inner_join(b) %>% dplyr::select(.ob0, .br0)
+  bXv <- b %>% dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% dplyr::select(.br0, .vx0)
+  oXb <- o %>% dplyr::inner_join(b, by = ".ob0") %>% dplyr::select(.ob0, .br0)
   ## clean up
   b <- b %>% dplyr::select(.br0)
   v <- v %>% dplyr::select(-.br0, -.ob0)
