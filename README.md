@@ -15,6 +15,9 @@ What we have
 What we need
 
 * flesh out the RTriangle support and relation to rgl texture mapping
+* speed up the normalization of vertices
+* consider edge model as default rather than branches
+* apply system of naming for vertices . . .
 * ~~triangulation with CGAL, constrained Delaunay~~
 
 

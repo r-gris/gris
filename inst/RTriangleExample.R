@@ -3,20 +3,27 @@ prs1 <- function(x) {
   x1 <- cbind(head(x, -1), tail(x, -1))
   rbind(x1, c(x1[length(x1)], x1[1]))
 }
+pquads1 <- function(x, texture = NULL, texcoords = NULL, subset = NULL, ...) {
+  if (is.null(texcoords)) texcoords <- t(x$vb[1:2,x$ib])
+  if (!is.null(subset)) x$ib <- x$ib[,subset]
+  rgl.quads(x$vb[1,x$ib], x$vb[2,x$ib], x$vb[3,x$ib], texcoords = texcoords, texture = texture, ...)
+}
+
+
 library(gris)
 library(RTriangle)
 library(maptools)
 data(wrld_simpl)
-o <- gris(subset(wrld_simpl, NAME == "Australia"))
+#o <- gris(subset(wrld_simpl, NAME == "Australia"))
 ##o <- gris(wrld_simpl[sample(nrow(wrld_simpl), 1), ])
-##o <- gris(wrld_simpl[sample(nrow(wrld_simpl), 10), ])
-p <- pslg(P = o$v %>% select(x, y) %>% as.matrix(), PB = NA, PA = NA,
-     S = do.call(rbind, lapply(split(o$bXv$.vx0, o$bXv$.br0), prs1))
-, SB = NA, H = NA)
+o <- gris(wrld_simpl[c(2, 10), ]) ##[sample(nrow(wrld_simpl), 10), ])
+##o <- gris(wrld_simpl)
+p <- pslg(P = o$v %>% select(x, y) %>% as.matrix(),
+          S = do.call(rbind, lapply(split(o$bXv$.vx0, o$bXv$.br0), prs1)))
+
 tr <- RTriangle::triangulate(p, a = 1e1)
 plot(tr, cex = 0.2)
 
-o$tri <- tr$T
 
 library(rgl)
 library(rglgris)

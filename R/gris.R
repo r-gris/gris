@@ -168,19 +168,6 @@ gris.SpatialPointsDataFrame <- function(x, ...) {
 }
 
 
-#' Subset for a vertex/branch/object object
-#'
-#' @param x list of \code{v} vertex, \code{b} branch and \code{o} object tables
-#' @param subset a subset of the \code{o} object
-#' @param ... ignored
-#' @return list of \code{v} vertex, \code{b} branch and \code{o} object tables
-#' @export
-sbs <- function(x, subset, ...) {
-  o <- subset
-  b <- x$b %>% semi_join(o, by = c(".ob0" = "id"))
-  v <- x$v %>%  semi_join(b, by = c(".br0" = ".br0"))
-  list(o = o, b = b, v = v)
-}
 
 
 
@@ -193,7 +180,7 @@ topotype <- function(x) {
 
 
 
-bld2 <- function(x, ...) {
+bld2 <- function(x, normalize_verts = TRUE, ...) {
   x0 <- x  ## need for test lower down, must fix
   g <- sp::geometry(x)
  o <- as_data_frame(as.data.frame(x))
@@ -235,22 +222,52 @@ bld2 <- function(x, ...) {
   ##bXv <- bXv  %>% semi_join(v)
   ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
   o <-  as_data_frame(lapply(o, function(x) {if(isTRUE(all.equal(attr(x, 'levels'), character(0)))) {attr(x, 'levels') <- NULL}; x}))
-  list(v = v,
+  obj <- list(v = v,
        bXv = bXv,
        b = b,
        oXb = oXb,
        o = o)
+  if (normalize_verts) obj <- normalizeVerts(obj, c("x", "y"))
+  obj
 }
 
-normalizeVerts <- function(x, dupenames) {
-  dupes <- duplicated(x$v %>% select(dupenames))
+
+
+normalizeVerts <- function(x, nam) {
+  v <- x$v
+  bXv <- x$bXv
+  dupes <- duplicated(v[, nam])
   dupeindex <- which(dupes)
   while(any(dupes)) {
-    index <- dupeindex[1]
-    id <- x$v$.vXb[index]
-    x$v$.vXb[]
+    index <- dupeindex[1L]
+    bad <- v[[nam[1L]]] == v[[nam[1L]]][index] & v[[nam[2L]]] == v[[nam[2L]]][index]
+    bXv$.vx0[bad] <- index
+    v$.vx0 <- bXv$.vx0
+    ##v <- v %>% filter(!bad)
+    dupes <- duplicated((v %>% distinct(.vx0))[,nam])
+    dupeindex <- which(dupes)
   }
+  v$.vx0 <- bXv$.vx0
+  x$v <- v %>% distinct() ## [!duplicated(v[,nam]), ]
+  x$bXv <- bXv
+  x
 }
+
+
+# #' Subset for a vertex/branch/object object
+# #'
+# #' @param x list of \code{v} vertex, \code{b} branch and \code{o} object tables
+# #' @param subset a subset of the \code{o} object
+# #' @param ... ignored
+# #' @return list of \code{v} vertex, \code{b} branch and \code{o} object tables
+# #' @export
+# sbs <- function(x, subset, ...) {
+#   o <- subset
+#   b <- x$b %>% semi_join(o, by = c(".ob0" = "id"))
+#   v <- x$v %>%  semi_join(b, by = c(".br0" = ".br0"))
+#   list(o = o, b = b, v = v)
+# }
+
 #
 # #' Generate a vertex/branch/object table from Spatial polygons
 # #'
