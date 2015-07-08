@@ -204,7 +204,7 @@ bld2 <- function(x, ...) {
 
 
     if (inherits(x0, "SpatialPolygons")) rawcoords <- lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
-      m <- g@polygons[[i]]@Polygons[[xi]]@coords
+      m <- head(g@polygons[[i]]@Polygons[[xi]]@coords, -1)
       dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
     })
 
