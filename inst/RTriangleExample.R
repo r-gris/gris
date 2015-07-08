@@ -14,11 +14,11 @@ library(gris)
 library(RTriangle)
 library(maptools)
 data(wrld_simpl)
-#o <- gris(subset(wrld_simpl, NAME == "Australia"))
+o <- gris(subset(wrld_simpl, NAME %in% c("Australia", "Russia")))
 ##o <- gris(wrld_simpl[sample(nrow(wrld_simpl), 1), ])
-o <- gris(wrld_simpl[c(2, 10), ]) ##[sample(nrow(wrld_simpl), 10), ])
+#o <- gris(wrld_simpl[sample(nrow(wrld_simpl), 20), ])
 ##o <- gris(wrld_simpl)
-p <- pslg(P = o$v %>% select(x, y) %>% as.matrix(),
+p <- pslg(P = o$v %>% dplyr::select(x, y) %>% as.matrix(),
           S = do.call(rbind, lapply(split(o$bXv$.vx0, o$bXv$.br0), prs1)))
 
 tr <- RTriangle::triangulate(p, a = 1e1)
@@ -30,4 +30,8 @@ library(rglgris)
 tri <- tetrahedron3d()
 tri$vb <- t(cbind(llh2xyz(cbind(tr$P, 0)),1))
 tri$it <- t(tr$T)
+tcoords <- xyFromCell(setExtent(wimg, extent(0, 1, 0, 1)), cellFromXY(wimg, tr$P))
+shade3d(tri, col = "white", texture = "world.topo.bathy.200411.3x5400x2700.png", texcoords = tcoords[tri$it, ])
+
+
 
