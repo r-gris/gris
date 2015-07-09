@@ -85,7 +85,7 @@ print.gris <- function(x, ..., n = NULL, width = NULL) {
 #' @export
 plot.gris <- function(x, y, ...) {
   ## forget y
-  largs <- list(x = x$v %>% select(x, y),   ...)
+  largs <- list(x = x$v %>% dplyr::select(x, y),   ...)
   if (is.null(largs$type)) largs$type <- "pp"  ## default to polygon for now
   if (is.null(largs$add) || !largs$add) {
     otype <- largs$type
@@ -108,7 +108,7 @@ plot.gris <- function(x, y, ...) {
       inner_join(x$b, by = ".br0") %>%
       inner_join(x$bXv, by = ".br0") %>%
       inner_join(x$v, by = ".vx0") %>%
-      select(x, y, .br0)
+      dplyr::select(x, y, .br0)
 
     largs$col <- col[i]
 
@@ -227,7 +227,12 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
        b = b,
        oXb = oXb,
        o = o)
-  if (normalize_verts) obj <- normalizeVerts(obj, c("x", "y"))
+  print(nrow(obj$v))
+  #if (normalize_verts) {
+  #  obj <- normalizeVerts(obj, c("x", "y"))
+ # }
+  print(nrow(obj$v))
+  print(range(obj$bXv$.vx0))
   obj
 }
 
@@ -236,19 +241,30 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
 normalizeVerts <- function(x, nam) {
   v <- x$v
   bXv <- x$bXv
-  dupes <- duplicated(v[, nam])
+  v$badge <- as.character(v$.vx0)
+  vx0 <- v$.vx0
+  dupes <- duplicated(v[, nam], fromLast = TRUE)
   dupeindex <- which(dupes)
   while(any(dupes)) {
+    cat("removing dupes, found at\n")
+    print(dupeindex)
     index <- dupeindex[1L]
     bad <- v[[nam[1L]]] == v[[nam[1L]]][index] & v[[nam[2L]]] == v[[nam[2L]]][index]
-    bXv$.vx0[bad] <- index
-    v$.vx0 <- bXv$.vx0
-    ##v <- v %>% filter(!bad)
-    dupes <- duplicated((v %>% distinct(.vx0))[,nam])
+    vx0[bad] <- index
+    ##vx0 <- unclass(factor(vx0))
+    dupes[bad] <- FALSE
     dupeindex <- which(dupes)
+    print(length(dupeindex))
   }
-  v$.vx0 <- bXv$.vx0
-  x$v <- v %>% distinct() ## [!duplicated(v[,nam]), ]
+
+  v$.vx0 <- vx0
+  bXv$badge <- v$badge[vx0]
+  v <- v %>% distinct(.vx0)
+  v$.vx0 <- seq(nrow(v))
+  bXv$.vx0 <- v$.vx0[match(bXv$badge, v$badge)]
+  v <- v %>% select(-badge)
+  bXv <- bXv %>% select(-badge)
+  x$v <- v
   x$bXv <- bXv
   x
 }
