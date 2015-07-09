@@ -231,8 +231,8 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
   if (normalize_verts) {
     obj <- normalizeVerts(obj, c("x", "y"))
   }
-  print(nrow(obj$v))
-  print(range(obj$bXv$.vx0))
+ # print(nrow(obj$v))
+ # print(range(obj$bXv$.vx0))
   obj
 }
 
@@ -248,14 +248,14 @@ normalizeVerts <- function(x, nam) {
   while(any(dupes)) {
    # cat("removing dupes, found at\n")
    # print(dupeindex)
-    index <- dupeindex[1L]
+ index <- dupeindex[1L]
     bad <- v[[nam[1L]]] == v[[nam[1L]]][index] & v[[nam[2L]]] == v[[nam[2L]]][index]
     vx0[bad] <- index
     ##vx0 <- unclass(factor(vx0))
     dupes[bad] <- FALSE
     dupeindex <- which(dupes)
-    #print(length(dupeindex))
-  }
+  #print(length(dupeindex))
+ }
 
   v$.vx0 <- vx0
   bXv$badge <- v$badge[vx0]
