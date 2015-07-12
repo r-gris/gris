@@ -16,11 +16,22 @@ library(gris)  ## devtools::install_github("mdsumner/gris)
 library(RTriangle) ## install.packages("RTriangle")
 library(maptools)
 data(wrld_simpl)
-o <- gris(wrld_simpl)  ##subset(wrld_simpl, NAME %in% c("Australia", "Indonesia", "United States")))
+library(rworldmap)
+data(countriesLow)
+#for (i in seq(nrow(countriesLow))) {
+while(TRUE) {
+#  i <- sample(1:nrow(countriesLow), 10)
+  i <- c(188L, 204L, 68L, 77L, 236L, 129L, 133L, 15L, 165L, 31L)
+o <- gris(countriesLow[i,])
+#o <- gris(wrld_simpl)  ##subset(wrld_simpl, NAME %in% c("Australia", "Indonesia", "United States")))
 ##o <- gris:::normalizeVerts(o1, c("x", "y"))
 p <- pslg(P = o$v %>% dplyr::select(x, y) %>% as.matrix(),
           S = do.call(rbind, lapply(split(o$bXv$.vx0, o$bXv$.br0), prs1)))
-plot(o)
+
+plot(p)
+}
+
+
 
 tr <- RTriangle::triangulate(p, a = 5e1)
 plot(p)

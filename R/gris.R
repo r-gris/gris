@@ -229,27 +229,33 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
        o = o)
   print(nrow(obj$v))
   if (normalize_verts) {
-    obj <- normalizeVerts(obj, c("x", "y"))
+    obj0 <- normalizeVerts(obj$v, obj$bXv , c("x", "y"))
+    obj$v <- obj0$v
+    obj$bXv <- obj0$bXv
   }
  # print(nrow(obj$v))
  # print(range(obj$bXv$.vx0))
   obj
 }
 
-
-
-normalizeVerts <- function(x, nam) {
-  v <- x$v
-  bXv <- x$bXv
+normalizeVerts <- function(v, bXv, nam) {
+  #v <- x$v
+  #bXv <- x$bXv
   v$badge <- as.character(v$.vx0)
   vx0 <- v$.vx0
   dupes <- duplicated(v[, nam], fromLast = TRUE)
   dupeindex <- which(dupes)
+  nn <- nrow(v)
   while(any(dupes)) {
    # cat("removing dupes, found at\n")
    # print(dupeindex)
  index <- dupeindex[1L]
-    bad <- v[[nam[1L]]] == v[[nam[1L]]][index] & v[[nam[2L]]] == v[[nam[2L]]][index]
+    ##bad <- v[[nam[1L]]] == v[[nam[1L]]][index] & v[[nam[2L]]] == v[[nam[2L]]][index]
+ ## this is specific to two columns, but needs to be generalized
+## browser()
+    ##bad <-  all.equal(rep(v[[nam[1L]]][index], nn), v[[nam[1L]]]) & all.equal(rep(v[[nam[2L]]][index], nn), v[[nam[2L]]])
+ bad <- abs(rep(v[[nam[1L]]][index], nn) - v[[nam[1L]]])  < sqrt(.Machine$double.eps) & 
+   abs(rep(v[[nam[2L]]][index], nn) - v[[nam[2L]]])  < sqrt(.Machine$double.eps)
     vx0[bad] <- index
     ##vx0 <- unclass(factor(vx0))
     dupes[bad] <- FALSE
@@ -264,10 +270,18 @@ normalizeVerts <- function(x, nam) {
   bXv$.vx0 <- v$.vx0[match(bXv$badge, v$badge)]
   v <- v %>% select(-badge)
   bXv <- bXv %>% select(-badge)
+  x <- list()
   x$v <- v
   x$bXv <- bXv
   x
 }
+
+# library(dplyr)
+# v <- data_frame(x = rep(1, 10), y = c(1, 2, 3, 2, 5, 6, 2, 8, 9, 2), .vx0 = 1:10)
+# nam <- c("x", "y")
+# bXv <- data_frame(.vx0 = seq(nrow(v)))
+# 
+# normalizeVerts(v, bXv, nam)
 
 
 # #' Subset for a vertex/branch/object object
