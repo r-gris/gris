@@ -1,57 +1,96 @@
 
-##' x is a tbl_df
-mpolypath <- function(x, g = 1, ...) {
-  x1 <- x %>% mutate(mg = g) %>%  group_by(mg) %>% do(rbind(., NA_real_))
-  polypath(x1[-nrow(x1), ], ...)
-}
-mlinepath <- function(x, g = 1, ..., col = "black") {
-
-  x1 <- split(x, g)
-  col <- rep(col, length(x1))
-  er <- lapply(seq_along(x1), function(x) lines(x1[[x]], col = col[x],  ...))
-  invisible(er)
-}
-
-
-#' Simple plot for vertices by branch and object
-#'
-#' Input is a data_frame of x, y, coordinates and .br0 and .ob0 the indices of individual branches and objects.
-#' @param x vertex table
-#' @param col optional colours for each object
-#' @param asp aspect ratio for plot
-#' @param ... arguments based to graphics::plot
-#' @param type p or l for poly or line
-#' @return \code{NULL}
-#' @export
-pl <- function(x, col = NULL, debug = FALSE, asp = NULL,  ..., type = "p") {
-  plot(dplyr::select(x, x, y), type = "n", asp = asp, ...)
-  uoid <- unique(x$.ob0)
-  if (is.null(col)) col <- sample(grey(seq_along(uoid)/(length(uoid)+1)))
-  col <- rep(col, length(uoid))
-  for (i in seq(length(uoid))) {
-    asub <- x %>% dplyr::filter(.ob0 == uoid[i]) %>% dplyr::select(x, y, .ob0, .br0)
-    if (type == "p") mpolypath(asub, g = asub$.br0, col = col[i], rule = "evenodd", ...)
-    if (type == "l") mlinepath(asub, g = asub$.br0, col = col[i])
-  }
-  invisible(NULL)
-}
-
-
-#' Plot
+#' gris
 #'
 #' @param x
-#' @param y
 #' @param ...
 #'
-#' @return x, invisibly
+#' @return gris
 #' @export
+#' @section Methods:
 #'
+#' \code{gris} implements these base methods:
+#'
+#' \describe{
+#' \item{plot}{Plots the object according to its topology type, or by a chosen \code{type}. This
+#' method follows base plotting with types "p" points, "l" lines, and adds "pp" for polygons}
+#' \item{print}{Prints the object and vertices tables with a summary of the topology linkages}
+#' \item{\code{[}}{Subset as an object table on attributes, propagates down through the geometry
+#' links to return a subsetted gris object}
+#' }
+gris <- function(x, ...) {
+  UseMethod("gris")
+}
+
+gris.full <- function(o, oXb, b, bXv, v) {
+  x <- list(o = o, oXb = oXb, b = b, bXv = bXv, v = v)
+  class(x) <- c("gris", "list")
+  x
+}
+
+## vectors of (possibly named) arguments in ... or in a list
+#' @export
+gris.default <- function(..., topotype = "p") {
+  x <- list(...)
+  as_data_frame(setNames(x, buildnames(x)))
+}
+
+# build names as required, but preserve any that are input
+# generated names may clobber later ones that are specified, cest la vie
+buildnames <- function(x) {
+  nams <- names(x)
+  if (is.null(nams)) {
+    nams <-  defaultnames(x)
+  }
+  nonames <- nchar(nams) < 1
+  if (any(nonames)) {
+    nams[nonames] <- defaultnames(x)[nonames]
+  }
+  make.unique(nams, sep = "")
+}
+
+
+# generate x, y, z, t and then as many more as required appending integers to the alphabet
+defaultnames <- function(x) {
+  ind <- c(24, 25, 26, 20)
+  first <- rep_len(c(letters[ind], letters[-ind], letters), length.out = length(x))
+  make.unique(first, sep = "")
+}
+
+#' @rdname gris
+#' @export
+`[.gris` <- function (x, i, j, drop = FALSE) {
+   o <- x$o[i,j,drop=drop]
+   oXb <- x$oXb %>% semi_join(o, by = ".ob0")
+   b <- x$b %>% semi_join(oXb, by = ".br0")
+   bXv <- x$bXv %>% semi_join(b, by = ".br0")
+   v <- x$v %>% semi_join(bXv, by = ".vx0")
+  gris.full(o, oXb, b, bXv, v)
+}
+
+#' @rdname gris
+#' @export
+print.gris <- function(x, ..., n = NULL, width = NULL) {
+  cat("gris object", "\n", sep = "")
+  print(x$o)
+  cat("\n")
+  cat("gris topology ", topotype(x), "\n", sep = "")
+  cat("\n")
+  cat("gris vertices", "\n", sep = "")
+  print(x$v)
+  cat("\n")
+  invisible(x)
+}
+
+#' @rdname gris
+#' @export
 plot.gris <- function(x, y, ...) {
   ## forget y
-  largs <- list(x = x$v %>% select(x, y),   ...)
+  largs <- list(x = x$v %>% dplyr::select(x, y),   ...)
+  if (is.null(largs$type)) largs$type <- "pp"  ## default to polygon for now
   if (is.null(largs$add) || !largs$add) {
     otype <- largs$type
     largs$type <- "n"
+    largs$add <- NULL
     do.call(plot, largs)
     largs$type <- otype
   }
@@ -61,6 +100,7 @@ plot.gris <- function(x, y, ...) {
   col <- rep(largs$col, length(uoid))
   type <- largs$type
   largs$type <- NULL
+
   for (i in seq(length(uoid))) {
     ##asub <- x %>% dplyr::filter(.ob0 == uoid[i]) %>% dplyr::select(x, y, .ob0, .br0)
     asub <- x$o %>% filter(.ob0 == uoid[i]) %>%
@@ -68,97 +108,30 @@ plot.gris <- function(x, y, ...) {
       inner_join(x$b, by = ".br0") %>%
       inner_join(x$bXv, by = ".br0") %>%
       inner_join(x$v, by = ".vx0") %>%
-      select(x, y, .br0)
+      dplyr::select(x, y, .br0)
 
     largs$col <- col[i]
 
+
+    x1 <- asub %>% mutate(mg = .br0) %>%  group_by(mg) %>% do(rbind(., NA_real_))
+    largs$x <- x1[-nrow(x1), ]
+    largs$y <- NULL
+
+
     if (type == "pp") {
       largs$rule <- "evenodd"
-      #mpolypath(asub, g = asub$.br0, col = col[i], rule = "evenodd", ...)
-      x1 <- asub %>% mutate(mg = .br0) %>%  group_by(mg) %>% do(rbind(., NA_real_))
-      largs$x <- x1[-nrow(x1), ]
-      largs$y <- NULL
-      ##polypath(x1[-nrow(x1), ], ...)
-
-      #browser()
       do.call(polypath, largs)
     }
-    ## lines slightly more complicated, need the 2-vertex segment model
-  ##if (type == "l") mlinepath(asub, g = asub$.br0, col = col[i])
-  if (type == "p") do.call(points, largs)
+
+    if (type == "l") {
+      do.call(lines, largs)
+    }
+    if (type == "p") do.call(points, largs)
   }
   invisible(x)
 }
 
-#' Subset for a vertex/branch/object object
-#'
-#' @param x list of \code{v} vertex, \code{b} branch and \code{o} object tables
-#' @param subset a subset of the \code{o} object
-#' @param ... ignored
-#' @return list of \code{v} vertex, \code{b} branch and \code{o} object tables
-#' @export
-sbs <- function(x, subset, ...) {
-  o <- subset
-  b <- x$b %>% semi_join(o, by = c(".ob0" = "id"))
-  v <- x$v %>%  semi_join(b, by = c(".br0" = ".br0"))
-  list(o = o, b = b, v = v)
-}
 
-
-#' Generate a vertex/branch/object table from Spatial polygons
-#'
-#' @param x SpatialPolygonsDataFrame
-#' @param ... ignored
-#' @return list of \code{v} vertex, \code{b} branch and \code{o} object tables
-#' @export
-#' @importFrom sp geometry
-bld <- function(x, ...) {
-  g <- sp::geometry(x)
-  d <- as.data.frame(x)
-  x <- vector("list", nrow(d))
-  d <- d %>% dplyr::mutate(nbranches = 0)
-  for (i in seq(nrow(d))) {
-
-    rawcoords <- lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
-      m <- g@polygons[[i]]@Polygons[[xi]]@coords
-      data_frame(x = m[,1], y = m[,2], .br0 = xi)
-    })
-    d$nbranches[i] <- length(rawcoords)
-    l <- do.call(bind_rows, rawcoords)
-    if (i > 1) l$.br0 <- l$.br0 + max(x[[i-1]]$.br0)
-    l$.ob0 <- i
-    x[[i]] <- l
-  }
-  x <- do.call(bind_rows, x)
-  x$id <- seq(nrow(x))
-  b <- x %>% dplyr::distinct(.br0) %>% dplyr::select(.br0, .ob0)
-  ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
-  d <-  as_data_frame(lapply(d, function(x) {if(isTRUE(all.equal(attr(x, 'levels'), character(0)))) {attr(x, 'levels') <- NULL}; x}))
-  d <- d %>% dplyr::mutate(id = row_number())
-  list(v = x, b = b, o = d)
-}
-
-#   getCoords <- function(xi) {
-#     m <- g@polygons[[i]]@Polygons[[xi]]@coords
-#     data_frame(x = m[,1], y = m[,2])
-#   }
-#   getBranchs <- function(xi) {
-#     obj <- g@polygons[[i]]@Polygons[[xi]]
-#     data_frame(labptx = obj@labpt[1], labpty = obj@labpt[2], area = obj@area, hole = obj@hole, ringDir = obj@ringDir)
-#   }
-
-
-#' gris
-#'
-#' @param x
-#' @param ...
-#'
-#' @return gris
-#' @export
-#'
-gris <- function(x, ...) {
-  UseMethod("gris")
-}
 
 #' Convert Spatial* objects to gris
 #'
@@ -194,34 +167,20 @@ gris.SpatialPointsDataFrame <- function(x, ...) {
   x
 }
 
+
+
+
+
+
 topotype <- function(x) {
   "basic gris"
 }
 
 
-#' print
-#'
-#' @param x
-#'
-#' @param ...
-#' @param n
-#' @param width
-#'
-#' @export
-print.gris <- function(x, ..., n = NULL, width = NULL) {
-  cat("gris object", "\n", sep = "")
-  print(x$o)
-  cat("\n")
-  cat("gris topology ", topotype(x), "\n", sep = "")
-  cat("\n")
-  cat("gris vertices", "\n", sep = "")
-  print(x$v)
-  cat("\n")
-  invisible(x)
-}
 
 
-bld2 <- function(x, ...) {
+
+bld2 <- function(x, normalize_verts = TRUE, ...) {
   x0 <- x  ## need for test lower down, must fix
   g <- sp::geometry(x)
  o <- as_data_frame(as.data.frame(x))
@@ -232,7 +191,7 @@ bld2 <- function(x, ...) {
 
 
     if (inherits(x0, "SpatialPolygons")) rawcoords <- lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
-      m <- g@polygons[[i]]@Polygons[[xi]]@coords
+      m <- head(g@polygons[[i]]@Polygons[[xi]]@coords, -1)
       dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
     })
 
@@ -251,43 +210,140 @@ bld2 <- function(x, ...) {
   }
   v <- do.call(bind_rows, x) %>% mutate(.vx0 = row_number())
   b <- v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
-  bXv <- b %>% dplyr::inner_join(v) %>% dplyr::select(.br0, .vx0)
-  oXb <- o %>% dplyr::inner_join(b) %>% dplyr::select(.ob0, .br0)
+  bXv <- b %>% dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% dplyr::select(.br0, .vx0)
+  oXb <- o %>% dplyr::inner_join(b, by = ".ob0") %>% dplyr::select(.ob0, .br0)
   ## clean up
   b <- b %>% dplyr::select(.br0)
   v <- v %>% dplyr::select(-.br0, -.ob0)
 
   ## no normalize vertices yet
-  ##
+
   ##v <-  v  %>% distinct(x, y)
   ##bXv <- bXv  %>% semi_join(v)
   ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
   o <-  as_data_frame(lapply(o, function(x) {if(isTRUE(all.equal(attr(x, 'levels'), character(0)))) {attr(x, 'levels') <- NULL}; x}))
-  list(v = v,
+  obj <- list(v = v,
        bXv = bXv,
        b = b,
        oXb = oXb,
        o = o)
+  print(nrow(obj$v))
+  if (normalize_verts) {
+    obj <- normalizeVerts(obj, c("x", "y"))
+  }
+ # print(nrow(obj$v))
+ # print(range(obj$bXv$.vx0))
+  obj
 }
 
 
-#' Generate a vertex/branch/object table from Spatial polygons
-#'
-#' @param x SpatialPolygonsDataFrame
-#' @param ... ignored
-#' @return vertex/branch/object table suitable for \code{pl}
-dv <- function(x, ...) {
-  g <- geometry(x)
-  d <- as.data.frame(x)
-  x <- NULL
-  for (i in seq(nrow(d))) {
-    l <- do.call(bind_rows, lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
-      m <- g@polygons[[i]]@Polygons[[xi]]@coords
-      data_frame(x = m[,1], y = m[,2], .br0 = xi)
-    }))
-    l$.ob0 <- i
-    x <- bind_rows(x, l)
-  }
-  x$id <- seq(nrow(x))
+
+normalizeVerts <- function(x, nam) {
+  v <- x$v
+  bXv <- x$bXv
+  v$badge <- as.character(v$.vx0)
+  vx0 <- v$.vx0
+  dupes <- duplicated(v[, nam], fromLast = TRUE)
+  dupeindex <- which(dupes)
+  while(any(dupes)) {
+   # cat("removing dupes, found at\n")
+   # print(dupeindex)
+ index <- dupeindex[1L]
+    bad <- v[[nam[1L]]] == v[[nam[1L]]][index] & v[[nam[2L]]] == v[[nam[2L]]][index]
+    vx0[bad] <- index
+    ##vx0 <- unclass(factor(vx0))
+    dupes[bad] <- FALSE
+    dupeindex <- which(dupes)
+  #print(length(dupeindex))
+ }
+
+  v$.vx0 <- vx0
+  bXv$badge <- v$badge[vx0]
+  v <- v %>% distinct(.vx0)
+  v$.vx0 <- seq(nrow(v))
+  bXv$.vx0 <- v$.vx0[match(bXv$badge, v$badge)]
+  v <- v %>% select(-badge)
+  bXv <- bXv %>% select(-badge)
+  x$v <- v
+  x$bXv <- bXv
   x
 }
+
+
+# #' Subset for a vertex/branch/object object
+# #'
+# #' @param x list of \code{v} vertex, \code{b} branch and \code{o} object tables
+# #' @param subset a subset of the \code{o} object
+# #' @param ... ignored
+# #' @return list of \code{v} vertex, \code{b} branch and \code{o} object tables
+# #' @export
+# sbs <- function(x, subset, ...) {
+#   o <- subset
+#   b <- x$b %>% semi_join(o, by = c(".ob0" = "id"))
+#   v <- x$v %>%  semi_join(b, by = c(".br0" = ".br0"))
+#   list(o = o, b = b, v = v)
+# }
+
+#
+# #' Generate a vertex/branch/object table from Spatial polygons
+# #'
+# #' @param x SpatialPolygonsDataFrame
+# #' @param ... ignored
+# #' @return vertex/branch/object table suitable for \code{pl}
+# dv <- function(x, ...) {
+#   g <- geometry(x)
+#   d <- as.data.frame(x)
+#   x <- NULL
+#   for (i in seq(nrow(d))) {
+#     l <- do.call(bind_rows, lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
+#       m <- g@polygons[[i]]@Polygons[[xi]]@coords
+#       data_frame(x = m[,1], y = m[,2], .br0 = xi)
+#     }))
+#     l$.ob0 <- i
+#     x <- bind_rows(x, l)
+#   }
+#   x$id <- seq(nrow(x))
+#   x
+# }
+#
+# #' Generate a vertex/branch/object table from Spatial polygons
+# #'
+# #' @param x SpatialPolygonsDataFrame
+# #' @param ... ignored
+# #' @return list of \code{v} vertex, \code{b} branch and \code{o} object tables
+# #' @export
+# #' @importFrom sp geometry
+# bld <- function(x, ...) {
+#   g <- sp::geometry(x)
+#   d <- as.data.frame(x)
+#   x <- vector("list", nrow(d))
+#   d <- d %>% dplyr::mutate(nbranches = 0)
+#   for (i in seq(nrow(d))) {
+#
+#     rawcoords <- lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
+#       m <- g@polygons[[i]]@Polygons[[xi]]@coords
+#       data_frame(x = m[,1], y = m[,2], .br0 = xi)
+#     })
+#     d$nbranches[i] <- length(rawcoords)
+#     l <- do.call(bind_rows, rawcoords)
+#     if (i > 1) l$.br0 <- l$.br0 + max(x[[i-1]]$.br0)
+#     l$.ob0 <- i
+#     x[[i]] <- l
+#   }
+#   x <- do.call(bind_rows, x)
+#   x$id <- seq(nrow(x))
+#   b <- x %>% dplyr::distinct(.br0) %>% dplyr::select(.br0, .ob0)
+#   ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
+#   d <-  as_data_frame(lapply(d, function(x) {if(isTRUE(all.equal(attr(x, 'levels'), character(0)))) {attr(x, 'levels') <- NULL}; x}))
+#   d <- d %>% dplyr::mutate(id = row_number())
+#   list(v = x, b = b, o = d)
+# }
+
+#   getCoords <- function(xi) {
+#     m <- g@polygons[[i]]@Polygons[[xi]]@coords
+#     data_frame(x = m[,1], y = m[,2])
+#   }
+#   getBranchs <- function(xi) {
+#     obj <- g@polygons[[i]]@Polygons[[xi]]
+#     data_frame(labptx = obj@labpt[1], labpty = obj@labpt[2], area = obj@area, hole = obj@hole, ringDir = obj@ringDir)
+#   }
