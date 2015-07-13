@@ -31,12 +31,9 @@ p <- pslg(P = o$v %>% dplyr::select(x, y) %>% as.matrix(),
 
 plot(p)
 
-
-
-
-tr <- RTriangle::triangulate(p, a = 5e1)
-plot(p)
-plot(tr, cex = 0.2)
+tr <- RTriangle::triangulate(p, a = 2)
+#plot(p)
+#plot(tr, cex = 0.2)
 
 
 library(rgl)
@@ -44,7 +41,7 @@ library(rglgris) ## devtools::install_github("mdsumner/rglgris)
 tri <- tetrahedron3d()
 tri$vb <- t(cbind(llh2xyz(cbind(tr$P, 0)),1))
 tri$it <- t(tr$T)
-wimg <- brick("world.topo.bathy.200411.3x5400x2700.png")
+wimg <- setExtent(brick("world.topo.bathy.200411.3x5400x2700.png"), extent(-180, 180, -90, 90))
 tcoords <- xyFromCell(setExtent(wimg, extent(0, 1, 0, 1)), cellFromXY(wimg, tr$P))
 shade3d(tri, col = "white", texture = "world.topo.bathy.200411.3x5400x2700.png", texcoords = tcoords[tri$it, ])
 

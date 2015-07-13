@@ -22,6 +22,15 @@ What we need
 * ~~triangulation with CGAL, constrained Delaunay~~
 
 
+Problems
+
+* general slowness of gris normalization
+* problem with countriesLow: 
+
+e.g. gris(countriesLow) gives a triangulation that is convex on all polygons, while wrld_simpl is fine ?
+
+
+
 
 
 
