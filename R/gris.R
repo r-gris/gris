@@ -4,9 +4,6 @@ prs1 <- function(x) {
   rbind(x1, c(x1[length(x1)], x1[1]))
 }
 
-
-
-
 #' Make a Planar Straight Line Graph from gris.
 #'
 #'
@@ -289,8 +286,6 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
   b <- b %>% dplyr::select(.br0)
   v <- v %>% dplyr::select(-.br0,-.ob0)
   
-  ## no normalize vertices yet
-  
   ##v <-  v  %>% distinct(x, y)
   ##bXv <- bXv  %>% semi_join(v)
   ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
@@ -309,7 +304,7 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
   )
   print(nrow(obj$v))
   if (normalize_verts) {
-    obj0 <- normalizeVerts(obj$v, obj$bXv , c("x", "y"))
+    obj0 <- normalizeVerts2(obj$v, obj$bXv , c("x", "y"))
     obj$v <- obj0$v
     obj$bXv <- obj0$bXv
   }
@@ -318,43 +313,62 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
   obj
 }
 
-normalizeVerts <- function(v, bXv, nam) {
-  #v <- x$v
-  #bXv <- x$bXv
-  v$badge <- as.character(v$.vx0)
-  vx0 <- v$.vx0
-  EPS <- sqrt(.Machine$double.eps)
-  
-  dupes <- duplicated(v[, nam], fromLast = TRUE)
-  #index <- which(dupes)[1]
-  #dupes <- abs(rep(v[[nam[1L]]][index], nn) - v[[nam[1L]]])  < EPS &
-  #  abs(rep(v[[nam[2L]]][index], nn) - v[[nam[2L]]])  < EPS
-  
-  nn <- nrow(v)
-  while (any(dupes)) {
-    dupeindex <- which(dupes)
-    index <- dupeindex[1L]
-    bad <-
-      abs(rep(v[[nam[1L]]][index], nn) - v[[nam[1L]]])  < EPS &
-      abs(rep(v[[nam[2L]]][index], nn) - v[[nam[2L]]])  < EPS
-    sb <- sum(bad)
-    vx0[bad] <- rep(index, sb)
-    dupes[bad] <- rep(FALSE, sb)
-    
-  }
-  
-  v$.vx0 <- vx0
-  bXv$badge <- v$badge[vx0]
-  v <- v %>% distinct(.vx0)
-  v$.vx0 <- seq(nrow(v))
-  bXv$.vx0 <- v$.vx0[match(bXv$badge, v$badge)]
-  v <- v %>% dplyr::select(-badge)
-  bXv <- bXv %>% dplyr::select(-badge)
+# pp <- SpatialPolygonsDataFrame(SpatialPolygons(list(Polygons(list(Polygon(cbind(c(0, 1, 1, 0, 0), c(0, 0, 1, 1, 0))), 
+#            Polygon(cbind(c(0, 1, 0.5, 0), c(1, 1, 1.5, 1)))), "1"))), data.frame(x = 1))
+# 
+
+
+
+normalizeVerts2 <- function(v, bXv, nam) {
+  bXv$original <- v$original <- seq(nrow(v))
+  ord <- do.call(order, v[nam])
+  v <- v[ord, ]
+  bXv <- bXv[ord, ]
+  dupes <- duplicated(v[, nam])
+  v$.vx0 <- bXv$.vx0 <- cumsum(!dupes)
+  v <- v[!dupes, ]
   x <- list()
-  x$v <- v
-  x$bXv <- bXv
+  x$v <- v %>% arrange(original)
+  x$bXv <- bXv %>% arrange(original)
   x
 }
+# normalizeVerts <- function(v, bXv, nam) {
+#   #v <- x$v
+#   #bXv <- x$bXv
+#   v$badge <- as.character(v$.vx0)
+#   vx0 <- v$.vx0
+#   EPS <- sqrt(.Machine$double.eps)
+#   
+#   dupes <- duplicated(v[, nam], fromLast = TRUE)
+#   #index <- which(dupes)[1]
+#   #dupes <- abs(rep(v[[nam[1L]]][index], nn) - v[[nam[1L]]])  < EPS &
+#   #  abs(rep(v[[nam[2L]]][index], nn) - v[[nam[2L]]])  < EPS
+#   
+#   nn <- nrow(v)
+#   while (any(dupes)) {
+#     dupeindex <- which(dupes)
+#     index <- dupeindex[1L]
+#     bad <-
+#       abs(rep(v[[nam[1L]]][index], nn) - v[[nam[1L]]])  < EPS &
+#       abs(rep(v[[nam[2L]]][index], nn) - v[[nam[2L]]])  < EPS
+#     sb <- sum(bad)
+#     vx0[bad] <- rep(index, sb)
+#     dupes[bad] <- rep(FALSE, sb)
+#     
+#   }
+#   
+#   v$.vx0 <- vx0
+#   bXv$badge <- v$badge[vx0]
+#   v <- v %>% distinct(.vx0)
+#   v$.vx0 <- seq(nrow(v))
+#   bXv$.vx0 <- v$.vx0[match(bXv$badge, v$badge)]
+#   v <- v %>% dplyr::select(-badge)
+#   bXv <- bXv %>% dplyr::select(-badge)
+#   x <- list()
+#   x$v <- v
+#   x$bXv <- bXv
+#   x
+# }
 
 # library(dplyr)
 # v <- data_frame(x = rep(1, 10), y = c(1, 2, 3, 2, 5, 6, 2, 8, 9, 2), .vx0 = 1:10)
