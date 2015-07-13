@@ -1,3 +1,26 @@
+## edge  pairs from sequential indexes for polygons
+prs1 <- function(x) {
+  x1 <- cbind(head(x, -1), tail(x, -1))
+  rbind(x1, c(x1[length(x1)], x1[1]))
+}
+
+
+
+
+#' Make a Planar Straight Line Graph from gris. 
+#'
+#' 
+#' @param x  gris object
+#'
+#' @return pslg object from RTriangle
+#' @export
+#' @importFrom RTriangle pslg
+mkpslg <- function(x) {
+  p <- pslg(P = x$v %>% dplyr::select(x, y) %>% as.matrix(),
+            S = do.call(rbind, lapply(split(x$bXv$.vx0, x$bXv$.br0), prs1)))
+  
+}
+
 
 #' gris
 #'
@@ -103,11 +126,11 @@ plot.gris <- function(x, y, ...) {
 
   for (i in seq(length(uoid))) {
     ##asub <- x %>% dplyr::filter(.ob0 == uoid[i]) %>% dplyr::select(x, y, .ob0, .br0)
-    asub <- x$o %>% filter(.ob0 == uoid[i]) %>%
-      inner_join(x$oXb, by = ".ob0") %>%
-      inner_join(x$b, by = ".br0") %>%
-      inner_join(x$bXv, by = ".br0") %>%
-      inner_join(x$v, by = ".vx0") %>%
+    asub <- x$o %>% dplyr::select(.ob0) %>%  filter(.ob0 == uoid[i]) %>%
+      inner_join(x$oXb, by = c(".ob0" = ".ob0")) %>%
+      inner_join(x$b, by = c(".br0" = ".br0")) %>%
+      inner_join(x$bXv, by = c(".br0" = ".br0")) %>%
+      inner_join(x$v, by = c(".vx0" = ".vx0")) %>%
       dplyr::select(x, y, .br0)
 
     largs$col <- col[i]
@@ -268,8 +291,8 @@ normalizeVerts <- function(v, bXv, nam) {
   v <- v %>% distinct(.vx0)
   v$.vx0 <- seq(nrow(v))
   bXv$.vx0 <- v$.vx0[match(bXv$badge, v$badge)]
-  v <- v %>% select(-badge)
-  bXv <- bXv %>% select(-badge)
+  v <- v %>% dplyr::select(-badge)
+  bXv <- bXv %>% dplyr::select(-badge)
   x <- list()
   x$v <- v
   x$bXv <- bXv
