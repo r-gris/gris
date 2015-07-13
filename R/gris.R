@@ -155,6 +155,16 @@ plot.gris <- function(x, y, ...) {
 }
 
 
+.tri2gris <- function(xx) {
+  o <- list(v = data_frame(x = xx$P[,1], y = xx$P[,2], .vx0 = seq(nrow(xx$P))))
+  o$b <- data_frame(.br0 = seq(nrow(xx$T)))
+  o$bXv <- data_frame(.vx0 = as.vector(t(xx$T)), .br0 = rep(seq(nrow(xx$T)), each = 3))
+  o$oXb <- data_frame(.ob0 = rep(1, nrow(xx$T)), .br0 = seq(nrow(xx$T)))
+  o$o <- data_frame(.ob0 = 1)
+  class(o) <- c("gris", "list")
+  o
+}
+
 
 #' Convert Spatial* objects to gris
 #'
