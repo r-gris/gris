@@ -313,12 +313,6 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
   obj
 }
 
-# pp <- SpatialPolygonsDataFrame(SpatialPolygons(list(Polygons(list(Polygon(cbind(c(0, 1, 1, 0, 0), c(0, 0, 1, 1, 0))), 
-#            Polygon(cbind(c(0, 1, 0.5, 0), c(1, 1, 1.5, 1)))), "1"))), data.frame(x = 1))
-# 
-
-
-
 normalizeVerts2 <- function(v, bXv, nam) {
   bXv$original <- v$original <- seq(nrow(v))
   ord <- do.call(order, v[nam])
@@ -332,6 +326,11 @@ normalizeVerts2 <- function(v, bXv, nam) {
   x$bXv <- bXv %>% arrange(original)
   x
 }
+
+
+
+
+
 # normalizeVerts <- function(v, bXv, nam) {
 #   #v <- x$v
 #   #bXv <- x$bXv

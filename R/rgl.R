@@ -1,0 +1,120 @@
+# edges <- function(x, side = "x") {
+#   e <- switch(side, 
+#          x = c(xmin(x), xFromCol(x) + res(x)[1]/2), 
+#          y = c(ymin(x), rev(yFromRow(x)) + res(x)[2]/2))
+#   
+#   e
+# }
+
+#' pquads
+#'
+#' pquads
+#' pquads
+#' @param x mesh object
+#' @param texture path to PNG file
+#' @param texcoords texture coordinates
+#' @export
+pquads <- function(x, texture = NULL, texcoords = NULL, subset = NULL, ...) {
+  if (is.null(texcoords)) texcoords <- t(x$vb[1:2,x$ib])
+  if (!is.null(subset)) x$ib <- x$ib[,subset]
+  rgl.quads(x$vb[1,x$ib], x$vb[2,x$ib], x$vb[3,x$ib], texcoords = texcoords, texture = texture, ...)
+}
+
+## OR, so we get this in raster-native order
+#' @importFrom sp coordinates
+#' @importFrom raster extend res shift xmin xmax ymin ymax
+edgesXY <- function(x) {
+  coordinates(shift(
+    extend(x, 
+           extent(xmin(x), xmax(x) + res(x)[1], ymin(x), ymax(x) + res(x)[2])), 
+    x = -res(x)[1]/2, y = -res(x)[2]/2))
+}
+
+
+prs <- function(x) {
+  cbind(head(x, -1), tail(x, -1))
+}
+
+p4 <- function(xp, nc) {
+  (xp + c(0, 0, rep(nc, 2)))[c(1, 2, 4, 3)]
+}
+
+
+
+
+#' Raster to gris object
+#'
+#' @param x RasterLayer
+#' @param z RasterLayer to extract Z value from
+#'
+#' @return gris
+#' @export
+ras2gris <- function(x, z = NULL) {
+  ##exy <- as.matrix(expand.grid(edges(x), edges(x, "y")))
+  exy <- edgesXY(x)
+  ind <- apply(prs(seq(ncol(x) + 1)), 1, p4, nc = ncol(x) + 1)
+  ## all face indexes
+  ind0 <- as.vector(ind) + 
+    rep(seq(0, length = nrow(x), by = ncol(x) + 1), each = 4 * ncol(x))
+  
+  ##ob <- rgl::oh3d()
+  
+  if (!is.null(z)) z <- extract(z, exy, method = "bilinear") else z <- 0
+  v <- data_frame(x = exy[,1], y = exy[,2], z = z, .vx0 = seq(nrow(exy)))
+  bXv <- data_frame(.br0 = rep(seq(length(ind0)/4), each = 4), .vx0 = ind0)
+  b <- bXv %>% dplyr::select(.br0) %>% dplyr::distinct(.br0)
+  oXb <- b %>% dplyr::mutate(.ob0 = .br0)
+  o <- oXb %>% dplyr::select(.ob0)
+  gris.full(o, oXb, b, bXv, v)
+#   ob$vb <- t(cbind(exy, z, 1))
+#   ob$ib <- matrix(ind0, nrow = 4)
+#   ob
+}
+
+
+#' Title
+#'
+#' @param lonlatheight 
+#' @param rad 
+#' @param exag 
+#'
+#' @return matrix
+#' @export
+#'
+
+llh2xyz <- function(lonlatheight, rad = 6378137.0, exag = 1) {
+  cosLat = cos(lonlatheight[,2] * pi / 180.0)
+  sinLat = sin(lonlatheight[,2] * pi / 180.0)
+  cosLon = cos(lonlatheight[,1] * pi / 180.0)
+  sinLon = sin(lonlatheight[,1] * pi / 180.0)
+  
+  rad <- (exag * lonlatheight[,3] + rad)
+  x = rad * cosLat * cosLon
+  y = rad * cosLat * sinLon
+  z = rad * sinLat
+  
+  cbind(x, y, z)
+}
+
+#' @importFrom raster ncell ncol nrow
+brick2rgl <- function(x) {
+  as.vector(matrix(seq(ncell(x)), ncol(x))[, nrow(x):1])
+}
+
+#' Title
+#'
+#' @param x 
+#'
+#' @return hex colour character vector
+#' @export
+#'
+
+#' @importFrom raster values
+brick2col <- function(x) {
+  ## count left to right from bottom to top
+  ## (raster is left to right top to bottom)
+  ##ord  <- brick2rgl(x)
+  v <- values(x)  ##[ord, ]
+  
+  rgb(v[,1], v[,2], v[,3], maxColorValue = 255)
+}
