@@ -1,8 +1,4 @@
-## edge  pairs from sequential indexes for polygons
-prs1 <- function(x) {
-  x1 <- cbind(head(x, -1), tail(x, -1))
-  rbind(x1, c(x1[length(x1)], x1[1]))
-}
+
 pquads1 <- function(x, texture = NULL, texcoords = NULL, subset = NULL, ...) {
   if (is.null(texcoords)) texcoords <- t(x$vb[1:2,x$ib])
   if (!is.null(subset)) x$ib <- x$ib[,subset]
@@ -19,6 +15,7 @@ data(wrld_simpl)
 library(rworldmap)
 data(countriesLow)
 o <- gris(countriesLow)
+
 #for (i in seq(nrow(countriesLow))) {
 #while(TRUE) {
 #  i <- sample(1:nrow(countriesLow), 10)
