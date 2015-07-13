@@ -1,23 +1,27 @@
 ## edge  pairs from sequential indexes for polygons
 prs1 <- function(x) {
-  x1 <- cbind(head(x, -1), tail(x, -1))
+  x1 <- cbind(head(x,-1), tail(x,-1))
   rbind(x1, c(x1[length(x1)], x1[1]))
 }
 
 
 
 
-#' Make a Planar Straight Line Graph from gris. 
+#' Make a Planar Straight Line Graph from gris.
 #'
-#' 
+#'
 #' @param x  gris object
 #'
 #' @return pslg object from RTriangle
 #' @export
 #' @importFrom RTriangle pslg
 mkpslg <- function(x) {
-  p <- pslg(P = x$v %>% dplyr::select(x, y) %>% as.matrix(),
-            S = do.call(rbind, lapply(split(x$bXv$.vx0, x$bXv$.br0), prs1)))
+  p <- pslg(
+    P = x$v %>% dplyr::select(x, y) %>% as.matrix(),
+    S = do.call(rbind, lapply(split(
+      x$bXv$.vx0, x$bXv$.br0
+    ), prs1))
+  )
   
 }
 
@@ -45,7 +49,9 @@ gris <- function(x, ...) {
 }
 
 gris.full <- function(o, oXb, b, bXv, v) {
-  x <- list(o = o, oXb = oXb, b = b, bXv = bXv, v = v)
+  x <- list(
+    o = o, oXb = oXb, b = b, bXv = bXv, v = v
+  )
   class(x) <- c("gris", "list")
   x
 }
@@ -75,18 +81,19 @@ buildnames <- function(x) {
 # generate x, y, z, t and then as many more as required appending integers to the alphabet
 defaultnames <- function(x) {
   ind <- c(24, 25, 26, 20)
-  first <- rep_len(c(letters[ind], letters[-ind], letters), length.out = length(x))
+  first <-
+    rep_len(c(letters[ind], letters[-ind], letters), length.out = length(x))
   make.unique(first, sep = "")
 }
 
 #' @rdname gris
 #' @export
 `[.gris` <- function (x, i, j, drop = FALSE) {
-   o <- x$o[i,j,drop=drop]
-   oXb <- x$oXb %>% semi_join(o, by = ".ob0")
-   b <- x$b %>% semi_join(oXb, by = ".br0")
-   bXv <- x$bXv %>% semi_join(b, by = ".br0")
-   v <- x$v %>% semi_join(bXv, by = ".vx0")
+  o <- x$o[i,j,drop = drop]
+  oXb <- x$oXb %>% semi_join(o, by = ".ob0")
+  b <- x$b %>% semi_join(oXb, by = ".br0")
+  bXv <- x$bXv %>% semi_join(b, by = ".br0")
+  v <- x$v %>% semi_join(bXv, by = ".vx0")
   gris.full(o, oXb, b, bXv, v)
 }
 
@@ -109,7 +116,8 @@ print.gris <- function(x, ..., n = NULL, width = NULL) {
 plot.gris <- function(x, y, ...) {
   ## forget y
   largs <- list(x = x$v %>% dplyr::select(x, y),   ...)
-  if (is.null(largs$type)) largs$type <- "pp"  ## default to polygon for now
+  if (is.null(largs$type))
+    largs$type <- "pp"  ## default to polygon for now
   if (is.null(largs$add) || !largs$add) {
     otype <- largs$type
     largs$type <- "n"
@@ -117,39 +125,43 @@ plot.gris <- function(x, y, ...) {
     do.call(plot, largs)
     largs$type <- otype
   }
-
+  
   uoid <- unique(x$o$.ob0)
-  if (is.null(largs$col)) largs$col <- sample(grey(seq_along(uoid)/(length(uoid)+1)))
+  if (is.null(largs$col))
+    largs$col <- sample(grey(seq_along(uoid) / (length(uoid) + 1)))
   col <- rep(largs$col, length(uoid))
   type <- largs$type
   largs$type <- NULL
-
+  
   for (i in seq(length(uoid))) {
     ##asub <- x %>% dplyr::filter(.ob0 == uoid[i]) %>% dplyr::select(x, y, .ob0, .br0)
-    asub <- x$o %>% dplyr::select(.ob0) %>%  filter(.ob0 == uoid[i]) %>%
+    asub <-
+      x$o %>% dplyr::select(.ob0) %>%  filter(.ob0 == uoid[i]) %>%
       inner_join(x$oXb, by = c(".ob0" = ".ob0")) %>%
       inner_join(x$b, by = c(".br0" = ".br0")) %>%
       inner_join(x$bXv, by = c(".br0" = ".br0")) %>%
       inner_join(x$v, by = c(".vx0" = ".vx0")) %>%
       dplyr::select(x, y, .br0)
-
+    
     largs$col <- col[i]
-
-
-    x1 <- asub %>% mutate(mg = .br0) %>%  group_by(mg) %>% do(rbind(., NA_real_))
-    largs$x <- x1[-nrow(x1), ]
+    
+    
+    x1 <-
+      asub %>% mutate(mg = .br0) %>%  group_by(mg) %>% do(rbind(., NA_real_))
+    largs$x <- x1[-nrow(x1),]
     largs$y <- NULL
-
-
+    
+    
     if (type == "pp") {
       largs$rule <- "evenodd"
       do.call(polypath, largs)
     }
-
+    
     if (type == "l") {
       do.call(lines, largs)
     }
-    if (type == "p") do.call(points, largs)
+    if (type == "p")
+      do.call(points, largs)
   }
   invisible(x)
 }
@@ -158,24 +170,32 @@ plot.gris <- function(x, y, ...) {
 #' @export
 #' @rdname gris
 #' @param x an object to coerce to a \code{gris}
-as.gris <- function(x, ...) UseMethod("as.gris")
+as.gris <- function(x, ...)
+  UseMethod("as.gris")
 
 #' @export
-as.gris.gris <- function(x, ...) x
+as.gris.gris <- function(x, ...)
+  x
 
 #' @export
 as.gris.triangulation <- function(x, ...) {
   .tri2gris(x)
 }
 .tri2gris <- function(xx) {
-  o <- list(v = data_frame(x = xx$P[,1], y = xx$P[,2], .vx0 = seq(nrow(xx$P))))
+  o <-
+    list(v = data_frame(
+      x = xx$P[,1], y = xx$P[,2], .vx0 = seq(nrow(xx$P))
+    ))
   o$b <- data_frame(.br0 = seq(nrow(xx$T)))
-  o$bXv <- data_frame(.vx0 = as.vector(t(xx$T)), .br0 = rep(seq(nrow(xx$T)), each = 3))
-  o$oXb <- data_frame(.ob0 = rep(1, nrow(xx$T)), .br0 = seq(nrow(xx$T)))
+  o$bXv <-
+    data_frame(.vx0 = as.vector(t(xx$T)), .br0 = rep(seq(nrow(xx$T)), each = 3))
+  o$oXb <-
+    data_frame(.ob0 = rep(1, nrow(xx$T)), .br0 = seq(nrow(xx$T)))
   o$o <- data_frame(.ob0 = 1)
   class(o) <- c("gris", "list")
   o
 }
+
 
 
 #' Convert Spatial* objects to gris
@@ -228,58 +248,73 @@ topotype <- function(x) {
 bld2 <- function(x, normalize_verts = TRUE, ...) {
   x0 <- x  ## need for test lower down, must fix
   g <- sp::geometry(x)
- o <- as_data_frame(as.data.frame(x))
- o <- o %>% mutate(.ob0 = row_number())
- if (inherits(x0, "SpatialPoints")) mcoords <- coordinates(g)
+  o <- as_data_frame(as.data.frame(x))
+  o <- o %>% mutate(.ob0 = row_number())
+  if (inherits(x0, "SpatialPoints"))
+    mcoords <- coordinates(g)
   x <- vector("list", nrow(o))
   for (i in seq_along(x)) {
-
-
-    if (inherits(x0, "SpatialPolygons")) rawcoords <- lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
-      m <- head(g@polygons[[i]]@Polygons[[xi]]@coords, -1)
-      dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
-    })
-
-    if (inherits(x0, "SpatialLines")) rawcoords <- lapply(seq_along(g@lines[[i]]@Lines), function(xi) {
-      m <- g@lines[[i]]@Lines[[xi]]@coords
-      dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
-    })
+    if (inherits(x0, "SpatialPolygons"))
+      rawcoords <-
+        lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
+          m <- head(g@polygons[[i]]@Polygons[[xi]]@coords,-1)
+          dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
+        })
+    
+    if (inherits(x0, "SpatialLines"))
+      rawcoords <- lapply(seq_along(g@lines[[i]]@Lines), function(xi) {
+        m <- g@lines[[i]]@Lines[[xi]]@coords
+        dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
+      })
     ## obviously this could be much faster without the loop
-    if (inherits(x0, "SpatialPoints")) rawcoords <- list(dplyr::data_frame(x = mcoords[i,1], y = mcoords[i,2], .br0 = i))
-
-   ## d$nbranches[i] <- length(rawcoords)
+    if (inherits(x0, "SpatialPoints"))
+      rawcoords <-
+        list(dplyr::data_frame(x = mcoords[i,1], y = mcoords[i,2], .br0 = i))
+    
+    ## d$nbranches[i] <- length(rawcoords)
     l <- do.call(bind_rows, rawcoords)
-    if (i > 1) l$.br0 <- l$.br0 + max(x[[i-1]]$.br0)
+    if (i > 1)
+      l$.br0 <- l$.br0 + max(x[[i - 1]]$.br0)
     l <- l %>% dplyr::mutate(.ob0 = i)
     x[[i]] <- l
   }
   v <- do.call(bind_rows, x) %>% mutate(.vx0 = row_number())
-  b <- v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
-  bXv <- b %>% dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% dplyr::select(.br0, .vx0)
-  oXb <- o %>% dplyr::inner_join(b, by = ".ob0") %>% dplyr::select(.ob0, .br0)
+  b <-
+    v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
+  bXv <-
+    b %>% dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% dplyr::select(.br0, .vx0)
+  oXb <-
+    o %>% dplyr::inner_join(b, by = ".ob0") %>% dplyr::select(.ob0, .br0)
   ## clean up
   b <- b %>% dplyr::select(.br0)
-  v <- v %>% dplyr::select(-.br0, -.ob0)
-
+  v <- v %>% dplyr::select(-.br0,-.ob0)
+  
   ## no normalize vertices yet
-
+  
   ##v <-  v  %>% distinct(x, y)
   ##bXv <- bXv  %>% semi_join(v)
   ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
-  o <-  as_data_frame(lapply(o, function(x) {if(isTRUE(all.equal(attr(x, 'levels'), character(0)))) {attr(x, 'levels') <- NULL}; x}))
-  obj <- list(v = v,
-       bXv = bXv,
-       b = b,
-       oXb = oXb,
-       o = o)
+  o <-
+    as_data_frame(lapply(o, function(x) {
+      if (isTRUE(all.equal(attr(x, 'levels'), character(0)))) {
+        attr(x, 'levels') <- NULL
+      }; x
+    }))
+  obj <- list(
+    v = v,
+    bXv = bXv,
+    b = b,
+    oXb = oXb,
+    o = o
+  )
   print(nrow(obj$v))
   if (normalize_verts) {
     obj0 <- normalizeVerts(obj$v, obj$bXv , c("x", "y"))
     obj$v <- obj0$v
     obj$bXv <- obj0$bXv
   }
- # print(nrow(obj$v))
- # print(range(obj$bXv$.vx0))
+  # print(nrow(obj$v))
+  # print(range(obj$bXv$.vx0))
   obj
 }
 
@@ -288,26 +323,26 @@ normalizeVerts <- function(v, bXv, nam) {
   #bXv <- x$bXv
   v$badge <- as.character(v$.vx0)
   vx0 <- v$.vx0
+  EPS <- sqrt(.Machine$double.eps)
+  
   dupes <- duplicated(v[, nam], fromLast = TRUE)
-  dupeindex <- which(dupes)
+  #index <- which(dupes)[1]
+  #dupes <- abs(rep(v[[nam[1L]]][index], nn) - v[[nam[1L]]])  < EPS &
+  #  abs(rep(v[[nam[2L]]][index], nn) - v[[nam[2L]]])  < EPS
+  
   nn <- nrow(v)
-  while(any(dupes)) {
-   # cat("removing dupes, found at\n")
-   # print(dupeindex)
- index <- dupeindex[1L]
-    ##bad <- v[[nam[1L]]] == v[[nam[1L]]][index] & v[[nam[2L]]] == v[[nam[2L]]][index]
- ## this is specific to two columns, but needs to be generalized
-## browser()
-    ##bad <-  all.equal(rep(v[[nam[1L]]][index], nn), v[[nam[1L]]]) & all.equal(rep(v[[nam[2L]]][index], nn), v[[nam[2L]]])
- bad <- abs(rep(v[[nam[1L]]][index], nn) - v[[nam[1L]]])  < sqrt(.Machine$double.eps) & 
-   abs(rep(v[[nam[2L]]][index], nn) - v[[nam[2L]]])  < sqrt(.Machine$double.eps)
-    vx0[bad] <- index
-    ##vx0 <- unclass(factor(vx0))
-    dupes[bad] <- FALSE
+  while (any(dupes)) {
     dupeindex <- which(dupes)
-  #print(length(dupeindex))
- }
-
+    index <- dupeindex[1L]
+    bad <-
+      abs(rep(v[[nam[1L]]][index], nn) - v[[nam[1L]]])  < EPS &
+      abs(rep(v[[nam[2L]]][index], nn) - v[[nam[2L]]])  < EPS
+    sb <- sum(bad)
+    vx0[bad] <- rep(index, sb)
+    dupes[bad] <- rep(FALSE, sb)
+    
+  }
+  
   v$.vx0 <- vx0
   bXv$badge <- v$badge[vx0]
   v <- v %>% distinct(.vx0)
@@ -325,7 +360,7 @@ normalizeVerts <- function(v, bXv, nam) {
 # v <- data_frame(x = rep(1, 10), y = c(1, 2, 3, 2, 5, 6, 2, 8, 9, 2), .vx0 = 1:10)
 # nam <- c("x", "y")
 # bXv <- data_frame(.vx0 = seq(nrow(v)))
-# 
+#
 # normalizeVerts(v, bXv, nam)
 
 
