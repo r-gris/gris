@@ -155,6 +155,18 @@ plot.gris <- function(x, y, ...) {
 }
 
 
+#' @export
+#' @rdname gris
+#' @param x an object to coerce to a \code{gris}
+as.gris <- function(x, ...) UseMethod("as.gris")
+
+#' @export
+as.gris.gris <- function(x, ...) x
+
+#' @export
+as.gris.triangulation <- function(x, ...) {
+  .tri2gris(x)
+}
 .tri2gris <- function(xx) {
   o <- list(v = data_frame(x = xx$P[,1], y = xx$P[,2], .vx0 = seq(nrow(xx$P))))
   o$b <- data_frame(.br0 = seq(nrow(xx$T)))

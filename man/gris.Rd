@@ -3,6 +3,7 @@
 \docType{package}
 \name{gris}
 \alias{[.gris}
+\alias{as.gris}
 \alias{gris}
 \alias{gris-package}
 \alias{plot.gris}
@@ -16,11 +17,15 @@ gris(x, ...)
 \method{print}{gris}(x, ..., n = NULL, width = NULL)
 
 \method{plot}{gris}(x, y, ...)
+
+as.gris(x, ...)
 }
 \arguments{
 \item{x}{}
 
 \item{...}{}
+
+\item{x}{an object to coerce to a \code{gris}}
 }
 \value{
 gris
