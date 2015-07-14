@@ -13,7 +13,10 @@ prs1 <- function(x) {
 #' @export
 #' @importFrom RTriangle pslg
 mkpslg <- function(x) {
-  p <- pslg(
+  ## remap vertices
+  x$v$remap <- seq(nrow(x$v))
+  x$bXv$.vx0 <- x$v$remap[match(x$bXv$.vx0, x$v$.vx0)]
+  pslg(
     P = x$v %>% dplyr::select(x, y) %>% as.matrix(),
     S = do.call(rbind, lapply(split(
       x$bXv$.vx0, x$bXv$.br0
