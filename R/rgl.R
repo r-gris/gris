@@ -40,7 +40,67 @@ p4 <- function(xp, nc) {
 }
 
 
-
+#' Title
+#'
+#' @param x 
+#' @param z 
+#' @param na.rm 
+#'
+#' @return mesh3d
+#' @export
+#'
+#' @importFrom rgl oh3d
+#' @examples 
+#' \dontrun{
+#' library(raster)
+#'  library(rgl)
+#'  library(rglgris)
+#'  library(rgdal)
+#'  f <- "E:\\DATA\\NASA\\world.topo.bathy.200411.3x21600x21600.D2_10.tif"
+#'  
+#'  esource <- readAll(crop(raster("E:\\DATA\\Etopo\\Etopo1Ice\\Etopo1.tif"), extent(90, 180, -90, 0)))
+#'  
+#'  
+#'  r <- readAll(brick(f))
+#'  extent(r) <- extent(90, 180, -90, 0) 
+#'  smashimate <- function(x, smash) {dim(x) <- dim(x)/smash; x}
+#'  
+#'  sm <-smashimate(r, 10)
+#'  rs <- setValues(sm, extract(r, coordinates(sm), method = "simple"))
+#'  cols <- brick2col(rs)
+#'  
+#'  ro <- bgl(rs, z = esource)
+#'  ro$vb[1:2,] <- t(project(t(ro$vb[1:2,]), "+proj=laea +lon_0=140 +lat_0=-55"))
+#'  ro$vb[3,] <- ro$vb[3,] * 30
+#'  shade3d(ro, col = rep(cols, each = 4), lit = FALSE)
+#'  library(graticule)
+#'  l <- graticule(seq(90, 180, by = 10), seq(-85, 0, by = 15), proj = "+proj=laea +lon_0=140 +lat_0=-55")
+#'  for (i in seq(nrow(l))) {xy <- coordinates(as(l[i,], "SpatialPoints")); rgl.lines(cbind(xy, 1000), col = "white")}
+#' }
+bgl <- function(x, z = NULL, na.rm = FALSE) {
+  x <- x[[1]]  ## just the oneth raster for now
+  ##exy <- as.matrix(expand.grid(edges(x), edges(x, "y")))
+  exy <- edgesXY(x)
+  ind <- apply(prs(seq(ncol(x) + 1)), 1, p4, nc = ncol(x) + 1)
+  
+ 
+  ## all face indexes
+  ind0 <- as.vector(ind) + 
+    rep(seq(0, length = nrow(x), by = ncol(x) + 1), each = 4 * ncol(x))
+ 
+  
+  ## need to consider normalizing vertices here
+  if (na.rm) {
+    ind1 <- matrix(ind0, nrow = 4)
+    ind0 <- ind1[,!is.na(values(x))]
+  }
+  ob <- rgl::oh3d()
+  
+  if (!is.null(z)) z <- extract(z, exy, method = "bilinear") else z <- 0
+  ob$vb <- t(cbind(exy, z, 1))
+  ob$ib <- matrix(ind0, nrow = 4)
+  ob
+}
 
 #' Raster to gris object
 #'
