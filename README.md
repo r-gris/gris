@@ -1,3 +1,5 @@
+[![Travis-CI Build Status](https://travis-ci.org/mdsumner/gris.svg?branch=master)](https://travis-ci.org/mdsumner/gris)
+
 # gris
 
 A dplyr-based geometry model for R. This is in early stages and will change a lot.
