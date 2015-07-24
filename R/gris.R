@@ -48,9 +48,9 @@ gris <- function(x, ...) {
   UseMethod("gris")
 }
 
-gris.full <- function(o, oXb, b, bXv, v) {
+gris.full <- function(o,  b, bXv, v) {
   x <- list(
-    o = o, oXb = oXb, b = b, bXv = bXv, v = v
+    o = o,  b = b, bXv = bXv, v = v
   )
   class(x) <- c("gris", "list")
   x
@@ -90,11 +90,12 @@ defaultnames <- function(x) {
 #' @export
 `[.gris` <- function (x, i, j, drop = FALSE) {
   o <- x$o[i,j,drop = drop]
-  oXb <- x$oXb %>% semi_join(o, by = ".ob0")
-  b <- x$b %>% semi_join(oXb, by = ".br0")
+ # oXb <- x$oXb %>% semi_join(o, by = ".ob0")
+  b <- x$b %>% semi_join(o, by = ".br0")
   bXv <- x$bXv %>% semi_join(b, by = ".br0")
   v <- x$v %>% semi_join(bXv, by = ".vx0")
-  gris.full(o, oXb, b, bXv, v)
+  #gris.full(o, oXb, b, bXv, v)
+  gris.full(o,  b, bXv, v)
 }
 
 #' @rdname gris
@@ -189,8 +190,8 @@ as.gris.triangulation <- function(x, ...) {
   o$b <- data_frame(.br0 = seq(nrow(xx$T)))
   o$bXv <-
     data_frame(.vx0 = as.vector(t(xx$T)), .br0 = rep(seq(nrow(xx$T)), each = 3))
-  o$oXb <-
-    data_frame(.ob0 = rep(1, nrow(xx$T)), .br0 = seq(nrow(xx$T)))
+ # o$oXb <-
+ #   data_frame(.ob0 = rep(1, nrow(xx$T)), .br0 = seq(nrow(xx$T)))
   o$o <- data_frame(.ob0 = 1)
   class(o) <- c("gris", "list")
   o
@@ -283,8 +284,8 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
     v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
   bXv <-
     b %>% dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% dplyr::select(.br0, .vx0)
-  oXb <-
-    o %>% dplyr::inner_join(b, by = ".ob0") %>% dplyr::select(.ob0, .br0)
+#  oXb <-
+#    o %>% dplyr::inner_join(b, by = ".ob0") %>% dplyr::select(.ob0, .br0)
   ## clean up
   b <- b %>% dplyr::select(.br0)
   v <- v %>% dplyr::select(-.br0,-.ob0)
@@ -302,7 +303,7 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
     v = v,
     bXv = bXv,
     b = b,
-    oXb = oXb,
+  #  oXb = oXb,
     o = o
   )
   print(nrow(obj$v))
