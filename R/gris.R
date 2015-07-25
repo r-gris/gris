@@ -49,9 +49,10 @@ gris <- function(x, ...) {
   UseMethod("gris")
 }
 
-gris.full <- function(o,  b, bXv, v) {
+gris.full <- function(o,  b, bXv, v, georef = NULL) {
   x <- list(
-    o = o,  b = b, bXv = bXv, v = v
+    o = o,  b = b, bXv = bXv, v = v, 
+    georef = georef
   )
   class(x) <- c("gris", "list")
   x
@@ -94,8 +95,10 @@ defaultnames <- function(x) {
 #' @importFrom dplyr semi_join
 `[.gris` <- function (x, i, j, drop = FALSE) {
   o <- x$o[i,j,drop = drop]
+  ## TODO: what if i is repeated? we need to make unique
+  ## o$.ob0 <- update dupes somehow
  # oXb <- x$oXb %>% semi_join(o, by = ".ob0")
-  b <- x$b %>% semi_join(o, by = ".br0")
+  b <- x$b %>% semi_join(o, by = ".ob0")
   bXv <- x$bXv %>% semi_join(b, by = ".br0")
   v <- x$v %>% semi_join(bXv, by = ".vx0")
   #gris.full(o, oXb, b, bXv, v)
@@ -142,8 +145,8 @@ plot.gris <- function(x, y, ...) {
     ##asub <- x %>% dplyr::filter(.ob0 == uoid[i]) %>% dplyr::select(x, y, .ob0, .br0)
     asub <-
       x$o %>% dplyr::select(.ob0) %>%  filter(.ob0 == uoid[i]) %>%
-      inner_join(x$oXb, by = c(".ob0" = ".ob0")) %>%
-      inner_join(x$b, by = c(".br0" = ".br0")) %>%
+      ##inner_join(x$oXb, by = c(".ob0" = ".ob0")) %>%
+      inner_join(x$b, by = c(".ob0" = ".ob0")) %>%
       inner_join(x$bXv, by = c(".br0" = ".br0")) %>%
       inner_join(x$v, by = c(".vx0" = ".vx0")) %>%
       dplyr::select(x, y, .br0)
@@ -254,6 +257,7 @@ topotype <- function(x) {
 bld2 <- function(x, normalize_verts = TRUE, ...) {
   x0 <- x  ## need for test lower down, must fix
   g <- sp::geometry(x)
+  proj <- proj4string(x)
   o <- as_data_frame(as.data.frame(x))
   o <- o %>% mutate(.ob0 = row_number())
   if (inherits(x0, "SpatialPoints"))
@@ -288,11 +292,11 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
   b <-
     v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
   bXv <-
-    b %>% dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% dplyr::select(.br0, .vx0)
+    b %>% dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% dplyr::select(.br0, .vx0, .ob0)
 #  oXb <-
 #    o %>% dplyr::inner_join(b, by = ".ob0") %>% dplyr::select(.ob0, .br0)
   ## clean up
-  b <- b %>% dplyr::select(.br0)
+  b <- b %>% dplyr::select(.br0, .ob0)
   v <- v %>% dplyr::select(-.br0,-.ob0)
   
   ##v <-  v  %>% distinct(x, y)
@@ -304,13 +308,8 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
         attr(x, 'levels') <- NULL
       }; x
     }))
-  obj <- list(
-    v = v,
-    bXv = bXv,
-    b = b,
-  #  oXb = oXb,
-    o = o
-  )
+  obj <- gris.full(v = v, bXv = bXv, b = b, o = o, georef = .georeference(proj4 = proj))
+
   print(nrow(obj$v))
   if (normalize_verts) {
     obj0 <- normalizeVerts2(obj$v, obj$bXv , c("x", "y"))
@@ -322,6 +321,11 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
   obj
 }
 
+.georeference <- function(proj4 = "NA_character_", ...) {
+  gg <- list(proj4 = proj4)
+  class(g) <- c("georef", "list")
+  gg
+}
 #' @importFrom dplyr arrange
 normalizeVerts2 <- function(v, bXv, nam) {
   bXv$original <- v$original <- seq(nrow(v))
