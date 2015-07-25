@@ -12,6 +12,7 @@ prs1 <- function(x) {
 #' @return pslg object from RTriangle
 #' @export
 #' @importFrom RTriangle pslg
+#' @importFrom dplyr select %>% 
 mkpslg <- function(x) {
   ## remap vertices
   x$v$remap <- seq(nrow(x$v))
@@ -28,7 +29,7 @@ mkpslg <- function(x) {
 
 #' gris
 #'
-#' @param x
+#' @param x Spatial* object
 #' @param ...
 #'
 #' @return gris
@@ -58,6 +59,7 @@ gris.full <- function(o,  b, bXv, v) {
 
 ## vectors of (possibly named) arguments in ... or in a list
 #' @export
+#' @importFrom dplyr as_data_frame
 gris.default <- function(..., topotype = "p") {
   x <- list(...)
   as_data_frame(setNames(x, buildnames(x)))
@@ -87,7 +89,9 @@ defaultnames <- function(x) {
 }
 
 #' @rdname gris
+#' @param i, j, drop subset arguments
 #' @export
+#' @importFrom dplyr semi_join
 `[.gris` <- function (x, i, j, drop = FALSE) {
   o <- x$o[i,j,drop = drop]
  # oXb <- x$oXb %>% semi_join(o, by = ".ob0")
@@ -179,6 +183,7 @@ as.gris.gris <- function(x, ...)
   x
 
 #' @export
+#' @importFrom dplyr data_frame
 as.gris.triangulation <- function(x, ...) {
   .tri2gris(x)
 }
@@ -317,6 +322,7 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
   obj
 }
 
+#' @importFrom dplyr arrange
 normalizeVerts2 <- function(v, bXv, nam) {
   bXv$original <- v$original <- seq(nrow(v))
   ord <- do.call(order, v[nam])

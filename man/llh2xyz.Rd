@@ -7,11 +7,11 @@
 llh2xyz(lonlatheight, rad = 6378137, exag = 1)
 }
 \arguments{
-\item{lonlatheight}{}
+\item{lonlatheight}{matrix or data.frame of lon,lat,height values}
 
-\item{rad}{}
+\item{rad}{radius of sphere}
 
-\item{exag}{}
+\item{exag}{exaggeration to apply to height values (added to radius)}
 }
 \value{
 matrix

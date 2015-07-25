@@ -12,9 +12,12 @@ pquads(x, texture = NULL, texcoords = NULL, subset = NULL, ...)
 \item{texture}{path to PNG file}
 
 \item{texcoords}{texture coordinates}
+
+\item{subset}{option index (on ib)}
+
+\item{...}{arguments pass to \code{\link[rgl]{rgl.quads}}}
 }
 \description{
-pquads
 pquads
 }
 

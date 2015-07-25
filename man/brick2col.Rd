@@ -7,7 +7,7 @@
 brick2col(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{RasterBrick}
 }
 \value{
 hex colour character vector

@@ -9,15 +9,18 @@
 #' pquads
 #'
 #' pquads
-#' pquads
+#'
 #' @param x mesh object
 #' @param texture path to PNG file
+#' @param subset option index (on ib)
+#' @param ... arguments pass to \code{\link[rgl]{rgl.quads}}
 #' @param texcoords texture coordinates
+#'
 #' @export
 pquads <- function(x, texture = NULL, texcoords = NULL, subset = NULL, ...) {
   if (is.null(texcoords)) texcoords <- t(x$vb[1:2,x$ib])
   if (!is.null(subset)) x$ib <- x$ib[,subset]
-  rgl.quads(x$vb[1,x$ib], x$vb[2,x$ib], x$vb[3,x$ib], texcoords = texcoords, texture = texture, ...)
+  rgl::rgl.quads(x$vb[1,x$ib], x$vb[2,x$ib], x$vb[3,x$ib], texcoords = texcoords, texture = texture, ...)
 }
 
 ## OR, so we get this in raster-native order
@@ -42,14 +45,16 @@ p4 <- function(xp, nc) {
 
 #' Title
 #'
-#' @param x 
-#' @param z 
-#' @param na.rm 
+#' @param x raster object for mesh structure
+#' @param z raster object for height values
+#' @param na.rm remove quads where missing values?
 #'
 #' @return mesh3d
 #' @export
 #'
 #' @importFrom rgl oh3d
+#' @importFrom raster extract extent
+#' @importFrom dplyr  bind_rows  distinct  group_by  inner_join  mutate row_number transmute
 #' @examples 
 #' \dontrun{
 #' library(raster)
@@ -74,8 +79,13 @@ p4 <- function(xp, nc) {
 #'  ro$vb[3,] <- ro$vb[3,] * 30
 #'  shade3d(ro, col = rep(cols, each = 4), lit = FALSE)
 #'  library(graticule)
-#'  l <- graticule(seq(90, 180, by = 10), seq(-85, 0, by = 15), proj = "+proj=laea +lon_0=140 +lat_0=-55")
-#'  for (i in seq(nrow(l))) {xy <- coordinates(as(l[i,], "SpatialPoints")); rgl.lines(cbind(xy, 1000), col = "white")}
+#'  lon <- seq(90, 180, by = 10)
+#'  lat <- seq(-85, 0, by = 15),
+#'  l <- graticule(lon, lat, proj = "+proj=laea +lon_0=140 +lat_0=-55")
+#'  for (i in seq(nrow(l))) {
+#'  xy <- coordinates(as(l[i,], "SpatialPoints"))
+#'   rgl.lines(cbind(xy, 1000), col = "white")
+#'   }
 #' }
 bgl <- function(x, z = NULL, na.rm = FALSE) {
   x <- x[[1]]  ## just the oneth raster for now
@@ -125,7 +135,7 @@ ras2gris <- function(x, z = NULL) {
   b <- bXv %>% dplyr::select(.br0) %>% dplyr::distinct(.br0)
   oXb <- b %>% dplyr::mutate(.ob0 = .br0)
   o <- oXb %>% dplyr::select(.ob0)
-  gris.full(o, oXb, b, bXv, v)
+  gris.full(o,  b, bXv, v)
 #   ob$vb <- t(cbind(exy, z, 1))
 #   ob$ib <- matrix(ind0, nrow = 4)
 #   ob
@@ -134,9 +144,9 @@ ras2gris <- function(x, z = NULL) {
 
 #' Title
 #'
-#' @param lonlatheight 
-#' @param rad 
-#' @param exag 
+#' @param lonlatheight matrix or data.frame of lon,lat,height values
+#' @param rad radius of sphere
+#' @param exag exaggeration to apply to height values (added to radius)
 #'
 #' @return matrix
 #' @export
@@ -163,7 +173,7 @@ brick2rgl <- function(x) {
 
 #' Title
 #'
-#' @param x 
+#' @param x RasterBrick
 #'
 #' @return hex colour character vector
 #' @export

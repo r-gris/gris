@@ -21,9 +21,11 @@ gris(x, ...)
 as.gris(x, ...)
 }
 \arguments{
-\item{x}{}
+\item{x}{Spatial* object}
 
 \item{...}{}
+
+\item{i,}{j, drop subset arguments}
 
 \item{x}{an object to coerce to a \code{gris}}
 }

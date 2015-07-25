@@ -7,11 +7,11 @@
 bgl(x, z = NULL, na.rm = FALSE)
 }
 \arguments{
-\item{x}{}
+\item{x}{raster object for mesh structure}
 
-\item{z}{}
+\item{z}{raster object for height values}
 
-\item{na.rm}{}
+\item{na.rm}{remove quads where missing values?}
 }
 \value{
 mesh3d
@@ -43,8 +43,13 @@ library(raster)
  ro$vb[3,] <- ro$vb[3,] * 30
  shade3d(ro, col = rep(cols, each = 4), lit = FALSE)
  library(graticule)
- l <- graticule(seq(90, 180, by = 10), seq(-85, 0, by = 15), proj = "+proj=laea +lon_0=140 +lat_0=-55")
- for (i in seq(nrow(l))) {xy <- coordinates(as(l[i,], "SpatialPoints")); rgl.lines(cbind(xy, 1000), col = "white")}
+ lon <- seq(90, 180, by = 10)
+ lat <- seq(-85, 0, by = 15),
+ l <- graticule(lon, lat, proj = "+proj=laea +lon_0=140 +lat_0=-55")
+ for (i in seq(nrow(l))) {
+ xy <- coordinates(as(l[i,], "SpatialPoints"))
+  rgl.lines(cbind(xy, 1000), col = "white")
+  }
 }
 }
 
