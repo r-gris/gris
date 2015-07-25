@@ -18,7 +18,8 @@ What we have
 What we need
 
 * flesh out the RTriangle support and relation to rgl texture mapping
-* consider edge model as default rather than branches
+* ensure standard triangulation is done in a local projection, no matter what the source is in
+* add ability to explode and recombine objects and their component polygons arbitrarily
 * coercion from gris to Spatial*
 * convert raster to quad mesh
 * apply system of naming for vertices . . .
@@ -28,9 +29,6 @@ What we need
 Problems
 
 * speed up of normalization leaves a problem with gris(countriesLow) but gris(wrld_simpl) is fine, I think it comes down to duplicated versus numeric equality on the sort
-* ~~problem with countriesLow: e.g. gris(countriesLow) gives a triangulation that is convex on all polygons, while wrld_simpl is fine~~
-* ~~general slowness of gris normalization~~
-
 
 ```{r}
 pp <- SpatialPolygonsDataFrame(SpatialPolygons(list(Polygons(list(Polygon(cbind(c(0, 1, 1, 0, 0), c(0, 0, 1, 1, 0))), 

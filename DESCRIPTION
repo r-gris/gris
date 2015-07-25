@@ -10,6 +10,6 @@ License: GPL-3
 ByteCompile: Yes
 LazyData: TRUE
 Depends: dplyr
-Imports: dplyr, RTriangle
-Suggests: testthat
+Imports: RTriangle, raster, rgl, sp
+Suggests: knitr, testthat
 VignetteBuilder: knitr
