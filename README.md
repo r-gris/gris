@@ -17,7 +17,7 @@ What we have
 
 What we need
 
-* need to fix how gris objects are created, since g[i, ] duplicates .ob0 for repeated i values
+* need to fix how gris objects are created, since g[i, ] duplicates .ob0 for repeated i values - but maybe it's nonsense to allow repeats anyway?
 * flesh out the RTriangle support and relation to rgl texture mapping
 * ensure standard triangulation is done in a local projection, no matter what the source is in
 * add ability to explode and recombine objects and their component polygons arbitrarily
