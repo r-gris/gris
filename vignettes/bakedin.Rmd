@@ -1,0 +1,39 @@
+---
+title: "GIS gaps"
+author: "Michael Sumner"
+date: "August 10, 2015"
+output: html_document
+---
+
+Geographic Information Systems (GIS) suffer from a number of baked-in limitations that have become the defining standards of how geospatial work is done in recent decades. These assumptions are usually completely at odds with another family of baked-in assumptions used in physical modelling, and the result is siloed communities with their own incompatible practices and software, and a lot of inefficient workarounds and confusion. 
+
+Here we describe different models for storing geo-spatial data and identify their limitations, pointing to new integrated model that is more flexible. 
+
+R's Spatial data classes were defined ~2002 and aimed to formalize a standard for spatial data that cut across the ad hoc and overlapping support in various packages in R. For the most part these align with the OGC standards for data storage, but there are excepctions. The programming model is also quite hard to use for non-experts and involves a fairly hefty API that sits between external formats (GDAL) and the objects in R's workspace. 
+
+Overview of basic planar geometry. Points, lines, polygons and rasters. Introduce concept of the evenodd  and nonzero (winding) rules. 
+
+Introduce terminology for various models. 
+
+"branch model" where sequential coordinates are stored explicitly as separate parts, with a repeating final coordinate for polygons. Need to store "hole-ness" and problems with topology. 
+
+"Edge model" where all coordinates are stored in one array, with index pairs defining which edges that compose lines or closed shapes
+
+"simplex model" where lines and polygons are always stored as atomic primitives - either of segments (lines) or triangles (surfaces)
+
+"quad model" - specific optimization for polygons/surfaces composed of four-index primitives (under the hood these are always triangles)
+
+The branch model may be stored implicitly as a sequences of indexes into the vertices, this is essentially a ragged array since each branch can have 2 (for lines) 3 (for triangles) or more vertices for every part.  This is where it diverges from the edge and simplex models, which usually store a structural index rather than an identity (does this make a real difference?). The branch model is a specific planar implementation that does not work for geometry above 2D since nothing can vary within the partitions within a branch, no matter how many boundary vertices there are. Compare this to a line where complexity is related to the number of vertices, and geometry is n-dimensional. 
+
+Relation of evenodd/nonzero rules to simple graphs (noded and non-noded line intersections). 
+
+We can generalize all of these structures in a variety of ways. 
+
+* long-form relational tables - implemented in gris package, most general 
+* simplicial complex - no ragged arrays, all indexes are consistent - but we need primitives and triangulation is hard
+* planar straight line graph - all primitives are 2-vertex segments, so polygon parts must be stored as cycles?
+
+The simplex model is the most flexible and efficient for standard GIS structures, but it cannot store traditional polygon branches so we work with the long-form relational table model and convert to more efficient forms when needed. 
+
+
+
