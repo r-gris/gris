@@ -195,7 +195,7 @@ as.gris.triangulation <- function(x, ...) {
     list(v = data_frame(
       x = xx$P[,1], y = xx$P[,2], .vx0 = seq(nrow(xx$P))
     ))
-  o$b <- data_frame(.br0 = seq(nrow(xx$T)))
+  o$b <- data_frame(.br0 = seq(nrow(xx$T)), .ob0 = 1)
   o$bXv <-
     data_frame(.vx0 = as.vector(t(xx$T)), .br0 = rep(seq(nrow(xx$T)), each = 3))
  # o$oXb <-
@@ -323,7 +323,7 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
 
 .georeference <- function(proj4 = "NA_character_", ...) {
   gg <- list(proj4 = proj4)
-  class(g) <- c("georef", "list")
+  class(gg) <- c("georef", "list")
   gg
 }
 #' @importFrom dplyr arrange
