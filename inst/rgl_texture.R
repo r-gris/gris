@@ -1,16 +1,5 @@
-Hello, I've been using the texture mapping in rgl quite a lot with great results, thank you for your previous help with shade3d. 
-
-I'd like to ask about the possibility of being able to pass in a texture image as an object rather than a file
-- this would open up a lot more flexibility for passing in imagery, especially via the raster and rgdal packages. Presumably 
-the efficiencies available for texture mapping are somewhat tied to the PNG format read in rgl, but I wonder if it's a good
-idea to try to extend that? Ideally I would like to pass in a matrix of colours, without the need for a file.  I deal with a lot of 
-imagery in either palette formats or dynamically created colour mappings within R, from actual data - the ability to use texture 
-mapping is extremely powerful for transforming imagery between coordinates systems without destructuve resampling, but currently 
-I have to create an actual PNG file, and often I have to create a full RGB data set from arbitrary numeric data. This is fine but 
-obviously the file management becomes and issue when we start to use this much more. 
 
 
-Below I have a full example that downloads elevation data and satellite imagery for the Grand Canyon, 
 
 
 ## quad index template
@@ -79,15 +68,17 @@ ro <- bgl(srtm, z = srtm/30000)
 ## download a google satellite image with dismo
 gm <- gmap(x = srtm, type = "satellite", scale = 2)
 
+
+## 1. Create PNG for texture
 # we need RGB expanded (gmap gives a palette)
 rgb1 <- col2rgb(gm@legend@colortable)
 img <- brick(gm, gm, gm)
 cells <- values(gm) + 1
 img <- setValues(img, cbind(rgb1[1, cells], rgb1[2, cells], rgb1[3, cells]))
-
 ## finally, create RGB PNG image to act as a texture image
 writeGDAL(as(img, "SpatialGridDataFrame"), "gm.png", drivername = "PNG", type = "Byte", mvFlag = 255)
 
+## 2. Remap the image coordinates (Mercator) onto elevation coordinates (longlat), and convert to PNG [0, 1, 0, 1]
 ## project our mesh to the image and get it in [0,1,0,1] of texture space
 tcoords <- xyFromCell(setExtent(gm, extent(0, 1, 0, 1)), cellFromXY(gm, project(t(ro$vb[1:2, ]), projection(gm))))
 
