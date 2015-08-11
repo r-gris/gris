@@ -3,6 +3,9 @@ library(raster)
 context("basic building")
 
 ## from ?graphics::polygon
+
+
+## NOTE that sp cannot draw this polygon (why?)
 x <- c(1:9, 8:1)
 y <- c(1, 2*(5:3), 2, -1, 17, 9, 8, 2:9)
 
@@ -29,5 +32,5 @@ test_that("we can ingest a line object", {
 })
 
 test_that("we can convert to Spatial", {
-  spline <- 
+  spline <- as.SpatialPolygonsDataFrame(gline)
 })

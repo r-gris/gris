@@ -128,7 +128,7 @@ plot.gris <- function(x, y, ...) {
     largs$type <- "pp"  ## default to polygon for now
   rule <- "evenodd"
   if (!is.null(largs$rule)) {
-    if (type != "pp") warning("argument 'rule' ignored for non polygon plot")
+    if (largs$type != "pp") warning("argument 'rule' ignored for non polygon plot")
     rule <- largs$rule 
     largs$rule <- NULL
   }
@@ -141,7 +141,7 @@ plot.gris <- function(x, y, ...) {
     do.call(plot, largs)
     largs$type <- otype
   }
-  if (type == "pp") largs$rule <- rule
+  if (largs$type == "pp") largs$rule <- rule
  uoid <- unique(x$o$.ob0)
   if (is.null(largs$col))
     largs$col <- sample(grey(seq_along(uoid) / (length(uoid) + 1)))

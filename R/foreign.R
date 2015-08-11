@@ -21,6 +21,27 @@ grisToSPbase <- function(x, type = "pp") {
 grisToSpatialPolygons <- function(x) 
   SpatialPolygons(lapply(x$o$.ob0, function(obid) Polygons(gris:::grisToSPbase(x[x$o$.ob0 == obid, ]), obid)))
 
+#' @export
+#' @rdname foreign
+as.SpatialPolygonsDataFrame <- function(x, ...) {
+  UseMethod("as.SpatialPolygonsDataFrame")
+}
+
+
+#' Convert to Spatial
+#'
+#' @param x gris object
+#' @param ... ignored
+#'
+#' @export
+#' @rdname foreign
+as.SpatialPolygonsDataFrame.gris <- function(x, ...) {
+  geom <- grisToSpatialPolygons(x)
+  dat <- x$o
+  rownames(dat) <- dat$.ob0
+  dat$.ob0 <- NULL
+  SpatialPolygonsDataFrame(geom, as.data.frame(dat))
+}
 
 
 #for (i in seq(nrow(gline$o))) gris:::grisToSPbase(gline[i, ])
