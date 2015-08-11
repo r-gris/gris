@@ -126,15 +126,23 @@ plot.gris <- function(x, y, ...) {
   largs <- list(x = x$v %>% dplyr::select(x, y),   ...)
   if (is.null(largs$type))
     largs$type <- "pp"  ## default to polygon for now
+  rule <- "evenodd"
+  if (!is.null(largs$rule)) {
+    if (type != "pp") warning("argument 'rule' ignored for non polygon plot")
+    rule <- largs$rule 
+    largs$rule <- NULL
+  }
+  
   if (is.null(largs$add) || !largs$add) {
     otype <- largs$type
     largs$type <- "n"
     largs$add <- NULL
+    
     do.call(plot, largs)
     largs$type <- otype
   }
-  
-  uoid <- unique(x$o$.ob0)
+  if (type == "pp") largs$rule <- rule
+ uoid <- unique(x$o$.ob0)
   if (is.null(largs$col))
     largs$col <- sample(grey(seq_along(uoid) / (length(uoid) + 1)))
   col <- rep(largs$col, length(uoid))
@@ -161,7 +169,7 @@ plot.gris <- function(x, y, ...) {
     
     
     if (type == "pp") {
-      largs$rule <- "evenodd"
+      
       do.call(polypath, largs)
     }
     
