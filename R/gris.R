@@ -344,8 +344,8 @@ normalizeVerts2 <- function(v, bXv, nam) {
   v$.vx0 <- bXv$.vx0 <- cumsum(!dupes)
   v <- v[!dupes, ]
   x <- list()
-  x$v <- v %>% arrange(original)
-  x$bXv <- bXv %>% arrange(original)
+  x$v <- v %>% arrange(original) %>% select(-original)
+  x$bXv <- bXv %>% arrange(original) %>% select(-original)
   x
 }
 
