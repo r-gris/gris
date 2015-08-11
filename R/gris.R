@@ -71,18 +71,18 @@ gris.default <- function(..., topotype = "p") {
 buildnames <- function(x) {
   nams <- names(x)
   if (is.null(nams)) {
-    nams <-  defaultnames(x)
+    nams <-  dfn(x)
   }
   nonames <- nchar(nams) < 1
   if (any(nonames)) {
-    nams[nonames] <- defaultnames(x)[nonames]
+    nams[nonames] <- dfn(x)[nonames]
   }
   make.unique(nams, sep = "")
 }
 
 
 # generate x, y, z, t and then as many more as required appending integers to the alphabet
-defaultnames <- function(x) {
+dfn <- function(x) {
   ind <- c(24, 25, 26, 20)
   first <-
     rep_len(c(letters[ind], letters[-ind], letters), length.out = length(x))
