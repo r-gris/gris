@@ -22,8 +22,8 @@ What we need
 * ensure standard triangulation is done in a local projection, no matter what the source is in
 * add ability to explode and recombine objects and their component polygons arbitrarily
 * coercion from gris to Spatial*
-* convert raster to quad mesh
-* apply system of naming for vertices . . .
+* apply system of naming for vertices - this is begun in gris.default, needs to be made only for simple case of points
+* ~convert raster to quad mesh~
 * ~~triangulation with CGAL, constrained Delaunay~~
 * ~~speed up the normalization of vertices~~
 

@@ -71,18 +71,18 @@ gris.default <- function(..., topotype = "p") {
 buildnames <- function(x) {
   nams <- names(x)
   if (is.null(nams)) {
-    nams <-  defaultnames(x)
+    nams <-  dfn(x)
   }
   nonames <- nchar(nams) < 1
   if (any(nonames)) {
-    nams[nonames] <- defaultnames(x)[nonames]
+    nams[nonames] <- dfn(x)[nonames]
   }
   make.unique(nams, sep = "")
 }
 
 
 # generate x, y, z, t and then as many more as required appending integers to the alphabet
-defaultnames <- function(x) {
+dfn <- function(x) {
   ind <- c(24, 25, 26, 20)
   first <-
     rep_len(c(letters[ind], letters[-ind], letters), length.out = length(x))
@@ -126,15 +126,23 @@ plot.gris <- function(x, y, ...) {
   largs <- list(x = x$v %>% dplyr::select(x, y),   ...)
   if (is.null(largs$type))
     largs$type <- "pp"  ## default to polygon for now
+  rule <- "evenodd"
+  if (!is.null(largs$rule)) {
+    if (largs$type != "pp") warning("argument 'rule' ignored for non polygon plot")
+    rule <- largs$rule 
+    largs$rule <- NULL
+  }
+  
   if (is.null(largs$add) || !largs$add) {
     otype <- largs$type
     largs$type <- "n"
     largs$add <- NULL
+    
     do.call(plot, largs)
     largs$type <- otype
   }
-  
-  uoid <- unique(x$o$.ob0)
+  if (largs$type == "pp") largs$rule <- rule
+ uoid <- unique(x$o$.ob0)
   if (is.null(largs$col))
     largs$col <- sample(grey(seq_along(uoid) / (length(uoid) + 1)))
   col <- rep(largs$col, length(uoid))
@@ -161,7 +169,7 @@ plot.gris <- function(x, y, ...) {
     
     
     if (type == "pp") {
-      largs$rule <- "evenodd"
+      
       do.call(polypath, largs)
     }
     
@@ -195,7 +203,7 @@ as.gris.triangulation <- function(x, ...) {
     list(v = data_frame(
       x = xx$P[,1], y = xx$P[,2], .vx0 = seq(nrow(xx$P))
     ))
-  o$b <- data_frame(.br0 = seq(nrow(xx$T)))
+  o$b <- data_frame(.br0 = seq(nrow(xx$T)), .ob0 = 1)
   o$bXv <-
     data_frame(.vx0 = as.vector(t(xx$T)), .br0 = rep(seq(nrow(xx$T)), each = 3))
  # o$oXb <-
@@ -336,8 +344,8 @@ normalizeVerts2 <- function(v, bXv, nam) {
   v$.vx0 <- bXv$.vx0 <- cumsum(!dupes)
   v <- v[!dupes, ]
   x <- list()
-  x$v <- v %>% arrange(original)
-  x$bXv <- bXv %>% arrange(original)
+  x$v <- v %>% arrange(original) %>% select(-original)
+  x$bXv <- bXv %>% arrange(original) %>% select(-original)
   x
 }
 
