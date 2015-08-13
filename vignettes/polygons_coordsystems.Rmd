@@ -1,0 +1,39 @@
+---
+title: "Polygons and coordinate systems"
+author: "Michael Sumner"
+date: "August 13, 2015"
+output: html_document
+---
+
+Polygons have a veneer of sophistication as the underlying geometric and spatial tools required to work with them are quite advanced, but this masks the fact that polygons are quite simplistic and only suited to a narrow range of applications. Here we illustrate this problem and show some ways out. 
+
+The simplest polygon is a piece of the plane bounded by three sides. 
+
+```{r}
+x <- c(-1, 1, 0)
+y <- c(0, 0.2, 1)
+
+plot(x, y, type = "n", xlim = range(x) + c(-1, 1) * diff(range(x))/4, ylim = range(y) + c(-1, 1) * diff(range(y))/4, asp = 1)
+polypath(x, y)
+```
+
+In layman's terms this shape is composed of 3 points joined by lines, and intuitively we can fill the inside of this shape as distinct from its outside and make explicit the three points. 
+
+```{r}
+polypath(x, y, col = "grey")
+points(x, y)
+```
+
+We can get confused about "points" here since to a mathematician this shape is composed of an infinity of points that fill the space inside the lines. To avoid this confusion we will use the term "vertex" rather than "point". Intuitively we need a vertex everywhere that our bounding lines change direction. 
+
+```{r}
+text(x, y, paste("Vertex", seq_along(x)), cex = 0.6, pos = c(1, 1, 3))
+```
+
+A triangle really is the most simple polygon, if we remove any vertex we only have a line, but another important property is that the triangle is **convex**.  If we add another vertex there are two 
+
+```{r}
+x <- c(-1, 1, 0, 0)
+y <- c(0, 0.2, 1, 0.6)
+plot(x, y)
+polypath(x, y)
