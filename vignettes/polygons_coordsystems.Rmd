@@ -13,27 +13,50 @@ The simplest polygon is a piece of the plane bounded by three sides.
 x <- c(-1, 1, 0)
 y <- c(0, 0.2, 1)
 
-plot(x, y, type = "n", xlim = range(x) + c(-1, 1) * diff(range(x))/4, ylim = range(y) + c(-1, 1) * diff(range(y))/4, asp = 1)
+xr <- range(x) + c(-1, 1) * diff(range(x))/4
+yr <- range(y) + c(-1, 1) * diff(range(y))/4
+plot(x, y, type = "n", xlim =xr, ylim = yr, asp = 1)
 polypath(x, y)
 ```
 
-In layman's terms this shape is composed of 3 points joined by lines, and intuitively we can fill the inside of this shape as distinct from its outside and make explicit the three points. 
+In lay terms this shape is composed of 3 points joined by lines, and intuitively we can fill the inside of this shape as distinct from its outside and make explicit the three points. 
 
 ```{r}
+plot(x, y, type = "n", xlim =xr, ylim = yr, asp = 1)
 polypath(x, y, col = "grey")
 points(x, y)
 ```
 
-We can get confused about "points" here since to a mathematician this shape is composed of an infinity of points that fill the space inside the lines. To avoid this confusion we will use the term "vertex" rather than "point". Intuitively we need a vertex everywhere that our bounding lines change direction. 
+We can get confused about "points" here since to a mathematician this shape is composed of an infinity of points that fill the space inside the lines. To avoid this confusion we will use the term "vertex" rather than "point". Intuitively we need a vertex everywhere that our bounding lines change direction. Everywhere else along the line does not require an explicit vertex, since it's just a straight line.  
 
 ```{r}
+plot(x, y, type = "n", xlim =xr, ylim = yr, asp = 1)
+polypath(x, y, col = "grey")
+points(x, y)
 text(x, y, paste("Vertex", seq_along(x)), cex = 0.6, pos = c(1, 1, 3))
 ```
 
-A triangle really is the most simple polygon, if we remove any vertex we only have a line, but another important property is that the triangle is **convex**.  If we add another vertex there are two 
+A triangle really is the most simple polygon, if we remove any vertex we only have a line, but another important property is that the triangle is **convex**.  If we add another vertex **on the existing boundary** and then move it there are really three kinds of outcomes. 
 
 ```{r}
-x <- c(-1, 1, 0, 0)
-y <- c(0, 0.2, 1, 0.6)
-plot(x, y)
-polypath(x, y)
+
+x1 <- c(-1, 1, 0, 0)
+y1 <- c(0, 0.2, 1, 0.6)
+plot(x1, y1, main = "concave", xlim = xr, ylim =yr, asp = 1) 
+polypath(x, y, col = rgb(0, 0, 0, 0.2), border = NA)
+polypath(x1, y1, lty = 2)
+text(x1, y1, paste("Vertex", seq_along(x1)), cex = 0.6, pos = c(1, 1, 3, 1))
+
+x2 <- c(-1, 1, 0, -0.75)
+y2 <- c(0, 0.2, 1, 0.6)
+plot(x2, y2, main = "convex", xlim = xr, ylim =yr, asp = 1) 
+polypath(x, y, col = rgb(0, 0, 0, 0.2), border = NA)
+polypath(x2, y2, lty = 2)
+text(x2, y2, paste("Vertex", seq_along(x2)), cex = 0.6, pos = c(1, 1, 3, 1))
+x3 <- c(-1, 1, 0, -1/3)
+y3 <- c(0, 0.2, 1, 2/3)
+plot(x3, y3, main = "no change", xlim = xr, ylim =yr, asp = 1) 
+polypath(x, y, col = rgb(0, 0, 0, 0.2), border = NA)
+polypath(x3, y3, lty = 2)
+text(x3, y3, paste("Vertex", seq_along(x3)), cex = 0.6, pos = c(1, 1, 3, 1))
+```
