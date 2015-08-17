@@ -60,3 +60,59 @@ polypath(x, y, col = rgb(0, 0, 0, 0.2), border = NA)
 polypath(x3, y3, lty = 2)
 text(x3, y3, paste("Vertex", seq_along(x3)), cex = 0.6, pos = c(1, 1, 3, 1))
 ```
+
+These outcomes aren't all guaranteed though, as there is two kinds of ambiguity here. 
+
+Consider again the case where our new vertex is internal to the original triangle. This might be a polygon with a concave left side, right side, or lower side based on which ever pair of the outer vertices is put with the inner vertex. 
+
+
+```{r}
+op <- par(mfrow = c(2, 2))
+x1 <- c(-1, 1, 0, 0)
+y1 <- c(0, 0.2, 1, 0.6)
+plot(x1, y1, main = "one concavity", xlim = xr, ylim =yr, asp = 1) 
+polypath(x, y, col = rgb(0, 0, 0, 0.1), border = NA)
+polypath(x1, y1, lty = 2)
+text(x1, y1, paste("Vertex", seq_along(x1)), cex = 0.6, pos = c(1, 1, 3, 1))
+
+plot(x1, y1, main = "two concavity", xlim = xr, ylim =yr, asp = 1) 
+polypath(x, y, col = rgb(0, 0, 0, 0.1), border = NA)
+polypath(cbind(x1, y1)[c(1, 2, 4, 3), ], lty = 2)
+text(x1, y1, paste("Vertex", seq_along(x1)), cex = 0.6, pos = c(1, 1, 3, 1))
+
+plot(x1, y1, main = "three concavity", xlim = xr, ylim =yr, asp = 1) 
+polypath(x, y, col = rgb(0, 0, 0, 0.1), border = NA)
+polypath(cbind(x1, y1)[c(1, 4, 2, 3), ], lty = 2)
+text(x1, y1, paste("Vertex", seq_along(x1)), cex = 0.6, pos = c(1, 1, 3, 1))
+par(op)
+```
+
+Each of these polygons is very different, and each is actually composed of a different set of underlying triangles. 
+
+
+
+Winding and even-odd rule. 
+
+```{r}
+op <- par(mfrow = c(2, 2))
+v1 <- cbind(x = c(0, 1, 0.5), y = c(0, 0, 1))
+v0 <- cbind(x = c(0.4, 0.6, 0.5) - 0.3, y = c(0.4, 0.4, 0.6))
+
+plot(v1, main = "winding, counterclockwise")
+points(v0)
+polypath(rbind(v1, NA,  v0), col = "grey", rule = "winding")
+
+plot(v1, main = "winding, clockwise")
+points(v0)
+polypath(rbind(v1, NA,   v0[nrow(v0):1, ]), col = "grey", rule = "winding")
+
+
+plot(v1, main = "evenodd, counterclockwise")
+points(v0)
+polypath(rbind(v1, NA,  v0), col = "grey", rule = "evenodd")
+
+plot(v1, main = "evenodd, clockwise")
+points(v0)
+polypath(rbind(v1, NA,   v0[nrow(v0):1, ]), col = "grey", rule = "evenodd")
+par(op)
+```
