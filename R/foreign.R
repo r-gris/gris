@@ -1,3 +1,19 @@
+sp2map <- function(x) {
+  g <- gris:::bld2(x, normalize_verts = FALSE)
+  
+  v <- g$o %>% inner_join(g$b) %>% inner_join(g$bXv) %>% inner_join(g$v) %>% 
+ # v <- x$v %>% inner_join(x$bXv) %>% inner_join(x$b) %>% inner_join(x$o) %>% 
+    mutate(obj = paste(.ob0, .br0, sep = "_")) %>% group_by(obj) %>% 
+    do(rbind(., NA_real_))
+  v <- v[-nrow(v), ]
+  m <- list(x = v$x, y = v$y, range = c(range(v$x, na.rm = TRUE), range(v$y, na.rm = TRUE)), 
+            names = unique(v$objs))
+
+  class(m) <- "map"
+  m
+}
+
+
 
 
 vertsToPoly <- function(v) {
