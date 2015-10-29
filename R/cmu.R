@@ -1,3 +1,4 @@
+
 #' CMU banner
 #' 
 #' A gris dataset of the example CMU banner used by Shewchuk to illustrate the features of Triangle. 
