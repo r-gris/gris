@@ -1,3 +1,42 @@
+sp2map <- function(x) {
+  g <- gris:::bld2(x, normalize_verts = FALSE)
+  
+  v <- g$o %>% inner_join(g$b) %>% inner_join(g$bXv) %>% inner_join(g$v) %>% 
+ # v <- x$v %>% inner_join(x$bXv) %>% inner_join(x$b) %>% inner_join(x$o) %>% 
+    mutate(obj = paste(.ob0, .br0, sep = "_")) %>% group_by(obj) %>% 
+    do(rbind(., NA_real_))
+  v <- v[-nrow(v), ]
+  m <- list(x = v$x, y = v$y, range = c(range(v$x, na.rm = TRUE), range(v$y, na.rm = TRUE)), 
+            names = unique(v$objs))
+
+  class(m) <- "map"
+  m
+}
+
+map2gris <- function(x, orphans = TRUE) {
+  na <- is.na(x$x)
+  segs <- c(0, cumsum(abs(diff(is.na(x$x)))))
+  nms <- x$names
+  
+  y <- x$y
+  x <- x$x
+
+    ##clist <- split(data.frame(x$x, x$y)[!na, ], segs[!na])
+  v <- data_frame(x = x, y = y, .br0 = segs) %>% filter(!is.na(x)) %>% mutate(.vx0 = seq(n()))
+  bXv <- v %>% select(.br0, .vx0)
+  v <- v %>% select(x, y, .vx0)
+  o <- normalizeVerts2(v, bXv, c("x", "y"))
+  o$b <- bXv %>% distinct(.br0) %>% select(.br0) 
+  dif <- length(nms) - nrow(o$b)
+  if (dif < 0) {
+    nms <- c(nms, paste("orphan", seq(-dif)))
+  }
+  o$o <- data_frame(names = nms, .ob0 = seq(length(nms)))
+  o$b$.ob0 <- o$o$.ob0
+  class(o) <- c("gris", "list")
+  o
+}
+
 
 
 vertsToPoly <- function(v) {
