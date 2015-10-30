@@ -48,6 +48,35 @@ cmu <- list(Vertices = v,  Branches = list(b = b, BxV = bXv), Primitives = NULL,
 x <- list(v = v, bXv = bXv, b = b, o = o)
 class(x) <- c("gris", "list")
 
+## matrix of points
+cpts <- x$v  %>% select(x, y)  %>% as.matrix
+storage.mode(cpts) <- "double"
+## list of raw bbox (as.double)
+# lb <- vector("list", nrow(x$o))
+# for (i in seq_along(lb)) {
+#   lb[[i]] <- x[1, ]$v  %>% summarize(min(x), min(y), max(x), max(y))  %>% as.double
+# }
+
+## dplyr bounding boxes
+bb <- x$o  %>% inner_join(x$b)  %>% inner_join(x$bXv)  %>% inner_join(x$v)  %>% group_by(.ob0)  %>% 
+  summarize(min(x), min(y), max(x), max(y))  %>% select(-.ob0)
+dorect <- function(x) rect(x[1], x[2], x[3], x[4])
+apply(bb, 1, dorect)
+# sp:::pointsInSpatialPolygons
+# function (pts, SpPolygons, returnList = FALSE) 
+# {
+#   pls = slot(SpPolygons, "polygons")
+#   lb <- lapply(pls, function(x) as.double(bbox(x)))
+#   cpts <- coordinates(pts)
+#   storage.mode(cpts) <- "double"
+#   mode.checked <- storage.mode(cpts) == "double"
+#   cand <- .Call(tList, .Call(pointsInBox, lb, cpts[, 1], cpts[, 
+#                                                               2]), as.integer(length(pls)))
+#   res <- pointsInPolys2(pls, cand, cpts, mode.checked = mode.checked, 
+#                         returnList = returnList)
+#   res
+# }
+
 p <- mkpslg(x)
 tr <- RTriangle::triangulate(p, a = 100)
 centroids <- cbind(.rowMeans(matrix(tr$P[tr$T, 1], nrow = nrow(tr$T)), nrow(tr$T), 3), 
@@ -72,7 +101,7 @@ rgl.triangles((pt$Vertices %>% dplyr::select(x, y, z) %>% as.matrix)[pt$Primitiv
 
 
 
-rep(sample(grey(seq(0, 1, length = max(pt$Primitives$.vx0)))), each = 3))
+#rep(sample(grey(seq(0, 1, length = max(pt$Primitives$.vx0)))), each = 3))
 
 
 
