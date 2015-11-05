@@ -59,9 +59,18 @@ storage.mode(cpts) <- "double"
 
 ## dplyr bounding boxes
 bb <- x$o  %>% inner_join(x$b)  %>% inner_join(x$bXv)  %>% inner_join(x$v)  %>% group_by(.ob0)  %>% 
-  summarize(min(x), min(y), max(x), max(y))  %>% select(-.ob0)
+  summarize(xmin = min(x), ymin = min(y), xmax = max(x), ymax = max(y))  %>% select(-.ob0)
+pts <- cbind(runif(100, min(x$v$x), max(x$v$x)), runif(100, min(x$v$y), max(x$v$y)))
+
+lb <- vector("list", nrow(bb))
+for (i in seq(nrow(bb))) {
+  inside <- pts[,1] >= bb$xmin[i] & pts[,1] <= bb$xmax[i] & pts[,2] >= bb$ymin[i] & pts[,2] <= bb$ymax[i]
+  if (any(inside)) lb[[i]] <- which(inside)
+}
+
 dorect <- function(x) rect(x[1], x[2], x[3], x[4])
 apply(bb, 1, dorect)
+
 # sp:::pointsInSpatialPolygons
 # function (pts, SpPolygons, returnList = FALSE) 
 # {
@@ -70,8 +79,8 @@ apply(bb, 1, dorect)
 #   cpts <- coordinates(pts)
 #   storage.mode(cpts) <- "double"
 #   mode.checked <- storage.mode(cpts) == "double"
-#   cand <- .Call(tList, .Call(pointsInBox, lb, cpts[, 1], cpts[, 
-#                                                               2]), as.integer(length(pls)))
+###  pointsInBox takes all bb and all points and returns a list of bb indexes if the point falls inside
+#   cand <- .Call(tList, .Call(pointsInBox, lb, cpts[, 1], cpts[,2]), as.integer(length(pls)))
 #   res <- pointsInPolys2(pls, cand, cpts, mode.checked = mode.checked, 
 #                         returnList = returnList)
 #   res
