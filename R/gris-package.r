@@ -22,4 +22,10 @@ NULL
 #' in Manifold GIS, then exporting that to MapInfo file (.mif) and reading it in with rgdal. \url{https://www.cs.cmu.edu/~quake/triangle.demo.html}
 #' library(rgdal); library(gris);  cmu <- gris(readOGR("CMU.mif", "CMU"))
 #' @note This data set has a "background" polygon which intersects the internal rings - it's not a "partition of the plane".
-NULL
+"cmu"
+
+#' Template quad 3d object
+#' 
+#' 
+#' @format see rgl oh3d
+"q3d"

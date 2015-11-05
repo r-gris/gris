@@ -1,5 +1,5 @@
 sp2map <- function(x) {
-  g <- gris:::bld2(x, normalize_verts = FALSE)
+  g <- bld2(x, normalize_verts = FALSE)
   
   v <- g$o %>% inner_join(g$b) %>% inner_join(g$bXv) %>% inner_join(g$v) %>% 
  # v <- x$v %>% inner_join(x$bXv) %>% inner_join(x$b) %>% inner_join(x$o) %>% 
@@ -48,6 +48,8 @@ vertsToLine <- function(v) {
 vertsToPoint <- function(v) {
   as.matrix(v[, dfn(1:2)])
 }
+
+
 #' Return a list of Polygon, Line or matrix
 grisToSPbase <- function(x, type = "pp") {
   conv <- switch(type, pp = vertsToPoly, l = vertsToLine, p = vertsToPoint)
@@ -58,7 +60,7 @@ grisToSPbase <- function(x, type = "pp") {
 }
 
 grisToSpatialPolygons <- function(x) 
-  SpatialPolygons(lapply(x$o$.ob0, function(obid) Polygons(gris:::grisToSPbase(x[x$o$.ob0 == obid, ]), obid)))
+  SpatialPolygons(lapply(x$o$.ob0, function(obid) Polygons(grisToSPbase(x[x$o$.ob0 == obid, ]), obid)))
 
 #' @export
 #' @rdname foreign
@@ -74,6 +76,7 @@ as.SpatialPolygonsDataFrame <- function(x, ...) {
 #'
 #' @export
 #' @rdname foreign
+#' @importFrom sp Polygons SpatialPolygons SpatialPolygonsDataFrame
 as.SpatialPolygonsDataFrame.gris <- function(x, ...) {
   geom <- grisToSpatialPolygons(x)
   dat <- x$o

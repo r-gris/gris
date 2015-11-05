@@ -30,7 +30,7 @@ mkpslg <- function(x) {
 #' gris
 #'
 #' @param x Spatial* object
-#' @param ...
+#' @param ... unused
 #'
 #' @return gris
 #' @export
@@ -90,7 +90,9 @@ dfn <- function(x) {
 }
 
 #' @rdname gris
-#' @param i, j, drop subset arguments
+#' @param i indices for extract
+#' @param j indices for extract
+#' @param drop ignored
 #' @export
 #' @importFrom dplyr semi_join
 `[.gris` <- function (x, i, j, drop = FALSE) {
@@ -185,7 +187,6 @@ plot.gris <- function(x, y, ...) {
 
 #' @export
 #' @rdname gris
-#' @param x an object to coerce to a \code{gris}
 as.gris <- function(x, ...)
   UseMethod("as.gris")
 

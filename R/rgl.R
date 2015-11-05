@@ -15,9 +15,14 @@
 #' @param subset option index (on ib)
 #' @param ... arguments pass to \code{\link[rgl]{rgl.quads}}
 #' @param texcoords texture coordinates
-#'
 #' @export
 pquads <- function(x, texture = NULL, texcoords = NULL, subset = NULL, ...) {
+  
+  if (!requireNamespace("rgl", quietly = TRUE)) {
+    stop("rgl needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+  
   if (is.null(texcoords)) texcoords <- t(x$vb[1:2,x$ib])
   if (!is.null(subset)) x$ib <- x$ib[,subset]
   rgl::rgl.quads(x$vb[1,x$ib], x$vb[2,x$ib], x$vb[3,x$ib], texcoords = texcoords, texture = texture, ...)
@@ -48,11 +53,8 @@ p4 <- function(xp, nc) {
 #' @param x raster object for mesh structure
 #' @param z raster object for height values
 #' @param na.rm remove quads where missing values?
-#'
 #' @return mesh3d
 #' @export
-#'
-#' @importFrom rgl oh3d
 #' @importFrom raster extract extent
 #' @importFrom dplyr  bind_rows  distinct  group_by  inner_join  mutate row_number transmute
 #' @examples 
@@ -104,7 +106,7 @@ bgl <- function(x, z = NULL, na.rm = FALSE) {
     ind1 <- matrix(ind0, nrow = 4)
     ind0 <- ind1[,!is.na(values(x))]
   }
-  ob <- rgl::oh3d()
+  ob <- q3d
   
   if (!is.null(z)) z <- extract(z, exy, method = "bilinear") else z <- 0
   ob$vb <- t(cbind(exy, z, 1))
@@ -127,8 +129,7 @@ ras2gris <- function(x, z = NULL) {
   ind0 <- as.vector(ind) + 
     rep(seq(0, length = nrow(x), by = ncol(x) + 1), each = 4 * ncol(x))
   
-  ##ob <- rgl::oh3d()
-  
+ 
   if (!is.null(z)) z <- extract(z, exy, method = "bilinear") else z <- 0
   v <- data_frame(x = exy[,1], y = exy[,2], z = z, .vx0 = seq(nrow(exy)))
   bXv <- data_frame(.br0 = rep(seq(length(ind0)/4), each = 4), .vx0 = ind0)
@@ -150,8 +151,6 @@ ras2gris <- function(x, z = NULL) {
 #'
 #' @return matrix
 #' @export
-#'
-
 llh2xyz <- function(lonlatheight, rad = 6378137.0, exag = 1) {
   cosLat = cos(lonlatheight[,2] * pi / 180.0)
   sinLat = sin(lonlatheight[,2] * pi / 180.0)
@@ -177,8 +176,6 @@ brick2rgl <- function(x) {
 #'
 #' @return hex colour character vector
 #' @export
-#'
-
 #' @importFrom raster values
 brick2col <- function(x) {
   ## count left to right from bottom to top

@@ -2,6 +2,7 @@
 #' Map projection for gris
 #'
 #' @param x gris object
+#' @param target proj4 string
 #' @param ... passed to methods
 #'
 #' @return gris object
@@ -102,6 +103,7 @@ xrange.default <- function(x) c(raster::xmin(x), raster::xmax(x))
 #' @rdname gris-summary
 yrange.default <- function(x) c(raster::ymin(x), raster::ymax(x))
 
+#' @param family projection family
 #' @export
 #' @rdname gris-summary
 local_triangulate <- function(x, family = "laea") {

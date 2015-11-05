@@ -9,7 +9,16 @@ Description: A flexible geometry data model for R.
 License: GPL-3
 ByteCompile: Yes
 LazyData: TRUE
-Depends: dplyr
-Imports: proj4, RTriangle, raster,  sp
-Suggests: knitr,  testthat
+Depends:
+    dplyr
+Imports:
+    proj4,
+    RTriangle,
+    raster,
+    sp
+Suggests:
+    knitr,
+    rgl,
+    testthat
 VignetteBuilder: knitr
+RoxygenNote: 5.0.0
