@@ -31,13 +31,23 @@ pquads <- function(x, texture = NULL, texcoords = NULL, subset = NULL, ...) {
 ## OR, so we get this in raster-native order
 #' @importFrom sp coordinates
 #' @importFrom raster extend res shift xmin xmax ymin ymax
-edgesXY <- function(x) {
-  coordinates(shift(
-    extend(x, 
-           extent(xmin(x), xmax(x) + res(x)[1], ymin(x), ymax(x) + res(x)[2])), 
-    x = -res(x)[1]/2, y = -res(x)[2]/2))
-}
+# edgesXY <- function(x) {
+#   coordinates(shift(
+#     extend(x, 
+#            extent(xmin(x), xmax(x) + res(x)[1], ymin(x), ymax(x) + res(x)[2])), 
+#     x = -res(x)[1]/2, y = -res(x)[2]/2))
+# }
 
+edgesXY <- function(x) {
+  ## report to Hijmans 2015-11-06
+  #extract(r, expand.grid(c(xmin(r), xmax(r)), c(ymin(r), ymax(r))), method = "bilinear")
+  #[1]   NA   NA 99.5   NA
+   ## remove this eps fudge once bilinear works
+  eps <- sqrt(.Machine$double.eps)
+  as.matrix(expand.grid(seq(xmin(x), xmax(x) -eps, length = ncol(x) + 1),
+                        seq(ymax(x), ymin(x) + eps, length = nrow(x) + 1)
+                        ))
+}
 
 prs <- function(x) {
   cbind(head(x, -1), tail(x, -1))
