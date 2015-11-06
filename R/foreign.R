@@ -62,7 +62,7 @@ grisToSPbase <- function(x, type = "pp") {
 grisToSpatialPolygons <- function(x) 
   SpatialPolygons(lapply(x$o$.ob0, function(obid) Polygons(grisToSPbase(x[x$o$.ob0 == obid, ]), obid)))
 
-#' @export
+
 #' @rdname foreign
 as.SpatialPolygonsDataFrame <- function(x, ...) {
   UseMethod("as.SpatialPolygonsDataFrame")
