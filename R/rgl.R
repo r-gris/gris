@@ -116,7 +116,7 @@ bgl <- function(x, z = NULL, na.rm = FALSE) {
     ind1 <- matrix(ind0, nrow = 4)
     ind0 <- ind1[,!is.na(values(x))]
   }
-  ob <- q3d
+  ob <- gris::q3d
   
   if (!is.null(z)) z <- extract(z, exy, method = "bilinear") else z <- 0
   ob$vb <- t(cbind(exy, z, 1))

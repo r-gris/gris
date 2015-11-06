@@ -12,7 +12,6 @@ LazyData: TRUE
 Depends:
     dplyr
 Imports:
-    proj4,
     RTriangle,
     raster,
     sp

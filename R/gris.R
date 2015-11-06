@@ -108,7 +108,10 @@ dfn <- function(x) {
 }
 
 #' @rdname gris
-#' @export
+#' @param width width
+#' @param n n
+#' @param y y
+#' @export 
 print.gris <- function(x, ..., n = NULL, width = NULL) {
   cat("gris object", "\n", sep = "")
   print(x$o)
@@ -262,7 +265,7 @@ topotype <- function(x) {
 
 
 
-
+#' @importFrom sp proj4string
 bld2 <- function(x, normalize_verts = TRUE, ...) {
   x0 <- x  ## need for test lower down, must fix
   g <- sp::geometry(x)

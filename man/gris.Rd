@@ -30,6 +30,12 @@ as.gris(x, ...)
 \item{j}{indices for extract}
 
 \item{drop}{ignored}
+
+\item{n}{n}
+
+\item{width}{width}
+
+\item{y}{y}
 }
 \value{
 gris
