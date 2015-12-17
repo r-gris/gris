@@ -28,6 +28,11 @@ What we need
 * ~~triangulation with CGAL, constrained Delaunay~~
 * ~~speed up the normalization of vertices~~
 
+Motivation
+
+http://gis.stackexchange.com/questions/168584/representation-of-spatial-lines-with-altitude/168618#168618
+
+
 Topology
 
 Currently in gris, traditional GIS-like objects are decomposed into a set of relational tables. These are Vertices, Branches, and Objects. Storing these data in tables is similar to the ggplot2 model where a GIS object is converted to a single table with *fortify*, but the problem with fortify is that it simply duplicates object and branch information by copying them onto every vertex. This is straightforward in one sense, but is wasteful and does not provide an obvious logical structure for GIS objects. In *gris* the Objects table is analogous to the "attributes" table in a GIS, each row stores data on an object which might be a polygon, a line, or a point (and each may be multi-versions thereof). The Branches table allows for multiple vertices on a a single point, multiple connected sets of line segments (linear strings) for a single line, and multiple "rings" for a complex polygon that may contain "holes" or include multiple separate "islands". 
