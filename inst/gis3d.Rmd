@@ -1,0 +1,335 @@
+---
+title: "GIS for 3D"
+author: "Michael Sumner"
+date: "28 December 2015"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r,echo=FALSE,message=FALSE}
+junk <- capture.output({
+library(raster)
+library(maptools)
+library(rgl)
+library(rglwidget)  ## allows embedding OpenGL vis in RMarkdown HTML
+library(gris) 
+  library(dismo)
+  library(geosphere)
+  
+})
+rgl.material(specular = "grey10")
+```
+
+## GIS for 3D
+
+GIS data structures are not well suited for generalization, and visualizations and models in 3D require pretty forceful and ad hoc approaches. 
+
+Here I describe a simple example, showing several ways of visualizing a simple polygon data set. I use the programming environment `R` for the data manipulation and the creation of this document via several extensions (packages) to base R. 
+
+## Polygon "layer"
+
+The R package `maptools` contains an in-built data set called `wrld_simpl`, which is a basic (and out of date) set of polygons describing the land masses of the world by country.  This code loads the data set and plots it with a basic grey-scale scheme for individual countries. 
+
+```{r}
+library(maptools)
+data(wrld_simpl)
+print(wrld_simpl)
+plot(wrld_simpl, col = grey(sample(seq(0, 1, length = nrow(wrld_simpl)))))
+```
+
+We also include a print statement to get a description of the data set, this is a `SpatialPolgyonsDataFrame` which is basically a table of attributes with one row for each country, linked to a recursive data structure holding sets of arrays of coordinates for each individual piece of these complex polygons. 
+
+These structures are quite complicated, involving nested lists of matrices with X-Y coordinates. I can use class coercion from polygons, to lines, then to points as the most straightforward way of obtaining every XY coordinate by dropping the recursive hierarchy structure to get at every single vertex in one matrix. 
+
+```{r}
+allcoords <- coordinates(as(as(wrld_simpl, "SpatialLines"), "SpatialPoints"))
+dim(allcoords)
+head(allcoords)  ## print top few rows
+```
+
+(There are other methods to obtain all coordinates while retaining information about the country objects and their component "pieces", but I'm ignoring that for now.)
+
+We need to put these "X/Y" coordinates in 3D so I simply add another column filled with zeroes. 
+
+```{r}
+allcoords <- cbind(allcoords, 0)
+head(allcoords)
+```
+(Note for non-R users:  in R expressions that don't include assignment to an object with "<-" are generally just a side-effect, here the side effect of the `head(allcoords)` here is to print the top few rows of allcoords, just for illustration, there's no other consequence of this code). 
+
+## OpenGL in R
+
+In R we have access to 3D visualizations in OpenGL via the `rgl` package, but the model for data representation is very different so I first plot the vertices of the `wrld_simpl` layer as points only. 
+
+```{r plot3d_wrld, webgl = TRUE, rgl.newwindow = TRUE}
+library(rgl)
+library(rglwidget)  ## allows embedding OpenGL vis in RMarkdown HTML
+plot3d(allcoords, xlab = "", ylab = "") ## smart enough to treat 3-columns as X,Y,Z
+subid <- currentSubscene3d()
+rglwidget(elementId="plot3d_wrld")
+rgl.close()
+```
+
+Plotting in the plane is one thing, but more striking is to convert the vertices from planar longitude-latitude to Cartesizan XYZ. Define an R function to take "longitude-latitude-height" and return spherical coordinates (we can leave WGS84 for another day). 
+
+```{r}
+llh2xyz <- 
+function (lonlatheight, rad = 6378137, exag = 1) 
+{
+    cosLat = cos(lonlatheight[, 2] * pi/180)
+    sinLat = sin(lonlatheight[, 2] * pi/180)
+    cosLon = cos(lonlatheight[, 1] * pi/180)
+    sinLon = sin(lonlatheight[, 1] * pi/180)
+    rad <- (exag * lonlatheight[, 3] + rad)
+    x = rad * cosLat * cosLon
+    y = rad * cosLat * sinLon
+    z = rad * sinLat
+    cbind(x, y, z)
+}
+
+## deploy our custom function on the longitude-latitude values
+xyzcoords <- llh2xyz(allcoords)
+```
+
+Now we can visualize these XYZ coordinates in a more natural setting, and even add a blue sphere for visual effect. 
+
+```{r plot3d_wrldxyz, webgl = TRUE, rgl.newwindow = TRUE}
+
+plot3d(xyzcoords, xlab = "", ylab = "")
+spheres3d(0, 0, 0, radius = 6370000, col = "lightblue")
+subid <- currentSubscene3d()
+rglwidget(elementId="plot3d_wrldxyz")
+rgl.close()
+```
+
+
+
+
+This is still not very exciting, since our plot knows nothing about the connectivity between vertices. 
+
+## Organization of polygons
+
+The in-development R package `gris` provides a way to represent spatial objects as a set of relational tables. I'm leaving out the details because it's not the point I want to make, but in short a `gris` object has tables "o" (objects), "b" (for branches), "bXv" (links between branches and vertices) and "v" the vertices. 
+
+If we ingest the `wrld_simpl` layer we get a list with several tables. 
+
+```{r}
+library(gris)  ## devtools::install_github("mdsumner/gris")
+gobject <- gris(wrld_simpl)
+```
+```{r,echo=FALSE}
+gobject$bXv$.ob0 <- NULL
+```
+
+The objects, these are individual countries with several attributes including the `NAME`. 
+
+```{r}
+gobject$o
+```
+
+The branches, these are individual simple, one-piece "ring polygons". Every object may have one or more branches (branches may be an "island" or a "hole" but this is not currently recorded). Note how branch 1 and 2 (`.br0`) both belong to object 1, but branch 3 is the only piece of object 2. 
+
+```{r}
+gobject$b
+
+plot(gobject[1, ], col = "#333333")
+title(gobject$o$NAME[1])
+plot(gobject[2, ], col = "#909090")
+title(gobject$o$NAME[2])
+```
+
+(Antigua and Barbuda sadly don't get a particularly good picture here, but this is not the point of the story.)
+
+The links between branches and vertices.
+
+
+```{r}
+gobject$bXv
+```
+
+
+This table is required so that we can normalize the vertices by removing any duplicates based on X/Y pairs. This is required for the triangulation engine used below, although not by the visualization strictly. (Note that we could also normalize branches for objects, since multiple objects might use the same branch - but again off-topic). 
+
+Finally, the vertices themselves. Here we only have X and Y, but these table structures can hold any number of attributes and of many types. 
+
+```{r}
+gobject$v
+```
+
+The normalization is only relevant for particular choices of vertices, so if we had X/Y/Z in use there might be a different version of "unique". I think this is a key point for flexibility, some of these tasks must be done on-demand and some ahead of time. 
+
+Indices here are numeric, but there's actually no reason that they couldn't be character or other identifier.  Under the hood the `dplyr` package is in use for doing straightforward (and fast!) table manipulations including joins between tables and filtering on values. 
+
+
+## More 3D already!
+
+Why go to all this effort just for a few polygons?  The structure of the `gris` objects gives us much more flexibility, so I can for example store the XYZ Cartesian coordinates right on the same data set. I don't need to recursively visit nested objects, it's just a straightforward calculation and update - although we're only making a simple point, this could be generalized a lot more for user code. 
+
+```{r}
+gobject$v$zlonlat <- 0
+do_xyz <- function(table) {
+  xyz <- llh2xyz(dplyr::select(table, x, y, zlonlat))
+  table$X <- xyz[,1]
+  table$Y <- xyz[,2]
+  table$Z <- xyz[,3]
+  table
+}
+
+gobject$v <- do_xyz(gobject$v)
+
+gobject$v
+
+```
+
+I now have XYZ coordinates for my data set, and so for example I will extract out a few nearby countries and plot them. 
+
+```{r}
+localarea <- gobject[gobject$o$NAME %in% c("Australia", "New Zealand"), ]
+## plot in traditional 2d
+plot(localarea, col = c("dodgerblue", "firebrick"))
+```
+
+The plot is a bit crazy since parts of NZ that are over the 180 meridian skews everything, and we could fix that easily by modifiying the vertex values for longitude, but it's more sensible in 3D. 
+
+```{r plot3d_wrldoznz, webgl = TRUE, rgl.newwindow = TRUE}
+plot3d(localarea$v$X, localarea$v$Y, localarea$v$Z, xlab = "", ylab = "")
+subid <- currentSubscene3d()
+rglwidget(elementId="plot3d_wrldoznz")
+rgl.close()
+```
+
+
+Finally, to get to the entire point of this discussion let's triangulate the polygons and make a nice plot of the world. 
+
+The R package `RTriangle` wraps Richard Shewchuk's Triangle library, allowing constrained Delaunay triangulations. To run this we need to make a Planar Straight Line Graph from the polygons, but this is fairly straightforward by tracing through paired vertices in the data set. The key parts of the PSLG are the vertices `P` and the segment indexes `S` defining paired vertices for each line segment. This is a "structural" index where the index values are bound to the actual size and shape of the vertices, as opposed to a more general but perhaps less efficient relational index. 
+
+```{r}
+pslgraph <- mkpslg(gobject)
+dim(pslgraph$P)
+range(pslgraph$S)
+head(pslgraph$P)
+head(pslgraph$S)
+```
+
+The PSLG is what we need for the triangulation. 
+
+```{r}
+tri <- RTriangle::triangulate(pslgraph)
+```
+
+The triangulation vertices (long-lat) can be converted to XYZ, and plotted. 
+
+```{r plot3d_wrld_polyxyz, webgl = TRUE, rgl.newwindow = TRUE}
+xyz <- llh2xyz(cbind(tri$P, 0))
+triangles3d(xyz[t(tri$T), ], col = "grey50")
+subid <- currentSubscene3d()
+rglwidget(elementId="plot3d_wrld_polyxyz")
+rgl.close()
+```
+
+These are very ugly polygons since there's no internal vertices to carry the curvature of this sphere. This is the same problem we'd face if we tried to drape these polygons over topography, as some point we need internal structure. 
+
+Luckily Triangle can set a minimum triangle size. We set a constant minimum area, which means no individual triangle can be larger in area than so many "square degrees". This gives a lot more internal structure so the polygons are more elegantly draped around the surface of the sphere. (There's not really enough internal structure added with this minimum area, but I've kept it simpler to make the size of this document more manageable). 
+
+
+```{r plot3d_wrld_surfacexyz, webgl = TRUE, rgl.newwindow = TRUE}
+tri <- RTriangle::triangulate(pslgraph, a = 9)  ## a (area) is in degrees, same as our vertices
+xyz <- llh2xyz(cbind(tri$P, 0))
+triangles3d(xyz[t(tri$T), ], col = "grey50")
+subid <- currentSubscene3d()
+rglwidget(elementId="plot3d_wrld_surfacexyz")
+rgl.close()
+```
+
+We still can't identify individual polygons as we smashed that information after putting the polygon boundary segments through the triangulator. With more careful work we could build a set of tables to store particular triangles between our vertices and objects, but to finish this story I just loop over each object adding them to the scene. 
+
+
+
+```{r plot3d_wrld_surfaceobjects, webgl = TRUE, rgl.newwindow = TRUE}
+## loop over objects
+cols <- sample(grey(seq(0, 1, length = nrow(gobject$o))))
+for (iobj in seq(nrow(gobject$o))) {
+  pslgraph <- mkpslg(gobject[iobj, ])
+  tri <- RTriangle::triangulate(pslgraph, a = 9)  ## a is in units of degrees, same as our vertices
+  xyz <- llh2xyz(cbind(tri$P, 0))
+  triangles3d(xyz[t(tri$T), ], col = cols[iobj])
+}
+
+subid <- currentSubscene3d()
+rglwidget(elementId="plot3d_wrld_surfaceobjects")
+rgl.close()
+```
+
+<script type="text/javascript">
+var rotate = function(angle) {
+  plot3d_wrld_surfaceobjectsrgl.getObj(`r subid`).par3d.userMatrix.rotate(angle, 0,1,0);
+  plot3d_wrld_surfaceobjectsrgl.drawScene();
+};
+</script>
+
+<button type="button" onclick="rotate(10)">Rotate Forward</button>
+<button type="button" onclick="rotate(-10)">Rotate Backward</button>
+
+<script type="text/javascript">
+var rotate = function(angle) {
+  var rgl = document.getElementById("plot3d_wrld_surfaceobjects").rglinstance;
+  rgl.getObj(`r subid`).par3d.userMatrix.rotate(angle, 0,1,0);
+  rgl.drawScene();
+};
+</script>
+
+
+## Image textures
+
+TBD
+
+
+## Real world topography
+
+A simplistic layer of country polygons wrapped around a sphere is not very practical. Here we show the techniques applied above to build a relief map. 
+
+Extract a polygon map for Tasmania.
+
+```{r,eval=FALSE,echo=FALSE}
+oz <- getData(name = "GADM", country = "AUS", level = 1)
+tas <- disaggregate(subset(oz, NAME_1 == "Tasmania"))[-c(1, 2), ] ## drop MI
+
+gtas<- gris(tas)
+
+topo <- getData("SRTM", lon = mean(gtas$v$x), lat = mean(gtas$v$y))
+
+f <- "ftp://xftp.jrc.it/pub/srtmV4/tiff/srtm_66_21.zip"
+download.file(f, basename(f), mode = "wb")
+unzip(basename(f))
+topo <- raster("srtm_66_21.tif")
+
+prj <- "+proj=laea +lon_0=147 +lat_0=-42 +ellps=WGS84"
+xy <- rgdal::project(gtas$v %>% select(x, y) %>% as.matrix, prj)
+gtas$v$x <- xy[,1]; gtas$v$y <- xy[,2]
+tri <- RTriangle::triangulate(mkpslg(gtas), a = 5e6)
+
+z <- extract(topo, rgdal::project(tri$P, prj, inv = TRUE))
+triangles3d(cbind(tri$P, z)[t(tri$T), ])
+aspect3d(1, 1, 2)
+
+
+```{r,eval=FALSE,echo=FALSE}
+## getData('ISO3') 
+nz <- getData("GADM", country = "NZL", level = 0)
+
+## explode into separate pieces
+nz <- disaggregate(nz)[order(areaPolygon(nz), decreasing = TRUE)[1:6], ]
+## grisify and modify all vertices that are too far west in -180,180
+gnz <- gris(nz[2,])
+gnz$v <- gnz$v %>% mutate(x = ifelse(x < 0, x + 360, x))
+#topo <- getData("SRTM", lon = mean(gnz$v$x), lat = mean(gnz$v$y))
+
+
+
+
+
+
+
