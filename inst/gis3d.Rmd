@@ -124,13 +124,13 @@ gobject <- gris(wrld_simpl)
 gobject$bXv$.ob0 <- NULL
 ```
 
-The objects, these are individual countries with several attributes including the `NAME`. 
+The objects, these are individual countries with several attributes including the `NAME`. The attribute ".ob0" is a gris-specific one - the "object ID", there are also ".br0" attributes for branches, and ".vx0" for vertices. 
 
 ```{r}
 gobject$o
 ```
 
-The branches, these are individual simple, one-piece "ring polygons". Every object may have one or more branches (branches may be an "island" or a "hole" but this is not currently recorded). Note how branch 1 and 2 (`.br0`) both belong to object 1, but branch 3 is the only piece of object 2. 
+The branches, these are individual simple, one-piece "ring polygons". Every object may have one or more branches (branches may be an "island" or a "hole" but this is not currently recorded). Note how branch 1 and 2 (`.br0`) both belong to object 1 (.ob0), but branch 3 is the only piece of object 2. 
 
 ```{r}
 gobject$b
@@ -151,7 +151,7 @@ gobject$bXv
 ```
 
 
-This table is required so that we can normalize the vertices by removing any duplicates based on X/Y pairs. This is required for the triangulation engine used below, although not by the visualization strictly. (Note that we could also normalize branches for objects, since multiple objects might use the same branch - but again off-topic). 
+This table is required so that we can normalize the vertices by removing any duplicates based on X/Y pairs, a necessary preparation for the triangulation engine used belo (although not by the visualization). (Note that we could also normalize branches for objects, since multiple objects might use the same branch - but again off-topic). 
 
 Finally, the vertices themselves. Here we only have X and Y, but these table structures can hold any number of attributes and of many types. 
 
@@ -184,7 +184,7 @@ gobject$v
 
 ```
 
-I now have XYZ coordinates for my data set, and so for example I will extract out a few nearby countries and plot them. 
+I now have XYZ coordinates for my data set, and so for example I will extract out a few nearby countries and plot them. First plot in the traditional way, using the default "evenodd" rule used by R's `polypath()` function. 
 
 ```{r}
 localarea <- gobject[gobject$o$NAME %in% c("Australia", "New Zealand"), ]
@@ -282,9 +282,47 @@ var rotate = function(angle) {
 </script>
 
 
+## Github, sfr
+
+There is ongoing work to upgrade R's Spatial support, but this is still wedded to the basic flat and dumb polygonal model used by open source projects.
+
+
+
+
+
 ## Image textures
 
-TBD
+```{r}
+## marmap has some topography
+library(marmap)
+data("hawaii", package = "marmap")
+r <- marmap::as.raster(hawaii)
+## but is otherwise undesirable so we unload it
+unloadNamespace("marmap")
+library(dismo)
+gm <- gmap(r, type = "satellite", scale = 2)
+
+## this is our texture
+paletteim2RGB <- function(x) {
+  ct <-  col2rgb(x@legend@colortable[values(x) + 1])
+
+  setValues(brick(x, x, x), t(ct))
+}
+library(rgdal)
+texture <- writeGDAL(as(paletteim2RGB(gm), "SpatialGridDataFrame"), "texture.png", drivername = "PNG", type = "Byte")
+
+library(gris)
+library(rgl)
+
+b <- bgl(r, r)
+tcoords <- xyFromCell(setExtent(gm, c(0, 1, 0, 1)), cellFromXY(gm, project(t(b$vb[1:2, ]), projection(gm))))
+aspect3d(1, 1, 0.0001)
+shade3d(b, col = "white", texture= texture, texcoords = tcoords[b$ib, ])
+
+subid <- currentSubscene3d()
+rglwidget(elementId="plot3d_texture")
+rgl.close()
+```
 
 
 ## Real world topography
