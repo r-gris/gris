@@ -292,7 +292,7 @@ There is ongoing work to upgrade R's Spatial support, but this is still wedded t
 
 ## Image textures
 
-```{r}
+```{r plot3d_texture, webgl = TRUE, rgl.newwindow = TRUE}
 ## marmap has some topography
 library(marmap)
 data("hawaii", package = "marmap")
@@ -301,7 +301,7 @@ r <- marmap::as.raster(hawaii)
 unloadNamespace("marmap")
 library(dismo)
 gm <- gmap(r, type = "satellite", scale = 2)
-
+#gm <- raster()
 ## this is our texture
 paletteim2RGB <- function(x) {
   ct <-  col2rgb(x@legend@colortable[values(x) + 1])
@@ -313,12 +313,13 @@ texture <- writeGDAL(as(paletteim2RGB(gm), "SpatialGridDataFrame"), "texture.png
 
 library(gris)
 library(rgl)
-
+library(rglwidget)
 b <- bgl(r, r)
 tcoords <- xyFromCell(setExtent(gm, c(0, 1, 0, 1)), cellFromXY(gm, project(t(b$vb[1:2, ]), projection(gm))))
 aspect3d(1, 1, 0.0001)
-shade3d(b, col = "white", texture= texture, texcoords = tcoords[b$ib, ])
+#shade3d(b, col = "white", texture= texture, texcoords = tcoords[b$ib, ])
 
+quads3d(t(b$vb[1:3, b$ib]), col = "white", texture= texture, texcoords = tcoords[b$ib, ])
 subid <- currentSubscene3d()
 rglwidget(elementId="plot3d_texture")
 rgl.close()
