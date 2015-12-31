@@ -325,6 +325,16 @@ rglwidget(elementId="plot3d_texture")
 rgl.close()
 ```
 
+## Polygon pathologies
+
+Orthodromes, loxodromes.
+
+Densifying vertices
+
+Projection boundaries
+
+D3 approach to curvature
+
 
 ## Real world topography
 
@@ -353,7 +363,7 @@ tri <- RTriangle::triangulate(mkpslg(gtas), a = 5e6)
 z <- extract(topo, rgdal::project(tri$P, prj, inv = TRUE))
 triangles3d(cbind(tri$P, z)[t(tri$T), ])
 aspect3d(1, 1, 2)
-
+```
 
 ```{r,eval=FALSE,echo=FALSE}
 ## getData('ISO3') 
@@ -366,7 +376,7 @@ gnz <- gris(nz[2,])
 gnz$v <- gnz$v %>% mutate(x = ifelse(x < 0, x + 360, x))
 #topo <- getData("SRTM", lon = mean(gnz$v$x), lat = mean(gnz$v$y))
 
-
+```
 
 
 
