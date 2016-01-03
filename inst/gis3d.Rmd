@@ -27,7 +27,18 @@ rgl.material(specular = "grey10")
 
 GIS data structures are not well suited for generalization, and visualizations and models in 3D require pretty forceful and ad hoc approaches. 
 
-Here I describe a simple example, showing several ways of visualizing a simple polygon data set. I use the programming environment `R` for the data manipulation and the creation of this document via several extensions (packages) to base R. 
+Here I show some of the ways 3D is used in GIS and how they relate to the underlying data models
+
+Manifold terrains - overlay, embedding, textures, walls - average planar elevation relative to surface or via attribute, inability of polygons/lines/points to have Z vertex-attribute
+
+Triangulation in manifold terrains, vs. triangulation in manifold drawings, constrained triangulations
+
+TIN-based triangulation
+
+
+From these examples, I develop several ways of visualizing a simple polygon data set in a more flexible setting. 
+
+Colophon?  I use the programming environment `R` for the data manipulation and the creation of this document via several extensions (packages) to base R. 
 
 ## Polygon "layer"
 
