@@ -5,7 +5,11 @@
 A dplyr-based geometry model for R. This is in early stages and will change a lot.
 
 =======
-There's not much to see except for this out of date readme with a companion package: 
+There's not much to see except for this blog post on building rgl visualizations via gris: 
+
+http://mdsumner.github.io/2015/12/28/gis3d.html
+
+Also this out of date readme with a companion package: 
 
 https://github.com/mdsumner/cgalgris/blob/master/README.md
 
