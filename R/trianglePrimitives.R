@@ -1,81 +1,49 @@
-# library(gris)
-# library(maptools)
-# data(wrld_simpl)
-# system.time(g <- gris(subset(wrld_simpl, NAME == "Australia")))
-#  library(RTriangle)
-#  TR <- NULL
-#  maxtr <- 0
-# 
-#  brid <- unique(g$b$.br0)
-# for (i in seq_along(brid)) {
-#   id <- brid[i]
-#   bXv <- g$bXv %>% filter(.br0 == id) %>% inner_join(g$v, ".vx0") %>% select(x, y, .vx0, .br0 )
+#  library(gris)
+#  library(maptools)
+#  data(wrld_simpl)
+#  gall <- gris(wrld_simpl)
+#  g <- gall[gall$o$NAME %in% c("Australia", "New Zealand"), ]
+#  
+#   library(RTriangle)
+#   tXv <-  oXt <- NULL
+#   maxtr <- 0
 #   
-#   ps <- pslg(P = bXv %>%  dplyr::select(x, y) %>% as.matrix(), S = gris:::prs1(seq(nrow(bXv))))
-#   tr <- RTriangle::triangulate(ps)
-#   bXt <- data_frame(.br0 = rep(id, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
-#   
-#   TR <- bind_rows(TR, data_frame(.tr0 = rep(bXt$.tr0, each = 3), .vx0 = bXv$.vx0[t(tr$T)]))
-#   # 
-#     maxtr <- nrow(TR)
-#   
-#   
-# }
-#  
-#  g$TR <- TR
-#  g$bXt <- bXt
-#  
-#  
-#  ## get out the triangles
-#  v <- g$v %>% select(x, y) %>% cbind(0) %>% as.matrix #g$TR %>% inner_join(g$v, ".vx0") %>% select(x, y) %>% cbind(0) %>% as.matrix
-#  library(rgl)
-#  triangles3d(v[TR$.vx0[1:3], ])
-#  
-#  
-#  
-#  
-#  
- 
- 
- 
- 
- 
- 
- 
-# ## triangulate each piece
-# ## this needs to happen per branch, but mkpsg code will need to come out to that level (not object level)
-# for (i in seq(nrow(g$b))) {
-#   g1 <- g[i, ]
+#  # tXv - table with .vx1, .vx2, .vx3 and .tr0
+# #  oXt - table with .tr0 and .ob0
 # 
-#   tr <- RTriangle::triangulate(mkpslg(g1))
-#   bXt <- data_frame(.br0 = rep(g1$b$.br0, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
-#   TR <- bind_rows(TR, data_frame(.tr0 = rep(bXt$.tr0, each = 3), .vx0 = g1$v$.vx0[t(tr$T)]))
-# 
-#   maxtr <- nrow(TR)
-# }
-
-
-# 
-# ## gris version of disaggregate
-# system.time({
-# g$b$.ob0 <- seq(nrow(g$b))
-# g$o <- g$o[rep(1, nrow(g$b)), ]
-# g$o$.ob0 <- g$b$.ob0
-# g$bXv
-# g$b
-# library(RTriangle)
+#  oid <- unique(g$o$.ob0)
+#  for (i in seq_along(oid)) {
+#    id <- oid[i]
+#    ## we triangulate each branch individually, so we can keep track of them
+#    ##bXv <- g$bXv %>% filter(.br0 == id) %>% inner_join(g$v, ".vx0") %>% select(x, y, .vx0, .br0 )
+#    g0 <- g[g$o$.ob0 == id, ]
+#   ps <- mkpslg(g0)
+#    #ps <- pslg(P = bXv %>%  dplyr::select(x, y) %>% as.matrix(), S = gris:::prs1(seq(nrow(bXv))))
+#    tr <- RTriangle::triangulate(ps)
+#    #bXt <- data_frame(.br0 = rep(id, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
+#    oX <- data_frame(.ob0 = rep(id, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
+#    oXt <- bind_rows(oXt, oX)
+#    
+#    tX <- data_frame(.vx1 = g$v$.vx0[tr$T[,1]], .vx2 = g$v$.vx0[tr$T[,2]], .vx3 = g$v$.vx0[tr$T[,3]], 
+#                     .tr0 = oX$.tr0)
+#    
+#   tXv <- bind_rows(tXv, tX)
+#      maxtr <- maxtr + nrow(tr$T)
 # 
 # 
-# TR <- NULL
-# maxtr <- 0
-# ## triangulate each piece
-# for (i in seq(nrow(g$o))) {
-#   g1 <- g[i, ]
+#  }
 # 
-#   tr <- RTriangle::triangulate(mkpslg(g1))
-#   bXt <- data_frame(.br0 = rep(g1$b$.br0, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
-#   TR <- bind_rows(TR, data_frame(.tr0 = rep(bXt$.tr0, each = 3), .vx0 = g1$v$.vx0[t(tr$T)]))
-# 
-#   maxtr <- nrow(TR)
-# }
-# })
+#  
+#  plotT <- function(tXv, v) {
+#    for (i in seq(nrow(tXv))) {
+#      XY1 <- v  %>% inner_join(tXv[i, ], c(".vx0" = ".vx1")) %>% select(x, y)
+#      XY2 <- v  %>% inner_join(tXv[i, ], c(".vx0" = ".vx2")) %>% select(x, y)
+#      XY3 <- v  %>% inner_join(tXv[i, ], c(".vx0" = ".vx3")) %>% select(x, y)
+#      
+#      
+#      polypath(c(XY1$x, XY2$x, XY3$x), c(XY1$y, XY2$y, XY3$y))
+#      
+#    }
+#    NULL
+#  }
+#  
