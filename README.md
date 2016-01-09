@@ -13,16 +13,17 @@ What we have
  
 * basic S3 methods to build gris objects from sp and plot them. 
 * examples of various workflows
-* basic proj4::ptransform with dplyr piping
+* triangulated Primitives model (triGris and plotT internal functions)
+* coercion from gris to Spatial (need more on cycle-extraction for triangles)
+* on hold: ~basic proj4::ptransform with dplyr piping~
 
 What we need
 
-* integration of primitive model for topology
+* integration of primitive model for topology - this is working, but we don't record the branch each triangle belongs too - this is possible but could become meaningless if we start manipulating the mesh of triangles
 * need to fix how gris objects are created, since g[i, ] duplicates .ob0 for repeated i values - but maybe it's nonsense to allow repeats anyway?
 * flesh out the RTriangle support and relation to rgl texture mapping
 * ensure standard triangulation is done in a local projection, no matter what the source is in
 * add ability to explode and recombine objects and their component polygons arbitrarily
-* coercion from gris to Spatial*
 * apply system of naming for vertices - this is begun in gris.default, needs to be made only for simple case of points
 * ~convert raster to quad mesh~
 * ~~triangulation with CGAL, constrained Delaunay~~
