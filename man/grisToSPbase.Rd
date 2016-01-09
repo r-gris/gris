@@ -6,6 +6,11 @@
 \usage{
 grisToSPbase(x, type = "pp")
 }
+\arguments{
+\item{x}{gris}
+
+\item{type}{pp-oly, l-ine, p-oints}
+}
 \description{
 Return a list of Polygon, Line or matrix
 }

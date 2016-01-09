@@ -1,8 +1,8 @@
 Package: gris
 Type: Package
 Title: Geometric Data
-Version: 0.0.1.9001
-Date: 2015-05-19
+Version: 0.0.2.9001
+Date: 2015-01-10
 Author: Michael D. Sumner
 Maintainer: Michael D. Sumner <mdsumner@gmail.com>
 Description: A flexible geometry data model for R.
