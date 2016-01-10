@@ -39,16 +39,38 @@ triGris <- function(x) {
     
     tXv <- bind_rows(tXv, tX)
     maxtr <- maxtr + nrow(tr$T)
-    
-    
   }
-  
+ 
+  ## need to remove any triangles that aren't within the branches
+  centroids <- bind_rows(
+    x$v %>% 
+    inner_join(tXv, c(".vx0" = ".vx1")) %>% select(x, y, .vx0, .tr0), 
+    x$v %>% 
+    inner_join(tXv, c(".vx0" = ".vx2")) %>% select(x, y, .vx0, .tr0), 
+    x$v %>% 
+    inner_join(tXv, c(".vx0" = ".vx3")) %>% select(x, y, .tr0)) %>% 
+ #  
+ #  
+ #   centroids <- x$v %>%
+ # inner_join(tXv, c(".vx0" = ".vx1")) %>% select(x, y, .vx0) %>%
+ # inner_join(tXv, c(".vx0" = ".vx2")) %>% select(x, y, .vx0) %>%
+ # inner_join(tXv, c(".vx0" = ".vx3")) %>% select(x, y, .tr0) 
+ # 
+    group_by(.tr0)  %>% distinct(x, y) %>% summarize(x = mean(x), y = mean(y)) 
+#     
+  ## use over for now
+  bad <- is.na(sp::over(SpatialPoints(as.matrix(centroids %>% select(x, y))), grisToSpatialPolygons(x)))
+  if (any(bad)) {
+    badtri <- centroids$.tr0[bad]
+    tXv <- tXv %>% filter(!.tr0 %in% badtri)
+    oXt <- oXt %>% filter(!.tr0 %in% badtri)
+  }
   x$tXv <- tXv
   x$oXt <- oXt
   x
 }
 
-plotT <- function(x) {
+plotT <- function(x, ...) {
   tXv <- x$tXv
   v <- x$v
   for (i in seq(nrow(tXv))) {
@@ -56,8 +78,8 @@ plotT <- function(x) {
     XY2 <- v  %>% inner_join(tXv[i, ], c(".vx0" = ".vx2")) %>% select(x, y)
     XY3 <- v  %>% inner_join(tXv[i, ], c(".vx0" = ".vx3")) %>% select(x, y)
     
-    
-    polypath(c(XY1$x, XY2$x, XY3$x), c(XY1$y, XY2$y, XY3$y))
+ 
+    polypath(c(XY1$x, XY2$x, XY3$x), c(XY1$y, XY2$y, XY3$y), ...)
     
   }
   NULL
