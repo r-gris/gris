@@ -197,22 +197,35 @@ as.gris <- function(x, ...)
 as.gris.gris <- function(x, ...)
   x
 
+#' @param x triangulation (package RTriangle)
+#' @param type mesh, triangle polygons, or triangle edges
 #' @export
+#' @rdname gris
 #' @importFrom dplyr data_frame
-as.gris.triangulation <- function(x, ...) {
-  .tri2gris(x)
+as.gris.triangulation <- function(x, type = c("mesh", "poly", "line")) {
+  type <- match.arg(type)
+  .tri2gris(x, type = type)
 }
-.tri2gris <- function(xx) {
+.tri2gris <- function(xx, type) {
   o <-
     list(v = data_frame(
       x = xx$P[,1], y = xx$P[,2], .vx0 = seq(nrow(xx$P))
     ))
-  o$b <- data_frame(.br0 = seq(nrow(xx$T)), .ob0 = 1)
+  o$b <- data_frame(.br0 = seq(nrow(xx$T)))
+  if (type == "mesh") {
+    o$b$.ob0 <- rep(1, nrow(o$b))
+    o$o <- data_frame(.ob0 = 1)
+  }
+  if (type == "poly") {
+    o$b$.ob0 <- seq(nrow(o$b))
+    o$o <- data_frame(.ob0 = seq(nrow(o$b)))
+  }
+  if (type == "line") stop("line coercion not yet implemented")
   o$bXv <-
     data_frame(.vx0 = as.vector(t(xx$T)), .br0 = rep(seq(nrow(xx$T)), each = 3))
  # o$oXb <-
  #   data_frame(.ob0 = rep(1, nrow(xx$T)), .br0 = seq(nrow(xx$T)))
-  o$o <- data_frame(.ob0 = 1)
+  
   class(o) <- c("gris", "list")
   o
 }
@@ -328,6 +341,7 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
     obj$v <- obj0$v
     obj$bXv <- obj0$bXv
   }
+  obj <- triGris(obj)
   # print(nrow(obj$v))
   # print(range(obj$bXv$.vx0))
   obj
