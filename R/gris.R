@@ -197,10 +197,10 @@ as.gris <- function(x, ...)
 as.gris.gris <- function(x, ...)
   x
 
+#' as.gris
 #' @param x triangulation (package RTriangle)
 #' @param type mesh, triangle polygons, or triangle edges
 #' @export
-#' @rdname gris
 #' @importFrom dplyr data_frame
 as.gris.triangulation <- function(x, type = c("mesh", "poly", "line")) {
   type <- match.arg(type)
