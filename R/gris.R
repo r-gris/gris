@@ -206,23 +206,37 @@ as.gris.triangulation <- function(x, type = c("mesh", "poly", "line")) {
   type <- match.arg(type)
   .tri2gris(x, type = type)
 }
+
+
 .tri2gris <- function(xx, type) {
   o <-
     list(v = data_frame(
       x = xx$P[,1], y = xx$P[,2], .vx0 = seq(nrow(xx$P))
     ))
-  o$b <- data_frame(.br0 = seq(nrow(xx$T)))
-  if (type == "mesh") {
+  
+  multi <- !type == "mesh"
+  if (type == "line") {
+    prims <- xx$E
+    primNVerts <- 2
+    #stop("gris line creation not yet implemented")
+  } else {
+    prims <- xx$T
+    primNVerts <- 3
+  }
+  o$b <- data_frame(.br0 = seq(nrow(prims)))
+  
+
+  if (multi) {
+    #prims <- xx$T
+    o$b$.ob0 <- seq(nrow(o$b))
+    o$o <- data_frame(.ob0 = seq(nrow(o$b)))
+  } else {
     o$b$.ob0 <- rep(1, nrow(o$b))
     o$o <- data_frame(.ob0 = 1)
   }
-  if (type == "poly") {
-    o$b$.ob0 <- seq(nrow(o$b))
-    o$o <- data_frame(.ob0 = seq(nrow(o$b)))
-  }
-  if (type == "line") stop("line coercion not yet implemented")
+  
   o$bXv <-
-    data_frame(.vx0 = as.vector(t(xx$T)), .br0 = rep(seq(nrow(xx$T)), each = 3))
+    data_frame(.vx0 = as.vector(t(prims)), .br0 = rep(seq(nrow(prims)), each = primNVerts))
  # o$oXb <-
  #   data_frame(.ob0 = rep(1, nrow(xx$T)), .br0 = seq(nrow(xx$T)))
   
