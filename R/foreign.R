@@ -51,6 +51,10 @@ vertsToPoint <- function(v) {
 
 
 #' Return a list of Polygon, Line or matrix
+#'
+#' @export
+#' @param x gris
+#' @param type pp-oly, l-ine, p-oints
 grisToSPbase <- function(x, type = "pp") {
   conv <- switch(type, pp = vertsToPoly, l = vertsToLine, p = vertsToPoint)
     branches <- x$v %>% 
