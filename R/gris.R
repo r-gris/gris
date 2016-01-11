@@ -372,21 +372,52 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = TRUE, ...) {
 normalizeVerts2 <- function(v, bXv, nam) {
   bXv$original <- v$original <- seq(nrow(v))
   ord <- do.call(order, v[nam])
-  v <- v[ord, ]
+ v <- v[ord, ]
   bXv <- bXv[ord, ]
   dupes <- duplicated(v[, nam])
-  v$.vx0 <- bXv$.vx0 <- cumsum(!dupes)
-  v <- v[!dupes, ]
+  #v$.vx0 <- bXv$.vx0 <- cumsum(!dupes)
+  
+  v <- v %>% distinct_(nam) ## v[!duplicated(v$.vx0), ]
+  v <- v[v$original, ]
+  v$.vx0 <- seq(nrow(v))
+  
+  bXv <- bXv %>% mutate()
+  #v$.vx0 <- bXv$.vx0 <- 
   x <- list()
   x$v <- v %>% arrange(original) %>% select(-original)
   x$bXv <- bXv %>% arrange(original) %>% select(-original)
   x
 }
 
+# 
+# library(rworldmap)
+# data(countriesLow)
+# 
+# coun <- c("Indonesia", "China", "Mongolia")
+# xn <- gris(countriesLow, normalize_verts = TRUE, triangulate = FALSE)
+# x1 <- xn[xn$o$SOVEREIGNT %in% coun, ]
+# 
+# xo <- gris(countriesLow, normalize_verts = FALSE, triangulate = FALSE)
+# x2 <- xo[xo$o$SOVEREIGNT %in% coun, ]
+# 
+# xnn <- gris(subset(countriesLow, SOVEREIGNT %in% coun), normalize_verts = TRUE, triangulate = TRUE)
+# xon <- gris(subset(countriesLow, SOVEREIGNT %in% coun), normalize_verts = FALSE, triangulate = FALSE)
+# 
+# nearto <- function(x, target, thresh = 1) abs(target - x) < thresh
+# 
+# x1$v %>% mutate(near = nearto(x, 116.7606, thresh = 0.005)) %>% filter(near)
+# x2$v %>% mutate(near = nearto(x, 116.7606, thresh = 0.005)) %>% filter(near)
 
-
-
-
+#   v <- xo$v
+#   bXv <- xo$bXv
+# #  
+#  bXv$original <- v$original <- seq(nrow(v))
+#  ord <- do.call(order, v[nam])
+#  v <- v[ord, ]
+#  bXv <- bXv[ord, ]
+#  v$new0 <- bXv$new0 <- cumsum(!dupes)
+#  cbind(v, dupes)  %>% mutate(nn = nearto(x, 116.7606, 0.01))  %>% filter(nn)
+#  
 # normalizeVerts <- function(v, bXv, nam) {
 #   #v <- x$v
 #   #bXv <- x$bXv
