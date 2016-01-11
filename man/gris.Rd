@@ -4,7 +4,6 @@
 \name{gris}
 \alias{[.gris}
 \alias{as.gris}
-\alias{as.gris.triangulation}
 \alias{gris}
 \alias{gris-package}
 \alias{plot.gris}
@@ -20,8 +19,6 @@ gris(x, ...)
 \method{plot}{gris}(x, y, ...)
 
 as.gris(x, ...)
-
-\method{as.gris}{triangulation}(x, type = c("mesh", "poly", "line"))
 }
 \arguments{
 \item{x}{Spatial* object}
@@ -39,10 +36,6 @@ as.gris(x, ...)
 \item{width}{width}
 
 \item{y}{y}
-
-\item{type}{mesh, triangle polygons, or triangle edges}
-
-\item{x}{triangulation (package RTriangle)}
 }
 \value{
 gris

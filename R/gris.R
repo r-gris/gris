@@ -293,7 +293,7 @@ topotype <- function(x) {
 
 
 #' @importFrom sp proj4string
-bld2 <- function(x, normalize_verts = TRUE, ...) {
+bld2 <- function(x, normalize_verts = TRUE, triangulate = TRUE, ...) {
   x0 <- x  ## need for test lower down, must fix
   g <- sp::geometry(x)
   proj <- proj4string(x)
@@ -331,7 +331,7 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
   b <-
     v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
   bXv <-
-    b %>% dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% dplyr::select(.br0, .vx0, .ob0)
+    b %>% dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% dplyr::select(.br0, .vx0)
 #  oXb <-
 #    o %>% dplyr::inner_join(b, by = ".ob0") %>% dplyr::select(.ob0, .br0)
   ## clean up
@@ -355,7 +355,9 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
     obj$v <- obj0$v
     obj$bXv <- obj0$bXv
   }
-  obj <- triGris(obj)
+  if (triangulate) {
+    obj <- triGris(obj)
+  }
   # print(nrow(obj$v))
   # print(range(obj$bXv$.vx0))
   obj
