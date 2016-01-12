@@ -162,6 +162,7 @@ plot.gris <- function(x, y, ...) {
       inner_join(x$b, by = c(".ob0" = ".ob0")) %>%
       inner_join(x$bXv, by = c(".br0" = ".br0")) %>%
       inner_join(x$v, by = c(".vx0" = ".vx0")) %>%
+      arrange(.br0, .br_order) %>% 
       dplyr::select(x, y, .br0)
     
     largs$col <- col[i]
@@ -332,10 +333,13 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = TRUE, ...) {
     v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
   bXv <-
     b %>% dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% dplyr::select(.br0, .vx0)
+  bXv$.br_order <- unlist(lapply(group_size(group_by(bXv, .br0)), seq))
 #  oXb <-
 #    o %>% dplyr::inner_join(b, by = ".ob0") %>% dplyr::select(.ob0, .br0)
   ## clean up
   b <- b %>% dplyr::select(.br0, .ob0)
+  
+  
   v <- v %>% dplyr::select(-.br0,-.ob0)
   
   ##v <-  v  %>% distinct(x, y)
@@ -351,7 +355,7 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = TRUE, ...) {
 
   print(nrow(obj$v))
   if (normalize_verts) {
-    obj0 <- normalizeVerts2(obj$v, obj$bXv , c("x", "y"))
+    obj0 <- normalizeVerts3(obj$v, obj$bXv , c("x", "y"))
     obj$v <- obj0$v
     obj$bXv <- obj0$bXv
   }
@@ -369,6 +373,17 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = TRUE, ...) {
   gg
 }
 #' @importFrom dplyr arrange
+
+normalizeVerts3 <- function(v, bXv, nam) {
+ # v <- g$v; bXv <- g$bXv
+  v <- v %>% inner_join(bXv %>% select(.vx0, .br0, .br_order), ".vx0")
+  
+  vv <- v %>% distinct_(nam) %>% mutate(new = .vx0) %>% select(-.vx0, -.br0, -.br_order)
+  bXv <-  vv  %>% inner_join(v, nam[1], nam[2]) %>% 
+    transmute(.vx0 = new, .br0, .br_order) %>% arrange(.br0, .br_order)
+  list(bXv = bXv, v = v %>% select(-.br0, -.br_order))
+  
+}
 normalizeVerts2 <- function(v, bXv, nam) {
   bXv$original <- v$original <- seq(nrow(v))
   ord <- do.call(order, v[nam])
