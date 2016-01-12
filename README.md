@@ -23,6 +23,17 @@ https://github.com/mdsumner/cgalgris/blob/master/README.md
 - comparative limitations of sp, difficulty in "normalizing vertices", no XYZ possible, 
 - parallel Topology model, Primitives and Branches
 
+Related Manifold resources: 
+
+http://www.georeference.org/forum/t87852.23  Inflection point index generator
+
+http://www.georeference.org/forum/t87791.23 Creating a tapered buffer
+
+http://www.georeference.org/forum/t128563.6  Removing duplicates
+
+http://www.georeference.org/forum/t99723.2 Deconstructing areas with multiple branches
+
+
 
 
 
