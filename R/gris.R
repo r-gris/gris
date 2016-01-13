@@ -328,33 +328,31 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = TRUE, ...) {
     x[[i]] <- l
   }
   v <- do.call(bind_rows, x) %>% mutate(.vx0 = row_number())
+  v$.br_order <- unlist(lapply(group_size(group_by(v, .br0)), seq))
   b <-
     v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
-  bXv <-
-    b %>% dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% dplyr::select(.br0, .vx0)
-#  oXb <-
-#    o %>% dplyr::inner_join(b, by = ".ob0") %>% dplyr::select(.ob0, .br0)
   ## clean up
   b <- b %>% dplyr::select(.br0, .ob0)
-  v <- v %>% dplyr::select(-.br0,-.ob0)
+ # v <- v %>% dplyr::select(.br0,-.ob0)
   
-  ##v <-  v  %>% distinct(x, y)
-  ##bXv <- bXv  %>% semi_join(v)
-  ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
-  o <-
+ o <-
     as_data_frame(lapply(o, function(x) {
       if (isTRUE(all.equal(attr(x, 'levels'), character(0)))) {
         attr(x, 'levels') <- NULL
       }; x
     }))
-  obj <- gris.full(v = v, bXv = bXv, b = b, o = o, georef = .georeference(proj4 = proj))
 
-  print(nrow(obj$v))
+ # print(nrow(obj$v))
   if (normalize_verts) {
-    obj0 <- normalizeVerts2(obj$v, obj$bXv , c("x", "y"))
-    obj$v <- obj0$v
-    obj$bXv <- obj0$bXv
+    obj0 <- normVerts(v, c("x", "y"))
+    v <- obj0$v 
+    bXv <- obj0$bXv
+  } else {
+    bXv <- v %>% select(.vx0, .br0, .br_order)
   }
+  v <- v %>% select(-.br0, -.ob0, -.br_order)
+  obj <- gris.full(v = v, bXv = bXv, b = b, o = o, georef = .georeference(proj4 = proj))
+  
   if (triangulate) {
     obj <- triGris(obj)
   }
@@ -362,6 +360,50 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = TRUE, ...) {
   # print(range(obj$bXv$.vx0))
   obj
 }
+
+
+
+#' Title
+#'
+#' @param v vertices *with* branch ID .br0
+#' @param nam 
+normVerts <- function(v, nam){
+  dupes <- duplicated(v[, nam])
+  these <- which(dupes)
+  vx0 <- v$.vx0
+  cnt <- 0
+  
+  mf <- function(x) {
+    EPS <- sqrt(.Machine$double.eps)
+    function(aa, i0) {
+      abs(x[[aa]] - x[[aa]][i0]) < EPS
+    }
+  }
+  f <- mf(v)
+  
+  #v$ind <- rep(FALSE, nrow(v))
+  while(any(dupes)) {
+    cnt <- cnt + 1
+    this <- these[cnt]
+    
+    ind <- which(do.call("&", lapply(nam, f, this)))
+    # indX <- abs(v[["x"]] - v[["x"]][this]) < EPS
+    # indY <- abs(v[["y"]] - v[["y"]][this]) < EPS
+    # ind <- indX & indY
+    
+    
+    # for (jj in seq_along(nam)) {
+    #   ind <- ind | abs(v[[nam[jj]]] - v[[nam[jj]]][this]) < EPS
+    # }
+    vx0[ind] <- vx0[this]
+    dupes[ind] <- FALSE
+  }
+  v$.vx0 <- vx0
+  bXv <- v %>% select(.vx0, .br0, .br_order)
+  v <- v %>% distinct(.vx0)  
+  list(v = v, bXv = bXv)
+}
+
 
 .georeference <- function(proj4 = "NA_character_", ...) {
   gg <- list(proj4 = proj4)
@@ -384,21 +426,18 @@ normalizeVerts2 <- function(v, bXv, nam) {
 }
 
 
-
-
-
 # normalizeVerts <- function(v, bXv, nam) {
 #   #v <- x$v
 #   #bXv <- x$bXv
 #   v$badge <- as.character(v$.vx0)
 #   vx0 <- v$.vx0
 #   EPS <- sqrt(.Machine$double.eps)
-#   
+#
 #   dupes <- duplicated(v[, nam], fromLast = TRUE)
 #   #index <- which(dupes)[1]
 #   #dupes <- abs(rep(v[[nam[1L]]][index], nn) - v[[nam[1L]]])  < EPS &
 #   #  abs(rep(v[[nam[2L]]][index], nn) - v[[nam[2L]]])  < EPS
-#   
+#
 #   nn <- nrow(v)
 #   while (any(dupes)) {
 #     dupeindex <- which(dupes)
@@ -409,9 +448,9 @@ normalizeVerts2 <- function(v, bXv, nam) {
 #     sb <- sum(bad)
 #     vx0[bad] <- rep(index, sb)
 #     dupes[bad] <- rep(FALSE, sb)
-#     
+#
 #   }
-#   
+#
 #   v$.vx0 <- vx0
 #   bXv$badge <- v$badge[vx0]
 #   v <- v %>% distinct(.vx0)
