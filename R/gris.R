@@ -293,7 +293,7 @@ topotype <- function(x) {
 
 
 #' @importFrom sp proj4string
-bld2 <- function(x, normalize_verts = TRUE, triangulate = TRUE, ...) {
+bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
   x0 <- x  ## need for test lower down, must fix
   g <- sp::geometry(x)
   proj <- proj4string(x)
@@ -342,6 +342,7 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = TRUE, ...) {
       }; x
     }))
 
+#return(v)
  # print(nrow(obj$v))
   if (normalize_verts) {
     obj0 <- normVerts(v, c("x", "y"))
@@ -361,48 +362,47 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = TRUE, ...) {
   obj
 }
 
-
-
-#' Title
-#'
-#' @param v vertices *with* branch ID .br0
-#' @param nam 
-normVerts <- function(v, nam){
-  dupes <- duplicated(v[, nam])
-  these <- which(dupes)
-  vx0 <- v$.vx0
-  cnt <- 0
-  
-  mf <- function(x) {
-    EPS <- sqrt(.Machine$double.eps)
-    function(aa, i0) {
-      abs(x[[aa]] - x[[aa]][i0]) < EPS
-    }
-  }
-  f <- mf(v)
-  
-  #v$ind <- rep(FALSE, nrow(v))
-  while(any(dupes)) {
-    cnt <- cnt + 1
-    this <- these[cnt]
-    
-    ind <- which(do.call("&", lapply(nam, f, this)))
-    # indX <- abs(v[["x"]] - v[["x"]][this]) < EPS
-    # indY <- abs(v[["y"]] - v[["y"]][this]) < EPS
-    # ind <- indX & indY
-    
-    
-    # for (jj in seq_along(nam)) {
-    #   ind <- ind | abs(v[[nam[jj]]] - v[[nam[jj]]][this]) < EPS
-    # }
-    vx0[ind] <- vx0[this]
-    dupes[ind] <- FALSE
-  }
-  v$.vx0 <- vx0
+normVerts <- function(v, nam) {
+  v$.vx0 <- as.integer(factor(do.call("paste", c(v[,nam], sep = "\r"))))
   bXv <- v %>% select(.vx0, .br0, .br_order)
-  v <- v %>% distinct(.vx0)  
+  v <- v %>% distinct(.vx0) # %>% select(-.br0, -.ob0, -.br_order) 
   list(v = v, bXv = bXv)
 }
+
+#' #' Title
+#' #'
+#' #' @param v vertices *with* branch ID .br0
+#' #' @param nam 
+#' normVerts <- function(v, nam){
+#'   text1 <- do.call("paste", c(v[, nam], sep = "\r"))
+#' #ord <- order(text1)
+#'   
+#'   dupes <- duplicated(text1)
+#'   these <- which(dupes)
+#'   vx0 <- v$.vx0
+#'   cnt <- 0
+#'   # while(any(dupes)) {
+#'   #  # cnt <- cnt + 1
+#'   #   this <- these[1L]
+#'   #   
+#'   #   ind <-  which(text1 == text1[this]) 
+#'   #   vx0[ind] <- vx0[this]
+#'   #   dupes[ind] <- FALSE
+#'   #   these <- which(dupes)
+#'   # }
+#'  while(any(dupes)) {
+#'     cnt <- cnt + 1
+#'     this <- these[cnt]
+#' 
+#'     ind <-  which(text1 == text1[this])
+#'     vx0[ind] <- vx0[this]
+#'     dupes[ind] <- FALSE
+#'   }
+#'   v$.vx0 <- vx0
+#'   bXv <- v %>% select(.vx0, .br0, .br_order)
+#'   v <- v %>% distinct(.vx0)  
+#'   list(v = v, bXv = bXv)
+#' }
 
 
 .georeference <- function(proj4 = "NA_character_", ...) {
