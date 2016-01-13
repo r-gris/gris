@@ -21,6 +21,7 @@ test_that("we can ingest a line object from sp", {
                                 df[c(1, 16),])
   gline <- gris(line)
   expect_that(gline, is_a("gris"))
+  expect_that(gris:::as.SpatialPolygonsDataFrame(gline), is_a("SpatialPolygonsDataFrame"))
 })
 
 test_that("we can ingest a line object from rasterToContour", {
@@ -33,10 +34,6 @@ test_that("we can ingest a line object from rasterToContour", {
   #expect_that(nrow(g$v %>% inner_join(g$bXv) %>% inner_join(g$b) %>% inner_join(g$o)), equals(703))
   ## why did this change? 2015-11-06
   expect_that(nrow(g$v %>% inner_join(g$bXv) %>% inner_join(g$b) %>% inner_join(g$o)), equals(707))
-})
-
-test_that("we can convert to Spatial", {
-  spline <- gris:::as.SpatialPolygonsDataFrame(gline)
 })
 
 test_that("build from scratch, and triangulate", {

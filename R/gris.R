@@ -333,7 +333,6 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
     v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
   ## clean up
   b <- b %>% dplyr::select(.br0, .ob0)
-  # v <- v %>% dplyr::select(.br0,-.ob0)
   
   o <-
     as_data_frame(lapply(o, function(x) {
@@ -342,8 +341,6 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
       }; x
     }))
   
-  #return(v)
-  # print(nrow(obj$v))
   if (normalize_verts) {
     obj0 <- normVerts(v, c("x", "y"))
     v <- obj0$v 
@@ -357,17 +354,24 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
   if (triangulate) {
     obj <- triGris(obj)
   }
-  # print(nrow(obj$v))
-  # print(range(obj$bXv$.vx0))
   obj
 }
 
 normVerts <- function(v, nam) {
   v$.vx0 <- as.integer(factor(do.call("paste", c(v[,nam], sep = "\r"))))
   bXv <- v %>% select(.vx0, .br0, .br_order)
-  v <- v %>% distinct(.vx0) # %>% select(-.br0, -.ob0, -.br_order) 
+  v <- v %>% distinct(.vx0) 
   list(v = v, bXv = bXv)
 }
+
+
+
+.georeference <- function(proj4 = "NA_character_", ...) {
+  gg <- list(proj4 = proj4)
+  class(gg) <- c("georef", "list")
+  gg
+}
+
 
 #' #' Title
 #' #'
@@ -404,26 +408,40 @@ normVerts <- function(v, nam) {
 #'   list(v = v, bXv = bXv)
 #' }
 
-
-.georeference <- function(proj4 = "NA_character_", ...) {
-  gg <- list(proj4 = proj4)
-  class(gg) <- c("georef", "list")
-  gg
-}
-#' @importFrom dplyr arrange
-normalizeVerts2 <- function(v, bXv, nam) {
-  bXv$original <- v$original <- seq(nrow(v))
-  ord <- do.call(order, v[nam])
-  v <- v[ord, ]
-  bXv <- bXv[ord, ]
-  dupes <- duplicated(v[, nam])
-  v$.vx0 <- bXv$.vx0 <- cumsum(!dupes)
-  v <- v[!dupes, ]
-  x <- list()
-  x$v <- v %>% arrange(original) %>% select(-original)
-  x$bXv <- bXv %>% arrange(original) %>% select(-original)
-  x
-}
+# 
+# 
+# library(dplyr)
+# ## one object, two branches
+# v1 <- data_frame(x = c(0, 1, 0.5), y = c(0, 0, 1), .br0 = 1, .ob0 = 1)
+# v2 <- data_frame(x = c(1, 1, 0.5), y = c(0, 1, 1), .br0 = 2, .ob0 = 1)
+# 
+# ## another object two branches
+# v3 <- v1 %>% mutate(x = x + 2, .br0 = 4, .ob0 = 2)
+# v4 <- v2 %>% mutate(x = x + 2, .br0 = 5, .ob0 = 2)
+# ## modify one to have concavity
+# v4 <- bind_rows(v4[1,], data_frame(x = 2.9, y = 0.6, .br0 = 5, .ob0 = 1), v4[2:3, ])
+# ## third branch in first  object
+# v0 <- data_frame(x = c(0.1,  0.4, 0.5, 0.3), y = c(0.05,  0.05,  0.12, 0.2), .br0 = 3, .ob0 = 1)
+# v <- bind_rows(v1,  v2, v0,  v3, v4) %>% mutate(.vx0 = seq(n())) 
+# v$.br_order <- unlist(lapply(group_size(group_by(v, .br0)), seq))
+# 
+# plot(v %>% select(x, y))
+# lapply(split(v, v$.br0), function(x) polypath(x$x, x$y, col = "grey"))
+#' 
+#' #' @importFrom dplyr arrange
+#' normalizeVerts2 <- function(v, bXv, nam) {
+#'   bXv$original <- v$original <- seq(nrow(v))
+#'   ord <- do.call(order, v[nam])
+#'   v <- v[ord, ]
+#'   bXv <- bXv[ord, ]
+#'   dupes <- duplicated(v[, nam])
+#'   v$.vx0 <- bXv$.vx0 <- cumsum(!dupes)
+#'   v <- v[!dupes, ]
+#'   x <- list()
+#'   x$v <- v %>% arrange(original) %>% select(-original)
+#'   x$bXv <- bXv %>% arrange(original) %>% select(-original)
+#'   x
+#' }
 
 
 # normalizeVerts <- function(v, bXv, nam) {
