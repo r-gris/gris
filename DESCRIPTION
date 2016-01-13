@@ -1,7 +1,7 @@
 Package: gris
 Type: Package
 Title: Geometric Data
-Version: 0.0.2.9001
+Version: 0.0.3.9001
 Date: 2015-01-10
 Author: Michael D. Sumner
 Maintainer: Michael D. Sumner <mdsumner@gmail.com>
@@ -17,7 +17,9 @@ Imports:
     sp
 Suggests:
     knitr,
+    maptools,
     rgl,
+    rworldmap,
     testthat
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
