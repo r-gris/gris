@@ -99,7 +99,7 @@ dfn <- function(x) {
   o <- x$o[i,j,drop = drop]
   ## TODO: what if i is repeated? we need to make unique
   ## o$.ob0 <- update dupes somehow
- # oXb <- x$oXb %>% semi_join(o, by = ".ob0")
+  # oXb <- x$oXb %>% semi_join(o, by = ".ob0")
   b <- x$b %>% semi_join(o, by = ".ob0")
   bXv <- x$bXv %>% semi_join(b, by = ".br0")
   v <- x$v %>% semi_join(bXv, by = ".vx0")
@@ -147,7 +147,7 @@ plot.gris <- function(x, y, ...) {
     largs$type <- otype
   }
   if (largs$type == "pp") largs$rule <- rule
- uoid <- unique(x$o$.ob0)
+  uoid <- unique(x$o$.ob0)
   if (is.null(largs$col))
     largs$col <- sample(grey(seq_along(uoid) / (length(uoid) + 1)))
   col <- rep(largs$col, length(uoid))
@@ -225,7 +225,7 @@ as.gris.triangulation <- function(x, type = c("mesh", "poly", "line")) {
   }
   o$b <- data_frame(.br0 = seq(nrow(prims)))
   
-
+  
   if (multi) {
     #prims <- xx$T
     o$b$.ob0 <- seq(nrow(o$b))
@@ -237,8 +237,8 @@ as.gris.triangulation <- function(x, type = c("mesh", "poly", "line")) {
   
   o$bXv <-
     data_frame(.vx0 = as.vector(t(prims)), .br0 = rep(seq(nrow(prims)), each = primNVerts))
- # o$oXb <-
- #   data_frame(.ob0 = rep(1, nrow(xx$T)), .br0 = seq(nrow(xx$T)))
+  # o$oXb <-
+  #   data_frame(.ob0 = rep(1, nrow(xx$T)), .br0 = seq(nrow(xx$T)))
   
   class(o) <- c("gris", "list")
   o
@@ -333,17 +333,17 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
     v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
   ## clean up
   b <- b %>% dplyr::select(.br0, .ob0)
- # v <- v %>% dplyr::select(.br0,-.ob0)
+  # v <- v %>% dplyr::select(.br0,-.ob0)
   
- o <-
+  o <-
     as_data_frame(lapply(o, function(x) {
       if (isTRUE(all.equal(attr(x, 'levels'), character(0)))) {
         attr(x, 'levels') <- NULL
       }; x
     }))
-
-#return(v)
- # print(nrow(obj$v))
+  
+  #return(v)
+  # print(nrow(obj$v))
   if (normalize_verts) {
     obj0 <- normVerts(v, c("x", "y"))
     v <- obj0$v 
