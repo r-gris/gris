@@ -41,6 +41,8 @@ http://www.georeference.org/forum/t94378r94829
 
 http://www.georeference.org/forum/t70597.61#91661
 
+http://staff.acecrc.org.au/~mdsumner/Eonfusion/Eonfusion_V2.0_Rasters.mp4
+
 # What we have 
  
 * basic S3 methods to build gris objects from sp and plot them. 
