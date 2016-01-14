@@ -35,6 +35,9 @@ http://www.georeference.org/forum/t99723.2 Deconstructing areas with multiple br
 
 http://www.georeference.org/forum/t122710.18
 
+http://www.georeference.org/forum/t108653.30
+
+http://www.georeference.org/forum/t94378r94829
 
 
 # What we have 
