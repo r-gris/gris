@@ -263,8 +263,39 @@ topotype <- function(x) {
 }
 
 
+exall <- function(x) {  g <- sp::geometry(x)
+                    proj <- proj4string(x)
+                    o <- as_data_frame(as.data.frame(x))
+                    o <- o %>% mutate(.ob0 = row_number())
+                    if (inherits(x0, "SpatialPoints"))
+                      mcoords <- coordinates(g)
+                    x <- vector("list", nrow(o))
+                    for (i in seq_along(x)) {
+                      if (inherits(x0, "SpatialPolygons"))
+                        rawcoords <-
+                          lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
+                            m <- head(g@polygons[[i]]@Polygons[[xi]]@coords,-1)
+                            dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
+                          })
+                      
+                      if (inherits(x0, "SpatialLines"))
+                        rawcoords <- lapply(seq_along(g@lines[[i]]@Lines), function(xi) {
+                          m <- g@lines[[i]]@Lines[[xi]]@coords
+                          dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
+                        })
+                      ## obviously this could be much faster without the loop
+                      if (inherits(x0, "SpatialPoints"))
+                        rawcoords <-
+                          list(dplyr::data_frame(x = mcoords[i,1], y = mcoords[i,2], .br0 = i))
+                      
+                      ## d$nbranches[i] <- length(rawcoords)
+                      l <- do.call(bind_rows, rawcoords)
+                    }
+}
 
-
+  
+                                      
+                    
 #' @importFrom sp proj4string
 bld2 <- function(x, normalize_verts = TRUE, ...) {
   x0 <- x  ## need for test lower down, must fix
