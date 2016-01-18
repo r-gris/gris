@@ -52,7 +52,7 @@ Srs3 = Polygons(list(Sr3, Sr4), "s3/4")
 Sp <- SpatialPolygonsDataFrame( SpatialPolygons(list(Srs1,Srs2,Srs3), 1:3), data.frame(x = 1:3, row.names = c("s1", "s2", "s3/4")))
 g <- gris(Sp, triangulate = TRUE)
 plot(g)
-gris:::plotT(g, lwd = 2)
+plot(g, triangles = TRUE, add = TRUE,  lwd = 2)
 })
 
 
