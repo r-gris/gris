@@ -56,7 +56,7 @@ What we need
 * integration of primitive model for topology - this is working, but we don't record the branch each triangle belongs too - this is possible but could become meaningless if we start manipulating the mesh of triangles
 * need to fix how gris objects are created, since g[i, ] duplicates .ob0 for repeated i values - but maybe it's nonsense to allow repeats anyway?
 * flesh out the RTriangle support and relation to rgl texture mapping
-* ensure standard triangulation is done in a local projection, no matter what the source is in
+* add option where standard triangulation is done in a local projection, no matter what the source is in
 * add ability to explode and recombine objects and their component polygons arbitrarily
 * apply system of naming for vertices - this is begun in gris.default, needs to be made only for simple case of points
 * ~convert raster to quad mesh~
