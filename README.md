@@ -33,9 +33,15 @@ http://www.georeference.org/forum/t128563.6  Removing duplicates
 
 http://www.georeference.org/forum/t99723.2 Deconstructing areas with multiple branches
 
+http://www.georeference.org/forum/t122710.18
 
+http://www.georeference.org/forum/t108653.30
 
+http://www.georeference.org/forum/t94378r94829
 
+http://www.georeference.org/forum/t70597.61#91661
+
+http://staff.acecrc.org.au/~mdsumner/Eonfusion/Eonfusion_V2.0_Rasters.mp4
 
 # What we have 
  
