@@ -126,7 +126,8 @@ print.gris <- function(x, ..., n = NULL, width = NULL) {
 
 #' @rdname gris
 #' @export
-plot.gris <- function(x, y, ...) {
+#' @importFrom dplyr do
+plot.gris <- function(x, y, triangles = FALSE, ...) {
   ## forget y
   largs <- list(x = x$v %>% dplyr::select(x, y),   ...)
   if (is.null(largs$type))
@@ -145,6 +146,10 @@ plot.gris <- function(x, y, ...) {
     
     do.call(plot, largs)
     largs$type <- otype
+  }
+  if(triangles) {
+    plotT(x ,border = "black")
+    return(invisible(x))
   }
   if (largs$type == "pp") largs$rule <- rule
   uoid <- unique(x$o$.ob0)
@@ -291,7 +296,7 @@ topotype <- function(x) {
 
 
 
-
+#' @importFrom dplyr %>%  group_size summarize
 #' @importFrom sp proj4string
 bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
   x0 <- x  ## need for test lower down, must fix
@@ -328,7 +333,7 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
     x[[i]] <- l
   }
   v <- do.call(bind_rows, x) %>% mutate(.vx0 = row_number())
-  v$.br_order <- unlist(lapply(group_size(group_by(v, .br0)), seq))
+  v$.br_order <- unlist(lapply(dplyr::group_size(group_by(v, .br0)), seq))
   b <-
     v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
   ## clean up
@@ -352,7 +357,7 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
   obj <- gris.full(v = v, bXv = bXv, b = b, o = o, georef = .georeference(proj4 = proj))
   
   if (triangulate) {
-    obj <- triGris(obj)
+    obj <- triangulate.gris(obj)
   }
   obj
 }
@@ -423,7 +428,7 @@ normVerts <- function(v, nam) {
 # ## third branch in first  object
 # v0 <- data_frame(x = c(0.1,  0.4, 0.5, 0.3), y = c(0.05,  0.05,  0.12, 0.2), .br0 = 3, .ob0 = 1)
 # v <- bind_rows(v1,  v2, v0,  v3, v4) %>% mutate(.vx0 = seq(n())) 
-# v$.br_order <- unlist(lapply(group_size(group_by(v, .br0)), seq))
+# v$.br_order <- unlist(lapply(dplyr::group_size(group_by(v, .br0)), seq))
 # 
 # plot(v %>% select(x, y))
 # lapply(split(v, v$.br0), function(x) polypath(x$x, x$y, col = "grey"))
