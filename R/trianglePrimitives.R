@@ -115,7 +115,10 @@ grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE) {
                     v$structural_index[match(x$tXv$.vx2, x$v$.vx0)], 
                     v$structural_index[match(x$tXv$.vx3, x$v$.vx0)]))
   
-  
+  o <- x$o
+  o$structural_index <- seq(nrow(o))
+  cols <- sample(grey(seq(0, 1, length = nrow(o))), replace = TRUE)
+  cols <- cols[(x$tXv %>% inner_join(x$oXt) %>% inner_join(o))$structural_index]
   
   t_3d$vb <- v[, verts]
   if (ncol(t_3d$vb) == 1L) stop("vertex attributes not found", setdiff(verts, names(v[, verts])))
@@ -123,7 +126,8 @@ grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE) {
   if (ncol(t_3d$vb) == 2) t_3d$vb <- cbind(t_3d$vb, z = 0)
   t_3d$vb <- t(cbind(t_3d$vb, w = 1))
   if (globe & length(verts) == 2L) t_3d$vb[1:3, ] <- t(llh2xyz(t(t_3d$vb[1:3, ])))
-  t_3d$material$color <- rep(sample(grey(seq(0, 1, length = ncol(t_3d$it)))), each = 3)
+  t_3d$material$color <- rep(cols, each = 3)
+    #rep(sample(grey(seq(0, 1, length = ncol(t_3d$it)))), each = 3)
   t_3d
 }
 
