@@ -20,7 +20,9 @@ pquads <- function(x, texture = NULL, texcoords = NULL, subset = NULL, ...) {
     stop("rgl needed for this function to work. Please install it.",
          call. = FALSE)
   
-  rgl::rgl.quads(x$vb[1,x$ib], x$vb[2,x$ib], x$vb[3,x$ib], texcoords = texcoords, texture = texture, ...)
+     
+  } else {
+    rgl::rgl.quads(x$vb[1,x$ib], x$vb[2,x$ib], x$vb[3,x$ib], texcoords = texcoords, texture = texture, ...)
   }
   invisible(x)
 }
@@ -155,7 +157,6 @@ brick2rgl <- function(x) {
 brick2col <- function(x) {
   ## count left to right from bottom to top
   ## (raster is left to right top to bottom)
-  ##ord  <- brick2rgl(x)
   v <- values(x)  ##[ord, ]
   
   rgb(v[,1], v[,2], v[,3], maxColorValue = 255)

@@ -29,3 +29,9 @@ NULL
 #' 
 #' @format see rgl oh3d
 "q3d"
+
+#' Template triangle 3d object
+#' 
+#' 
+#' @format see rgl tetrahedron3d
+"t3d"

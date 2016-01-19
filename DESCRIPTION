@@ -13,11 +13,11 @@ Imports:
     dplyr,
     RTriangle,
     raster,
+    rgl,
     sp
 Suggests:
     knitr,
     maptools,
-    rgl,
     rworldmap,
     testthat
 VignetteBuilder: knitr

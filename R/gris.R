@@ -207,8 +207,10 @@ as.gris.gris <- function(x, ...)
 #' @param type mesh, triangle polygons, or triangle edges
 #' @export
 #' @importFrom dplyr data_frame
-as.gris.triangulation <- function(x, type = c("mesh", "poly", "line")) {
-  type <- match.arg(type)
+as.gris.triangulation <- function(x, ...) {
+  largs <- list(...)
+  types = c("mesh", "poly", "line")
+  type <- grep(largs$type, types, value = TRUE)
   .tri2gris(x, type = type)
 }
 
