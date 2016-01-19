@@ -1,0 +1,69 @@
+---
+title: "Organization of gris tables"
+author: "Michael Sumner"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gris)
+library(maptools)
+```
+
+The in-development R package `gris` provides a way to represent spatial objects as a set of relational tables. In short a `gris` object has tables "o" (objects), "b" (for branches), "bXv" (links between branches and vertices) and "v" the vertices. 
+
+It can also have tables 'oXt' (links between objects and triangles) and 'tXv' (links between triangles and vertices) - this is not yet generalized to deal with line segments or multi-points rather than triangles so we ignore it for now. 
+
+
+
+If we ingest the `wrld_simpl` layer we get a list with several tables. 
+
+```{r}
+library(gris)  ## devtools::install_github("mdsumner/gris")
+library(maptools)
+data(wrld_simpl)
+gobject <- gris(wrld_simpl)
+```
+```{r,echo=FALSE}
+gobject$bXv$.ob0 <- NULL
+```
+
+First the objects, these are individual countries with several attributes including the `NAME`. The attribute ".ob0" is a gris-specific one - the "object ID", there are also ".br0" attributes for branches, and ".vx0" for vertices. 
+
+```{r}
+gobject$o
+```
+
+The branches, these are individual simple, one-piece "ring polygons". Every object may have one or more branches (branches may be an "island" or a "hole" but this is not currently recorded). Note how branch 1 and 2 (`.br0`) both belong to object 1 (.ob0), but branch 3 is the only piece of object 2. 
+
+```{r}
+gobject$b
+
+plot(gobject[1, ], col = "#333333")
+title(gobject$o$NAME[1])
+plot(gobject[2, ], col = "#909090")
+title(gobject$o$NAME[2])
+```
+
+(Antigua and Barbuda sadly don't get a particularly good picture here, but this is not the point of the story.)
+
+The links between branches and vertices.
+
+
+```{r}
+gobject$bXv
+```
+
+
+This table is required so that we can normalize the vertices by removing any duplicates based on X/Y pairs, a necessary preparation for the triangulation engine used belo (although not by the visualization). (Note that we could also normalize branches for objects, since multiple objects might use the same branch - but again off-topic). 
+
+Finally, the vertices themselves. Here we only have X and Y, but these table structures can hold any number of attributes and of many types. 
+
+```{r}
+gobject$v
+```
+The normalization is only relevant for particular choices of vertices, so if we had X/Y/Z in use there might be a different version of "unique". I think this is a key point for flexibility, some of these tasks must be done on-demand and some ahead of time. 
+
+Indices here are numeric, but there's actually no reason that they couldn't be character or other identifier.  Under the hood the `dplyr` package is in use for doing straightforward (and fast!) table manipulations including joins between tables and filtering on values. 
+
