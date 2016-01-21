@@ -10,7 +10,8 @@ Update to http://gis.stackexchange.com/questions/90635/what-programs-would-allow
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-gpath <- "D:\\data\\data_candidates\\geoid"
+#gpath <- "D:\\data\\data_candidates\\geoid"
+gpath <- "E:\\data\\geoid"
 fpal <- function (n, h = c(260, 0), c = 80, l = c(30, 90), power = 1.5, 
     fixup = TRUE, gamma = NULL, alpha = 1, ...) 
 {
@@ -115,22 +116,22 @@ pal <- colorRampPalette(c("blue", "lightblue", "white", "orange", "red"))(24)
 scl <- function(x) (x - min(x, na.rm = TRUE)) / diff(range(x, na.rm = TRUE))
 library(rgl)
 shade3d(geoid, col = pal[scl(geoid0$vb[3,geoid$ib]) * (length(pal) - 1) + 1])
-for (i in seq(nrow(globe$o))) {
-    xx <- mkpslg(globe[i, ])
-    xx$XYZ <- llh2xyz(cbind(xx$P, extract(r, xx$P) + 1000 ))
-    lines3d(xx$XYZ[xx$S, ])
-}
+# for (i in seq(nrow(globe$o))) {
+#     xx <- mkpslg(globe[i, ])
+#     xx$XYZ <- llh2xyz(cbind(xx$P, extract(r, xx$P) + 1000 ))
+#     lines3d(xx$XYZ[xx$S, ])
+# }
 
 subid <- currentSubscene3d()
 rglwidget(elementId="geoid")
 
-imagesphere <- bgl(raster(extent(-180, 180, -90, 90), nrow = 180, ncol = 360))
-tcoords <- xyFromCell(setExtent(tmp, extent(0, 1, 0, 1)), cellFromXY(tmp, t(imagesphere$vb[1:2, ])))
-imagesphere$vb[1:3, ] <- t(llh2xyz(t(imagesphere$vb[1:3, ])))
-
-shade3d(imagesphere, col = "white", texcoords = tcoords[imagesphere$ib, ], texture = imname)
-
-subid <- currentSubscene3d()
-rglwidget(elementId="sphere")
+# imagesphere <- bgl(raster(extent(-180, 180, -90, 90), nrow = 180, ncol = 360))
+# tcoords <- xyFromCell(setExtent(tmp, extent(0, 1, 0, 1)), cellFromXY(tmp, t(imagesphere$vb[1:2, ])))
+# imagesphere$vb[1:3, ] <- t(llh2xyz(t(imagesphere$vb[1:3, ])))
+# 
+# shade3d(imagesphere, col = "white", texcoords = tcoords[imagesphere$ib, ], texture = imname)
+# 
+# subid <- currentSubscene3d()
+# rglwidget(elementId="sphere")
 
 ```

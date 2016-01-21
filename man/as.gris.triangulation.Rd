@@ -4,7 +4,7 @@
 \alias{as.gris.triangulation}
 \title{as.gris}
 \usage{
-\method{as.gris}{triangulation}(x, type = c("mesh", "poly", "line"))
+\method{as.gris}{triangulation}(x, ...)
 }
 \arguments{
 \item{x}{triangulation (package RTriangle)}
