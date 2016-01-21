@@ -107,3 +107,7 @@ Polygons(list(Polygon(cbind(c(0, 1, 1, 0, 0), c(0, 0, 1, 1, 0))),
 # Related
 
 https://htmlpreview.github.io/?https://github.com/mstrimas/rgeos-scale/blob/master/rgeos-scale.html
+
+http://www.datasciencecentral.com/forum/topics/3-d-visualizations-for-small-and-big-data
+
+
