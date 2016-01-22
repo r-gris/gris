@@ -16,6 +16,8 @@ http://mdsumner.github.io/2015/12/28/gis3d.html
  
 * basic methods to build relational table structures to represent objects from vector GIS and convert to / from network models and visualization modesl
 * Branches and or/Primitives model to link vertices and objects
+* conversion methods for OpenGL visualization
+
 
 What we need
 
