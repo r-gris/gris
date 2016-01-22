@@ -10,7 +10,9 @@ There's not much to see except for this blog post on building rgl visualizations
 
 http://mdsumner.github.io/2015/12/28/gis3d.html
 
+I also plan to make connections with Manifold GIS: 
 
+https://github.com/mdsumner/manifoldr/blob/master/README.md
 
 # What we have 
  
