@@ -24,9 +24,9 @@ triangulate <- function(x, ...) UseMethod("triangulate")
 triangulate.gris <- function(x, ...) {
   oid <- unique(x$o$.ob0)
   
-  tXv <-  oXt <- NULL
+  tv <- tXv <-  oXt <- NULL
   maxtr <- 0
-  
+  maxvt <- 0
   for (i in seq_along(oid)) {
     id <- oid[i]
     ## we triangulate each branch individually, so we can keep track of them
@@ -39,20 +39,24 @@ triangulate.gris <- function(x, ...) {
     oX <- data_frame(.ob0 = rep(id, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
     oXt <- bind_rows(oXt, oX)
     
-    tX <- data_frame(.vx1 = g0$v$.vx0[tr$T[,1]], .vx2 = g0$v$.vx0[tr$T[,2]], .vx3 = g0$v$.vx0[tr$T[,3]],
+    ## here we are using RTriangle's vertices, as there may be new ones added 
+    ## and so need to record links to the old ones so that branches still work (or maybe we don't care?)
+    tv <- bind_rows(tv, data_frame(x = tr$P[,1], y = tr$P[,2], .vx0 = seq(nrow(tr$P)) + maxvt))
+    tX <- data_frame(.vx1 = tv$.vx0[tr$T[,1]], .vx2 = tv$.vx0[tr$T[,2]], .vx3 = tv$.vx0[tr$T[,3]],
                      .tr0 = oX$.tr0)
     
     tXv <- bind_rows(tXv, tX)
     maxtr <- maxtr + nrow(tr$T)
+    maxvt <- maxvt + nrow(tr$P)
   }
  
   ## need to remove any triangles that aren't within the branches
   centroids <- bind_rows(
-    x$v %>% 
+    tv %>% 
     inner_join(tXv, c(".vx0" = ".vx1")) %>% dplyr::select_("x", "y", ".vx0", ".tr0"), 
-    x$v %>% 
+    tv %>% 
     inner_join(tXv, c(".vx0" = ".vx2")) %>% dplyr::select_("x", "y", ".vx0", ".tr0"), 
-    x$v %>% 
+    tv %>% 
     inner_join(tXv, c(".vx0" = ".vx3")) %>% dplyr::select_("x", "y", ".tr0")) %>% 
  #  
  #  
@@ -61,7 +65,9 @@ triangulate.gris <- function(x, ...) {
  # inner_join(tXv, c(".vx0" = ".vx2")) %>% select(x, y, .vx0) %>%
  # inner_join(tXv, c(".vx0" = ".vx3")) %>% select(x, y, .tr0) 
  # 
-    group_by(.tr0)  %>% distinct(x, y) %>% summarize(x = mean(x), y = mean(y)) 
+    group_by(.tr0)  %>% 
+    distinct(x, y) %>% 
+    summarize(x = mean(x), y = mean(y)) 
 #     
   ## use over for now
   bad <- is.na(sp::over(SpatialPoints(as.matrix(centroids %>% select(x, y))), grisToSpatialPolygons(x)))
@@ -72,6 +78,7 @@ triangulate.gris <- function(x, ...) {
   }
   x$tXv <- tXv
   x$oXt <- oXt
+  x$v <- tv
   x
 }
 
