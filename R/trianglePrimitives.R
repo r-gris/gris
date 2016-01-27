@@ -57,25 +57,20 @@ triangulate.gris <- function(x, ...) {
     tv %>% 
     inner_join(tXv, c(".vx0" = ".vx2")) %>% dplyr::select_("x", "y", ".vx0", ".tr0"), 
     tv %>% 
-    inner_join(tXv, c(".vx0" = ".vx3")) %>% dplyr::select_("x", "y", ".tr0")) %>% 
- #  
- #  
- #   centroids <- x$v %>%
- # inner_join(tXv, c(".vx0" = ".vx1")) %>% select(x, y, .vx0) %>%
- # inner_join(tXv, c(".vx0" = ".vx2")) %>% select(x, y, .vx0) %>%
- # inner_join(tXv, c(".vx0" = ".vx3")) %>% select(x, y, .tr0) 
- # 
-    group_by(.tr0)  %>% 
+    inner_join(tXv, c(".vx0" = ".vx3"))) %>% 
+    dplyr::select_("x", "y", ".tr0") %>% 
+    group_by(.tr0)  %>% arrange(.tr0)
     distinct(x, y) %>% 
     summarize(x = mean(x), y = mean(y)) 
-#     
+  
+    
   ## use over for now
-  bad <- is.na(sp::over(SpatialPoints(as.matrix(centroids %>% select(x, y))), grisToSpatialPolygons(x)))
-  if (any(bad)) {
-    badtri <- centroids$.tr0[bad]
-    tXv <- tXv %>% dplyr::filter_(!".tr0" %in% badtri)
-    oXt <- oXt %>% dplyr::filter_(!".tr0" %in% badtri)
-  }
+  # bad <- is.na(sp::over(SpatialPoints(as.matrix(centroids %>% select(x, y))), grisToSpatialPolygons(x)))
+  # if (any(bad)) {
+  #   badtri <- centroids$.tr0[bad]
+  #   tXv <- tXv %>% dplyr::filter_(!".tr0" %in% badtri)
+  #   oXt <- oXt %>% dplyr::filter_(!".tr0" %in% badtri)
+  # }
   x$tXv <- tXv
   x$oXt <- oXt
   x$v <- tv
