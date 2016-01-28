@@ -11,7 +11,7 @@ A database table model for storing geometry in R.
 
 ## What we need
 
-* Primitives model is currentl just triangles, this needs generalization for line segments - and some resolution of whether "wide" (v1, v2, v3) or "long" (v0, p0) format is preferable (the former is like the structural form in OpenGL, the latter more relational)
+* Primitives model is currently only triangles, this needs generalization for line segments, for representation and plotting, and some resolution of whether "wide" (v1, v2, v3) or "long" (v0, p0) format is preferable (the former is like the structural form in OpenGL, the latter more relational)
 * invalidation, i.e. if we manipulate the mesh of triangles either the branches get removed or re-calculated
 * need to fix how gris objects are created, with a proper set of constructor methods, not that  g[i, ] duplicates .ob0 for repeated i values - but maybe it's nonsense to allow repeats anyway?
 * control over coordinate system (crs) for triangulation independent of input crs
