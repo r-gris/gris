@@ -17,7 +17,7 @@ A database table model for storing geometry in R.
 * control over coordinate system (crs) for triangulation independent of input crs
 * ability to explode and union objectss arbitrarily, and general access to lower level tools (tools in sp/rgeos should be decoupled from the Spatial classes, for example)
 * system of naming somehow for vertices in order to generalize away from x/y 
-* analogue to the vector case for raster data, to provide n-dimensional curvilinear grids with rectilinear and affine-regular grids as special cases
+* analogue to the vector case for raster data, to provide n-dimensional curvilinear grids with rectilinear and affine dimensions as special cases
 
 # Topology
 
