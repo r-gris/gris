@@ -36,7 +36,7 @@ triangulate.gris <- function(x, ...) {
     bXv0 <- g0$bXv
     ps <- mkpslg(g0)
     #ps <- pslg(P = bXv %>%  dplyr::select(x, y) %>% as.matrix(), S = gris:::prs1(seq(nrow(bXv))))
-    tr <- RTriangle::triangulate(ps)
+    tr <- RTriangle::triangulate(ps, ...)
     #bXt <- data_frame(.br0 = rep(id, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
     oX <- data_frame(.ob0 = rep(id, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
     oXt <- bind_rows(oXt, oX)
@@ -47,7 +47,7 @@ triangulate.gris <- function(x, ...) {
     tv <- bind_rows(tv, tv0)
     bXv0$.vx0 <- tv0$.vx0[seq(1, nrow(bXv0))]
     bXv <- bind_rows(bXv, bXv0)
-    tX <- data_frame(.vx1 = tv$.vx0[tr$T[,1]], .vx2 = tv$.vx0[tr$T[,2]], .vx3 = tv$.vx0[tr$T[,3]],
+    tX <- data_frame(.vx1 = tv0$.vx0[tr$T[,1]], .vx2 = tv0$.vx0[tr$T[,2]], .vx3 = tv0$.vx0[tr$T[,3]],
                      .tr0 = oX$.tr0)
     
     tXv <- bind_rows(tXv, tX)

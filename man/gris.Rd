@@ -16,7 +16,7 @@ gris(x, ...)
 
 \method{print}{gris}(x, ..., n = NULL, width = NULL)
 
-\method{plot}{gris}(x, y, ...)
+\method{plot}{gris}(x, y, triangles = FALSE, ...)
 
 as.gris(x, ...)
 }
