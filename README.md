@@ -93,3 +93,5 @@ http://portolan.leaffan.net/category/gdalogr/
 http://gis.stackexchange.com/questions/168584/representation-of-spatial-lines-with-altitude/168618#168618
 
 https://github.com/domlysz/BlenderGIS/wiki/Make-terrain-mesh-with-Delaunay-triangulation
+
+https://stat.ethz.ch/pipermail/r-sig-geo/2016-January/023953.html
