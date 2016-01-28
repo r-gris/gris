@@ -15,7 +15,7 @@ A database table model for storing geometry in R.
 * invalidation, i.e. if we manipulate the mesh of triangles either the branches get removed or re-calculated
 * need to fix how gris objects are created, with a proper set of constructor methods, not that  g[i, ] duplicates .ob0 for repeated i values - but maybe it's nonsense to allow repeats anyway?
 * control over coordinate system (crs) for triangulation independent of input crs
-* ability to explode and union objectss arbitrarily, and general access to lower level tools (tools in sp/rgeos should be decoupled from the Spatial classes, for example)
+* ability to explode and union objects arbitrarily, and general access to lower level tools (tools in sp/rgeos should be decoupled from the Spatial classes, for example)
 * system of naming somehow for vertices in order to generalize away from x/y 
 * analogue to the vector case for raster data, to provide n-dimensional curvilinear grids with rectilinear and affine dimensions as special cases
 
