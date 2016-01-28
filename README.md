@@ -48,6 +48,8 @@ https://htmlpreview.github.io/?https://github.com/mstrimas/rgeos-scale/blob/mast
 
 http://www.datasciencecentral.com/forum/topics/3-d-visualizations-for-small-and-big-data
 
+http://portolan.leaffan.net/category/gdalogr/
+
 # Story plan
 
 - ingestion of Spatial structures
@@ -57,7 +59,7 @@ http://www.datasciencecentral.com/forum/topics/3-d-visualizations-for-small-and-
 - parallel Topology model, Primitives and Branches
 
 
-http://mdsumner.github.io/2015/12/28/gis3d.html
+# Manifold 
 
 I also plan to make connections with Manifold GIS, and turn that into a dplyr back end interface: 
 
@@ -81,8 +83,14 @@ http://www.georeference.org/forum/t94378r94829
 
 http://www.georeference.org/forum/t70597.61#91661
 
+# Other stuff and motivation
+
+http://mdsumner.github.io/2015/12/28/gis3d.html
+
 http://staff.acecrc.org.au/~mdsumner/Eonfusion/Eonfusion_V2.0_Rasters.mp4
 
-Motivation
+http://portolan.leaffan.net/category/gdalogr/
 
 http://gis.stackexchange.com/questions/168584/representation-of-spatial-lines-with-altitude/168618#168618
+
+https://github.com/domlysz/BlenderGIS/wiki/Make-terrain-mesh-with-Delaunay-triangulation
