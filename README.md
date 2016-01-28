@@ -3,6 +3,14 @@
 
 A database table model for storing geometry in R. 
 
+
+The gris package provides a relational geometry/topology model for spatial data in R. This is inspired by data models used in the commercial products Manifold System GIS and Eonfusion. The main aspirations are
+
+1. remove the X/Y limitation on vertex attributes for points, lines, surfaces (and polygons)
+2. allow multiple topology types in individual layers
+3. provide a flexible basis for conversion between other formats.
+4. (a similar generalization for raster data)
+
 ## What we have 
  
 *  build relational table structures representing vector GIS and conversion to network models and visualization models
