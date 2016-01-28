@@ -24,7 +24,7 @@ triangulate <- function(x, ...) UseMethod("triangulate")
 triangulate.gris <- function(x, ...) {
   oid <- unique(x$o$.ob0)
   
-  tv <- tXv <-  oXt <- NULL
+  bXv <- tv <- tXv <-  oXt <- NULL
   maxtr <- 0
   maxvt <- 0
   for (i in seq_along(oid)) {
@@ -32,16 +32,21 @@ triangulate.gris <- function(x, ...) {
     ## we triangulate each branch individually, so we can keep track of them
     ##bXv <- g$bXv %>% filter(.br0 == id) %>% inner_join(g$v, ".vx0") %>% select(x, y, .vx0, .br0 )
     g0 <- x[x$o$.ob0 == id, ]
+    v0 <- g0$v
+    bXv0 <- g0$bXv
     ps <- mkpslg(g0)
     #ps <- pslg(P = bXv %>%  dplyr::select(x, y) %>% as.matrix(), S = gris:::prs1(seq(nrow(bXv))))
-    tr <- RTriangle::triangulate(ps, ...)
+    tr <- RTriangle::triangulate(ps)
     #bXt <- data_frame(.br0 = rep(id, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
     oX <- data_frame(.ob0 = rep(id, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
     oXt <- bind_rows(oXt, oX)
     
     ## here we are using RTriangle's vertices, as there may be new ones added 
     ## and so need to record links to the old ones so that branches still work (or maybe we don't care?)
-    tv <- bind_rows(tv, data_frame(x = tr$P[,1], y = tr$P[,2], .vx0 = seq(nrow(tr$P)) + maxvt))
+    tv0 <- data_frame(x = tr$P[,1], y = tr$P[,2], .vx0 = seq(nrow(tr$P)) + maxvt)
+    tv <- bind_rows(tv, tv0)
+    bXv0$.vx0 <- tv0$.vx0[seq(1, nrow(bXv0))]
+    bXv <- bind_rows(bXv, bXv0)
     tX <- data_frame(.vx1 = tv$.vx0[tr$T[,1]], .vx2 = tv$.vx0[tr$T[,2]], .vx3 = tv$.vx0[tr$T[,3]],
                      .tr0 = oX$.tr0)
     
@@ -50,30 +55,32 @@ triangulate.gris <- function(x, ...) {
     maxvt <- maxvt + nrow(tr$P)
   }
  
-  ## need to remove any triangles that aren't within the branches
-  centroids <- bind_rows(
-    tv %>% 
-    inner_join(tXv, c(".vx0" = ".vx1")) %>% dplyr::select_("x", "y", ".vx0", ".tr0"), 
-    tv %>% 
-    inner_join(tXv, c(".vx0" = ".vx2")) %>% dplyr::select_("x", "y", ".vx0", ".tr0"), 
-    tv %>% 
-    inner_join(tXv, c(".vx0" = ".vx3"))) %>% 
-    dplyr::select_("x", "y", ".tr0") %>% 
-    group_by(.tr0)  %>% arrange(.tr0)
-    distinct(x, y) %>% 
-    summarize(x = mean(x), y = mean(y)) 
-  
-    
-  ## use over for now
-  # bad <- is.na(sp::over(SpatialPoints(as.matrix(centroids %>% select(x, y))), grisToSpatialPolygons(x)))
-  # if (any(bad)) {
-  #   badtri <- centroids$.tr0[bad]
-  #   tXv <- tXv %>% dplyr::filter_(!".tr0" %in% badtri)
-  #   oXt <- oXt %>% dplyr::filter_(!".tr0" %in% badtri)
-  # }
+  # ## need to remove any triangles that aren't within the branches
+  # centroids <- bind_rows(
+  #   tv %>% 
+  #   inner_join(tXv, c(".vx0" = ".vx1")) %>% dplyr::select_("x", "y", ".vx0", ".tr0"), 
+  #   tv %>% 
+  #   inner_join(tXv, c(".vx0" = ".vx2")) %>% dplyr::select_("x", "y", ".vx0", ".tr0"), 
+  #   tv %>% 
+  #   inner_join(tXv, c(".vx0" = ".vx3"))) %>% 
+  #   dplyr::select_("x", "y", ".tr0") %>% 
+  #   group_by_(".tr0")  %>% arrange_(".tr0") %>% 
+  #   distinct(x, y) %>% 
+  #   summarize(x = mean(x), y = mean(y)) %>% select_("x", "y", ".tr0")
+  # 
+  # 
+  #   
+  # ## use over for now
+  #  bad <- is.na(sp::over(SpatialPoints(as.matrix(centroids %>% select(x, y))), grisToSpatialPolygons(x)))
+  #  if (any(bad)) {
+  #    badtri <- centroids$.tr0[bad]
+  #    tXv <- tXv %>% dplyr::filter_(!".tr0" %in% badtri)
+  #    oXt <- oXt %>% dplyr::filter_(!".tr0" %in% badtri)
+  #  }
   x$tXv <- tXv
   x$oXt <- oXt
   x$v <- tv
+  x$bXv <- bXv
   x
 }
 
