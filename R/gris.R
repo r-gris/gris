@@ -103,8 +103,22 @@ dfn <- function(x) {
   b <- x$b %>% semi_join(o, by = ".ob0")
   bXv <- x$bXv %>% semi_join(b, by = ".br0")
   v <- x$v %>% semi_join(bXv, by = ".vx0")
+  # if ("tXv" %in% names(x)) {
+  #   oXt <- x$oXt %>% semi_join(o, by = ".ob0")
+  #   tXv <- x$tXv %>% semi_join(oXt, by = ".tr0")
+  #   v <- bind_rows(x$v %>% semi_join(tXv, c(".vx0" = ".vx1")), 
+  #                   x$v %>% semi_join(tXv, c(".vx0" = ".vx2")), 
+  #                   x$v %>% semi_join(tXv, c(".vx0" = ".vx3"))) %>% 
+  #     distinct_(".vx0")
+  #   
+  # } else {
+  #   v <- x$v %>% semi_join(bXv, by = ".vx0")
+  # }
   #gris.full(o, oXb, b, bXv, v)
-  gris.full(o,  b, bXv, v)
+  x <- gris.full(o,  b, bXv, v)
+  #x$tXv <- tXv 
+  #x$oXt <- oXt
+  x
 }
 
 #' @rdname gris
@@ -127,7 +141,7 @@ print.gris <- function(x, ..., n = NULL, width = NULL) {
 #' @rdname gris
 #' @export
 #' @importFrom dplyr do
-plot.gris <- function(x, y, triangles = FALSE, ...) {
+plot.gris <- function(x, y,  ...) {
   ## forget y
   largs <- list(x = x$v %>% dplyr::select(x, y),   ...)
   if (is.null(largs$type))
@@ -147,10 +161,10 @@ plot.gris <- function(x, y, triangles = FALSE, ...) {
     do.call(plot, largs)
     largs$type <- otype
   }
-  if(triangles) {
-    plotT(x ,border = "black")
-    return(invisible(x))
-  }
+  # if(triangles) {
+  #   plotT(x ,border = "black")
+  #   return(invisible(x))
+  # }
   if (largs$type == "pp") largs$rule <- rule
   uoid <- unique(x$o$.ob0)
   if (is.null(largs$col))
