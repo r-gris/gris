@@ -5,10 +5,9 @@ A database table model for storing geometry in R.
 
 ## What we have 
  
-* basic methods to build relational table structures to represent objects from vector GIS and convert to / from network models and visualization modesl
+*  build relational table structures representing vector GIS and conversion to network models and visualization models
 * `Branches` and `Primitives` model to link vertices and objects, including coexistence of both models on one structure
-* straightforward conversion methods for OpenGL visualization 
-
+* simplistic raster conversion to OpenGL structures 
 
 ## What we need
 
@@ -18,7 +17,7 @@ A database table model for storing geometry in R.
 * control over coordinate system (crs) for triangulation independent of input crs
 * ability to explode and union objectss arbitrarily, and general access to lower level tools (tools in sp/rgeos should be decoupled from the Spatial classes, for example)
 * system of naming somehow for vertices in order to generalize away from x/y 
-
+* analogue to the vector case for raster data, to provide n-dimensional curvilinear grids with rectilinear and affine-regular grids as special cases
 
 # Topology
 
