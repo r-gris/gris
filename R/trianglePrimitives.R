@@ -17,6 +17,7 @@
 #' plot(g)
 #' plot(gT, triangles = TRUE, add = TRUE)
 #' }}
+#' 
 #' @export
 triangulate <- function(x, ...) UseMethod("triangulate")
 #' @export
