@@ -260,11 +260,12 @@ as.gris.triangulation <- function(x, ...) {
   }
   
   o$bXv <-
-    data_frame(.vx0 = as.vector(t(prims)), .br0 = rep(seq(nrow(prims)), each = primNVerts))
+#    data_frame(.vx0 = as.vector(t(prims)), .br0 = rep(seq(nrow(prims)), each = primNVerts))
+  data_frame(.vx0 = as.vector(t(xx$T)), .br0 = rep(seq(nrow(xx$T)), each = 3))
   # o$oXb <-
   #   data_frame(.ob0 = rep(1, nrow(xx$T)), .br0 = seq(nrow(xx$T)))
-  
-  class(o) <- c("gris", "list")
+  o$o <- data_frame(.ob0 = 1)
+ class(o) <- c("gris", "list")
   o
 }
 
@@ -303,10 +304,13 @@ gris.SpatialPointsDataFrame <- function(x, ...) {
   class(x) <- c("gris", "list")
   x
 }
-
-
-
-
+#' @rdname sp2gris
+#' @export
+gris.SpatialMultiPointsDataFrame <- function(x, ...) {
+  x <- bld2(x, ...)
+  class(x) <- c("gris", "list")
+  x
+}
 
 
 topotype <- function(x) {
@@ -318,54 +322,62 @@ topotype <- function(x) {
 #' @importFrom dplyr %>%  group_size summarize
 #' @importFrom sp proj4string
 bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
-  x0 <- x  ## need for test lower down, must fix
-  g <- sp::geometry(x)
-  proj <- proj4string(x)
-  o <- as_data_frame(as.data.frame(x))
+ proj <- proj4string(x)
+  o <- as_data_frame(x@data)  ## as.data.frame doesn't work for multi-points
   o <- o %>% mutate(.ob0 = row_number())
-  if (inherits(x0, "SpatialPoints"))
-    mcoords <- coordinates(g)
-  x <- vector("list", nrow(o))
-  for (i in seq_along(x)) {
-    if (inherits(x0, "SpatialPolygons"))
-      rawcoords <-
-        lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
-          m <- head(g@polygons[[i]]@Polygons[[xi]]@coords,-1)
-          dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
-        })
-    
-    if (inherits(x0, "SpatialLines"))
-      rawcoords <- lapply(seq_along(g@lines[[i]]@Lines), function(xi) {
-        m <- g@lines[[i]]@Lines[[xi]]@coords
-        dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
-      })
-    ## obviously this could be much faster without the loop
-    if (inherits(x0, "SpatialPoints"))
-      rawcoords <-
-        list(dplyr::data_frame(x = mcoords[i,1], y = mcoords[i,2], .br0 = i))
-    
-    ## d$nbranches[i] <- length(rawcoords)
-    l <- do.call(bind_rows, rawcoords)
-    if (i > 1)
-      l$.br0 <- l$.br0 + max(x[[i - 1]]$.br0)
-    l <- l %>% dplyr::mutate(.ob0 = i)
-    x[[i]] <- l
-  }
-  v <- do.call(bind_rows, x) %>% mutate(.vx0 = row_number())
-  v$.br_order <- unlist(lapply(dplyr::group_size(group_by(v, .br0)), seq))
-  b <-
-    v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
-  ## clean up
-  b <- b %>% dplyr::select(.br0, .ob0)
   
-  o <-
+  ## original gris method
+  ## need to find out why this had more vertices?
+  #fhttps://github.com/mdsumner/gris/issues/15
+  # v <- exall(x)
+  
+  ## leverage raster::geom
+  if (inherits(x, "SpatialPolygons")) {
+    rg <- .polysGeom(x)
+    v <- data_frame(x = rg[,"x"], y = rg[,"y"], 
+                    .br0 = rg[,"cump"], 
+                    .ob0 = rg[,"object"], 
+                    .h0 = rg[,"hole"],  
+                    .vx0 = seq(nrow(rg)))
+  }
+  if (inherits(x, "SpatialLines")) {
+    rg <- .linesGeom(x)
+    v <- data_frame(x = rg[,"x"], y = rg[,"y"], 
+                    .br0 = rg[,"cump"], 
+                    .ob0 = rg[,"object"], 
+                    .vx0 = seq(nrow(rg)))
+  }
+ if (inherits(x, "SpatialPoints") | inherits(x, "SpatialMultiPoints")) {
+    rg <- .pointsGeom(x)
+    v <- data_frame(x = rg[,"x"], y = rg[,"y"],  
+                    .br0 = rg[,"cump"], 
+                    .ob0 = rg[,"object"], 
+                    .vx0 = seq(nrow(rg)))
+ }
+  ## original vertex order within a branch
+  v$.br_order <- unlist(lapply(dplyr::group_size(group_by(v, .br0)), seq))
+  
+  
+  b <- v  %>% distinct(.br0) 
+  bXv <- b %>% dplyr::select_(".br0", ".ob0") %>% 
+    dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% 
+    dplyr::select(.br0, .vx0, .ob0)
+  
+  ## clean up
+  b <- b %>% dplyr::select(-x, -y, -.vx0, -.br_order)
+  #v <- v %>% dplyr::select(-.ob0)
+  
+  ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
+ o <-
     as_data_frame(lapply(o, function(x) {
       if (isTRUE(all.equal(attr(x, 'levels'), character(0)))) {
         attr(x, 'levels') <- NULL
       }; x
     }))
+obj <- gris.full(v = v, bXv = bXv, b = b, o = o, georef = .georeference(proj4 = proj))
   
-  if (normalize_verts) {
+ # print(nrow(obj$v))
+ if (normalize_verts) {
     obj0 <- normVerts(v, c("x", "y"))
     v <- obj0$v 
     bXv <- obj0$bXv

@@ -31,5 +31,6 @@ gT <- gris::triangulate(g)
 plot(g)
 plot(gT, triangles = TRUE, add = TRUE)
 }}
+
 }
 

@@ -1,8 +1,8 @@
 Package: gris
 Type: Package
 Title: A Flexible Geometry and Topology Model for Spatial Data in R
-Version: 0.0.4.9001
-Date: 2015-01-10
+Version: 0.0.5.9001
+Date: 2016-02-01
 Author: Michael D. Sumner
 Maintainer: Michael D. Sumner <mdsumner@gmail.com>
 Description: A flexible geometry data model for R.

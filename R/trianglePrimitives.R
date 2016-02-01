@@ -128,7 +128,7 @@ grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE) {
   o <- x$o
   o$structural_index <- seq(nrow(o))
   cols <- sample(grey(seq(0, 1, length = nrow(o))), replace = TRUE)
-  cols <- cols[(x$tXv %>% inner_join(x$oXt) %>% inner_join(o))$structural_index]
+  cols <- cols[(x$tXv %>% inner_join(x$oXt, ".tr0") %>% inner_join(o, ".ob0"))$structural_index]
   
   t_3d$vb <- v[, verts]
   if (ncol(t_3d$vb) == 1L) stop("vertex attributes not found", setdiff(verts, names(v[, verts])))
