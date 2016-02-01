@@ -1,3 +1,30 @@
+boundaryEdges <- function(x) {
+  x$E[x$EB > 0, ]
+}
+cycles <- function(aa) {
+  ii <- 1
+  set0 <- ii
+  visited <- logical(nrow(aa))
+  while(!all(visited)) {
+    i0 <- ii
+    repeat {
+      ii <- which(aa[,1] == aa[ii, 2])
+      if (ii == i0) {
+        set0 <- c(set0, NA_integer_)
+        break; 
+      }
+      set0 <- c(set0, ii)
+    }
+    visited <- seq(nrow(aa)) %in% na.omit(set0)
+    ii <- which(!visited)[1L]
+    if (!is.na(ii)) set0 <- c(set0, ii)
+  }
+  set0
+}
+
+
+
+
 #' Add triangle primitives
 #'
 #' @param x gris object
@@ -23,40 +50,74 @@ triangulate <- function(x, ...) UseMethod("triangulate")
 #' @export
 #' @importFrom dplyr filter
 triangulate.gris <- function(x, ...) {
-  oid <- unique(x$o$.ob0)
+  nobject <- nrow(x$o)
   
-  bXv <- tv <- tXv <-  oXt <- NULL
+ bXv <- tXv <-  oXt <- NULL
   maxtr <- 0
   maxvt <- 0
-  for (i in seq_along(oid)) {
-    id <- oid[i]
-    ## we triangulate each branch individually, so we can keep track of them
-    ##bXv <- g$bXv %>% filter(.br0 == id) %>% inner_join(g$v, ".vx0") %>% select(x, y, .vx0, .br0 )
-    g0 <- x[x$o$.ob0 == id, ]
-    v0 <- g0$v
-    bXv0 <- g0$bXv
+  
+  for (i in seq(nobject)) {
+    g0 <- x[i, ]
+    bXv0 <- g0$bXv %>% inner_join(g0$v, ".vx0")
     ps <- mkpslg(g0)
-    #ps <- pslg(P = bXv %>%  dplyr::select(x, y) %>% as.matrix(), S = gris:::prs1(seq(nrow(bXv))))
-    tr <- RTriangle::triangulate(ps, ...)
-    #bXt <- data_frame(.br0 = rep(id, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
-    oX <- data_frame(.ob0 = rep(id, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
+    tri <- RTriangle::triangulate(ps)  #;plot(tri)
+    oX <- data_frame(.ob0 = rep(g0$o$.ob0[1L], nrow(tri$T)), .tr0 = seq(nrow(tri$T)) + maxtr)
     oXt <- bind_rows(oXt, oX)
-    
-    ## here we are using RTriangle's vertices, as there may be new ones added 
-    ## and so need to record links to the old ones so that branches still work (or maybe we don't care?)
-    tv0 <- data_frame(x = tr$P[,1], y = tr$P[,2], .vx0 = seq(nrow(tr$P)) + maxvt)
-    tv <- bind_rows(tv, tv0)
-    bXv0$.vx0 <- tv0$.vx0[seq(1, nrow(bXv0))]
-    bXv <- bind_rows(bXv, bXv0)
-    tX <- data_frame(.vx1 = tv0$.vx0[tr$T[,1]], .vx2 = tv0$.vx0[tr$T[,2]], .vx3 = tv0$.vx0[tr$T[,3]],
-                     .tr0 = oX$.tr0)
+     
+    bXv <- bind_rows(bXv, bXv0) 
+    tX <-  data_frame(.vx1 = bXv0$.vx0[tri$T[,1]], .vx2 = bXv0$.vx0[tri$T[,2]], .vx3 = bXv0$.vx0[tri$T[,3]],
+                                                .tr0 = oX$.tr0)
     
     tXv <- bind_rows(tXv, tX)
     maxtr <- maxtr + nrow(tr$T)
-    maxvt <- maxvt + nrow(tr$P)
+    maxvt <- maxvt + nrow(tr$P) 
   }
- 
-  # ## need to remove any triangles that aren't within the branches
+  x$tXv <- tXv
+  x$oXt <- oXt
+  x$v <- bXv %>% select(-.br0, -.br_order)
+  x$bXv <- bXv %>% select(.vx0, .br0, .br_order)
+  x 
+}
+  ## find edges and pull out all segments that trace a border
+  # bounds <- cycles(boundaryEdges(tri))
+  
+  # for (i in seq_along(oid)) {
+  #   id <- oid[i]
+  #   ##bXv <- g$bXv %>% filter(.br0 == id) %>% inner_join(g$v, ".vx0") %>% select(x, y, .vx0, .br0 )
+  #   g0 <- x[x$o$.ob0 == id, ]
+  #   v0 <- g0$v
+  #   bXv0 <- g0$bXv
+  #   ps <- mkpslg(g0)
+  #   #ps <- pslg(P = bXv %>%  dplyr::select(x, y) %>% as.matrix(), S = gris:::prs1(seq(nrow(bXv))))
+  #   tr <- RTriangle::triangulate(ps)
+  #   #bXt <- data_frame(.br0 = rep(id, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
+  #   oX <- data_frame(.ob0 = rep(id, nrow(tr$T)), .tr0 = seq(nrow(tr$T)) + maxtr)
+  #   oXt <- bind_rows(oXt, oX)
+  #   
+  #   ## here we are using RTriangle's vertices, as there may be new ones added 
+  #   ## and so need to record links to the old ones so that branches still work (or maybe we don't care?)
+  #   tv0 <- data_frame(x = tr$P[,1], y = tr$P[,2], .vx0 = seq(nrow(tr$P)) + maxvt)
+  #   tv <- bind_rows(tv, tv0)
+  #   ## this is not right . . .
+  #   bXv0$.vx0 <- tv0seq(nrow(bXv0 %>% inner_join(v0, ".vx0")))## tv0$.vx0[seq(1, nrow(bXv0))]
+  #   bXv <- bind_rows(bXv, bXv0)
+  #   tX <- data_frame(.vx1 = tv0$.vx0[tr$T[,1]], .vx2 = tv0$.vx0[tr$T[,2]], .vx3 = tv0$.vx0[tr$T[,3]],
+  #                    .tr0 = oX$.tr0)
+  #   
+  #   tXv <- bind_rows(tXv, tX)
+  #   maxtr <- maxtr + nrow(tr$T)
+  #   maxvt <- maxvt + nrow(tr$P)
+  # }
+ # x <- gris(wrld_simpl)[180, ]
+ #  ps <- mkpslg(x)
+ #  holecen <- x$b  %>% dplyr::filter(.h0 > 0)  %>% 
+ #    inner_join(x$bXv, ".br0")  %>% inner_join(x$v, ".vx0")  %>% 
+ #    group_by(.br0)  %>% summarize(x = mean(x), y = mean(y)) %>% 
+ #    select(x, y)
+ #  ps$H <- as.matrix(holecen)
+ #  
+ #  tr <- RTriangle::triangulate(ps)
+ #  # ## need to remove any triangles that aren't within the branches
   # centroids <- bind_rows(
   #   tv %>% 
   #   inner_join(tXv, c(".vx0" = ".vx1")) %>% dplyr::select_("x", "y", ".vx0", ".tr0"), 
@@ -78,12 +139,12 @@ triangulate.gris <- function(x, ...) {
   #    tXv <- tXv %>% dplyr::filter_(!".tr0" %in% badtri)
   #    oXt <- oXt %>% dplyr::filter_(!".tr0" %in% badtri)
   #  }
-  x$tXv <- tXv
-  x$oXt <- oXt
-  x$v <- tv
-  x$bXv <- bXv
-  x
-}
+  # x$tXv <- tXv
+  # x$oXt <- oXt
+  # x$v <- tv
+  # x$bXv <- bXv
+  # x
+#}
 
 
 triangulate.default <- function(x, y = NULL, ...) {
@@ -125,9 +186,9 @@ grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE) {
                     v$structural_index[match(x$tXv$.vx2, x$v$.vx0)], 
                     v$structural_index[match(x$tXv$.vx3, x$v$.vx0)]))
   
-  o <- x$o
+  o <- x$o %>% dplyr::select_(".ob0")
   o$structural_index <- seq(nrow(o))
-  cols <- sample(grey(seq(0, 1, length = nrow(o))), replace = TRUE)
+  cols <- sample(grey(seq(0, 1, length = nrow(o))), replace = FALSE)
   cols <- cols[(x$tXv %>% inner_join(x$oXt, ".tr0") %>% inner_join(o, ".ob0"))$structural_index]
   
   t_3d$vb <- v[, verts]
