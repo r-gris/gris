@@ -3,47 +3,46 @@
 
 A database table model for storing geometry in R. 
 
-This is somewhat still in early stages and may change a lot. 
 
+The gris package provides a relational geometry/topology model for spatial data in R. This is inspired by data models used in the commercial products Manifold System GIS and Eonfusion. The main aspirations are
 
-=======
-There's not much to see except for this blog post on building rgl visualizations via gris: 
+1. remove the X/Y limitation on vertex attributes for points, lines, surfaces (and polygons)
+2. allow multiple topology types in individual layers
+3. provide a flexible basis for conversion between other formats.
+4. (a similar generalization for raster data)
 
-http://mdsumner.github.io/2015/12/28/gis3d.html
-
-I also plan to make connections with Manifold GIS: 
-
-https://github.com/mdsumner/manifoldr/blob/master/README.md
-
-# What we have 
+## What we have 
  
-* basic methods to build relational table structures to represent objects from vector GIS and convert to / from network models and visualization modesl
-* Branches and or/Primitives model to link vertices and objects
-* conversion methods for OpenGL visualization
+*  build relational table structures representing vector GIS and conversion to network models and visualization models
+* `Branches` and `Primitives` model to link vertices and objects, including coexistence of both models on one structure
+* simplistic raster conversion to OpenGL structures 
 
+## What we need
 
-What we need
-
-* more integration of primitive model for topology - this is working, but we don't record the branch each triangle belongs too - this is possible but could become meaningless if we start manipulating the mesh of triangles
-* need to fix how gris objects are created, since g[i, ] duplicates .ob0 for repeated i values - but maybe it's nonsense to allow repeats anyway?
+* Primitives model is currently only triangles, this needs generalization for line segments, for representation and plotting, and some resolution of whether "wide" (v1, v2, v3) or "long" (v0, p0) format is preferable (the former is like the structural form in OpenGL, the latter more relational)
+* need point-in-poly tests, independent of sp for determining holes and filtering out triangles
+* invalidation, i.e. if we manipulate the mesh of triangles either the branches get removed or re-calculated
+* need to fix how gris objects are created, with a proper set of constructor methods, not that  g[i, ] duplicates .ob0 for repeated i values - but maybe it's nonsense to allow repeats anyway?
 * control over coordinate system (crs) for triangulation independent of input crs
-* ability to explode and union objects s arbitrarily
-* system of naming for vertices in order to generalize x/y 
+* ability to explode and union objects arbitrarily, and general access to lower level tools (tools in sp/rgeos should be decoupled from the Spatial classes, for example)
+* system of naming somehow for vertices in order to generalize away from x/y 
+* analogue to the vector case for raster data, to provide n-dimensional curvilinear grids with rectilinear and affine dimensions as special cases
 
+# Topology
 
+Currently in gris, traditional GIS-like objects are decomposed into a set of relational tables. These are Vertices and Objects, and these two tables may be linked via the *Branches model* with intermediate tables `Vertex-Link-Branches` (bXv) and `Branches` (b), or via the *Primitives model* with intermediate tables  `Vertex-Link-Triangles` (tXv) and `Object-Link-Triangles` (oXt). 
 
-Topology
-
-Currently in gris, traditional GIS-like objects are decomposed into a set of relational tables. These are Vertices, Vertex-Link-Branches, Branches, and Objects. Storing these data in tables is similar to the `ggplot2` model where a GIS object is converted to a single table with *fortify*, but the problem with fortify is that it simply duplicates object and branch information by copying them onto every vertex. This is straightforward in one sense, but is wasteful and does not provide a logical structure. In *gris* the Objects table is analogous to the "attributes" table in a GIS, each row stores data on an object which may be topologically a (multi) polygon,  line, or  point. The Branches table allows for multiple vertices on a a single point, multiple connected sets of line segments (linear strings) for a single line, and multiple "rings" for a complex polygon that may contain "holes" or include multiple separate "islands". 
+Storing these data in tables is similar to the *ggplot2 model* where a GIS object is converted to a single table with `fortify`, but this duplicates object and branch information by copying them onto every vertex. This is straightforward, but wasteful and does not provide a logical structure for entitities, these are implicit and must be derived by uniqueness tests and so on. In *gris* the `Objects` table is analogous to the *attributes* table in a GIS, each row stores data on an object which may be topologically a (multi) polygon,  line, or  point. The Branches table allows for multiple vertices on a a single point, multiple connected sets of line segments (linear strings) for a single line, and multiple "rings" for a complex polygon that may contain "holes" or include multiple separate "islands". 
 
 Vertex-Link-Branches is necessary so that the vertex table can be normalized, i.e. remove duplicates in x/y (or more generally any combination of attributes). It may be worth having a Branches-Link-Objects table (and triangles-link-objects)  for further normalization of complex layers, but I ignore it for now. 
 
-. There are three steps in converting a traditional polygon into a surface: 1) decompose the polygon into a set of vertices with a two-element index specifying every boundary segment, a planar-straight-line-graph (the vertices must also be "normalized" to remove any duplicates) 2) triangulate with Triangle's** constrained Delaunay algorithm (optionally with a maximum triangle area constraint) 3) calculate centroids of every triangle and filter those that compose a "hole" in the original complex polygon. 
+There are three steps in converting a traditional polygon into a surface: 1) decompose the polygon into a set of vertices with a two-element index specifying every boundary segment, a planar-straight-line-graph (the vertices must also be "normalized" to remove any duplicates) 2) triangulate with Triangle's** constrained Delaunay algorithm (optionally with a maximum triangle area constraint) 3) calculate centroids of every triangle and filter those that compose a "hole" in the original complex polygon. 
 
+Gris converts to the Branches topology by default, but can also use Shewchuk's Triangle to decompose each object to Constrained Delaunay triangular primitives and simply insert tables to link the objects and vertices by this alternative. It would be helpful to include other triangulation methods, like the unconstrained algorithms in  *deldir*, *geometry* and *spatstat*, and the ear-clipping (random or deterministic) algorithms in *rgl*. I'll build in a connection to Manifold's constrained algorithm via the *manifoldr* package. 
 
-Gris converts to the Branches topology by default, but can also use Shewchuk's Triangle to decompose each object to Constrained Delaunay triangular primitives and simply insert tables to link the objects and vertices by this alternative. 
+Other important comparisons must be done with topojson and D3. 
 
-There is a wrinkle in keeping the relation between objects and primitives in that it may be necessary to perform the triangulation on an object-by-object basis. This complicates the approach since the Triangle vertex index is *structural* rather than relational, but it might work with the following: 
+There is a wrinkle in keeping the relation between objects and primitives in that it may be necessary to perform the triangulation on an object-by-object basis. This complicates the approach since the Triangle vertex index is *structural* rather than relational, but it's working and these notes may need revision: 
 
 1) assume that the addition of Steiner points to the triangulation is always appended to the input vertices
 2) always maintain the entire set of input vertices, but filter the PSLG segments for each triangulation (in fact this might mean doing the entire triangulation upfront, then iterating again through every object in turn)
@@ -57,6 +56,8 @@ https://htmlpreview.github.io/?https://github.com/mstrimas/rgeos-scale/blob/mast
 
 http://www.datasciencecentral.com/forum/topics/3-d-visualizations-for-small-and-big-data
 
+http://portolan.leaffan.net/category/gdalogr/
+
 # Story plan
 
 - ingestion of Spatial structures
@@ -64,6 +65,13 @@ http://www.datasciencecentral.com/forum/topics/3-d-visualizations-for-small-and-
 - need for RTriangle
 - comparative limitations of sp, difficulty in "normalizing vertices", no XYZ possible, 
 - parallel Topology model, Primitives and Branches
+
+
+# Manifold 
+
+I also plan to make connections with Manifold GIS, and turn that into a dplyr back end interface: 
+
+https://github.com/mdsumner/manifoldr
 
 Related Manifold resources: 
 
@@ -83,8 +91,16 @@ http://www.georeference.org/forum/t94378r94829
 
 http://www.georeference.org/forum/t70597.61#91661
 
+# Other stuff and motivation
+
+http://mdsumner.github.io/2015/12/28/gis3d.html
+
 http://staff.acecrc.org.au/~mdsumner/Eonfusion/Eonfusion_V2.0_Rasters.mp4
 
-Motivation
+http://portolan.leaffan.net/category/gdalogr/
 
 http://gis.stackexchange.com/questions/168584/representation-of-spatial-lines-with-altitude/168618#168618
+
+https://github.com/domlysz/BlenderGIS/wiki/Make-terrain-mesh-with-Delaunay-triangulation
+
+https://stat.ethz.ch/pipermail/r-sig-geo/2016-January/023953.html

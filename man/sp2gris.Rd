@@ -2,6 +2,7 @@
 % Please edit documentation in R/gris.R
 \name{gris.SpatialPolygonsDataFrame}
 \alias{gris.SpatialLinesDataFrame}
+\alias{gris.SpatialMultiPointsDataFrame}
 \alias{gris.SpatialPointsDataFrame}
 \alias{gris.SpatialPolygonsDataFrame}
 \title{Convert Spatial* objects to gris}
@@ -11,6 +12,8 @@
 \method{gris}{SpatialLinesDataFrame}(x, ...)
 
 \method{gris}{SpatialPointsDataFrame}(x, ...)
+
+\method{gris}{SpatialMultiPointsDataFrame}(x, ...)
 }
 \arguments{
 \item{x}{Spatial* object}
