@@ -252,7 +252,13 @@ gris.SpatialPointsDataFrame <- function(x, ...) {
   class(x) <- c("gris", "list")
   x
 }
-
+#' @rdname sp2gris
+#' @export
+gris.SpatialMultiPointsDataFrame <- function(x, ...) {
+  x <- bld2(x, ...)
+  class(x) <- c("gris", "list")
+  x
+}
 
 
 
@@ -263,34 +269,38 @@ topotype <- function(x) {
 }
 
 
-exall <- function(x) {  g <- sp::geometry(x)
+exall <- function(x) {  
+  g <- sp::geometry(x)
                     proj <- proj4string(x)
-                    o <- as_data_frame(as.data.frame(x))
-                    o <- o %>% mutate(.ob0 = row_number())
-                    if (inherits(x0, "SpatialPoints"))
+                  if (inherits(x, "SpatialPoints"))
                       mcoords <- coordinates(g)
-                    x <- vector("list", nrow(o))
+                    xx <- vector("list", nrow(x))
                     for (i in seq_along(x)) {
-                      if (inherits(x0, "SpatialPolygons"))
+                      if (inherits(x, "SpatialPolygons"))
                         rawcoords <-
                           lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
                             m <- head(g@polygons[[i]]@Polygons[[xi]]@coords,-1)
                             dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
                           })
                       
-                      if (inherits(x0, "SpatialLines"))
+                      if (inherits(x, "SpatialLines"))
                         rawcoords <- lapply(seq_along(g@lines[[i]]@Lines), function(xi) {
                           m <- g@lines[[i]]@Lines[[xi]]@coords
                           dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
                         })
                       ## obviously this could be much faster without the loop
-                      if (inherits(x0, "SpatialPoints"))
+                      if (inherits(x, "SpatialPoints"))
                         rawcoords <-
                           list(dplyr::data_frame(x = mcoords[i,1], y = mcoords[i,2], .br0 = i))
                       
                       ## d$nbranches[i] <- length(rawcoords)
                       l <- do.call(bind_rows, rawcoords)
+                      if (i > 1)
+                        l$.br0 <- l$.br0 + max(xx[[i - 1]]$.br0)
+                      l <- l %>% dplyr::mutate(.ob0 = i)
+                      xx[[i]] <- l
                     }
+                    do.call(bind_rows, xx) %>% mutate(.vx0 = row_number())
 }
 
   
@@ -298,52 +308,44 @@ exall <- function(x) {  g <- sp::geometry(x)
                     
 #' @importFrom sp proj4string
 bld2 <- function(x, normalize_verts = TRUE, ...) {
-  x0 <- x  ## need for test lower down, must fix
-  g <- sp::geometry(x)
   proj <- proj4string(x)
-  o <- as_data_frame(as.data.frame(x))
+  o <- as_data_frame(x@data)  ## as.data.frame doesn't work for multi-points
   o <- o %>% mutate(.ob0 = row_number())
-  if (inherits(x0, "SpatialPoints"))
-    mcoords <- coordinates(g)
-  x <- vector("list", nrow(o))
-  for (i in seq_along(x)) {
-    if (inherits(x0, "SpatialPolygons"))
-      rawcoords <-
-        lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
-          m <- head(g@polygons[[i]]@Polygons[[xi]]@coords,-1)
-          dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
-        })
-    
-    if (inherits(x0, "SpatialLines"))
-      rawcoords <- lapply(seq_along(g@lines[[i]]@Lines), function(xi) {
-        m <- g@lines[[i]]@Lines[[xi]]@coords
-        dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
-      })
-    ## obviously this could be much faster without the loop
-    if (inherits(x0, "SpatialPoints"))
-      rawcoords <-
-        list(dplyr::data_frame(x = mcoords[i,1], y = mcoords[i,2], .br0 = i))
-    
-    ## d$nbranches[i] <- length(rawcoords)
-    l <- do.call(bind_rows, rawcoords)
-    if (i > 1)
-      l$.br0 <- l$.br0 + max(x[[i - 1]]$.br0)
-    l <- l %>% dplyr::mutate(.ob0 = i)
-    x[[i]] <- l
+
+  ## original gris method
+  ## need to find out why this had more vertices?
+  # v <- exall(x)
+  
+  ## leverage raster::geom
+  if (inherits(x, "SpatialPolygons")) {
+    rg <- .polysGeom(x)
+    v <- data_frame(x = rg[,"x"], y = rg[,"y"], .br0 = rg[,"cump"], .ob0 = rg[,"object"], 
+                    .h0 = rg[,"hole"],  
+                    .vx0 = seq(nrow(rg)))
   }
-  v <- do.call(bind_rows, x) %>% mutate(.vx0 = row_number())
+  if (inherits(x, "SpatialLines")) {
+    rg <- .linesGeom(x)
+    v <- data_frame(x = rg[,"x"], y = rg[,"y"], 
+                    .br0 = rg[,"cump"], .ob0 = rg[,"object"], 
+                    .vx0 = seq(nrow(rg)))
+  }
+  if (inherits(x, "SpatialPoints") | inherits(x, "SpatialMultiPoints")) {
+    rg <- .pointsGeom(x)
+    v <- data_frame(x = rg[,"x"], y = rg[,"y"],  
+                    .br0 = rg[,"cump"], .ob0 = rg[,"object"], 
+                    .vx0 = seq(nrow(rg)))
+  }
+
+  
+  
   b <-
-    v  %>% distinct(.br0)  %>% transmute(.br0 = .br0, .ob0 = .ob0)
+    v  %>% distinct(.br0)  %>% dplyr::select_(".br0", ".ob0")
   bXv <-
     b %>% dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% dplyr::select(.br0, .vx0, .ob0)
-#  oXb <-
-#    o %>% dplyr::inner_join(b, by = ".ob0") %>% dplyr::select(.ob0, .br0)
-  ## clean up
+ ## clean up
   b <- b %>% dplyr::select(.br0, .ob0)
   v <- v %>% dplyr::select(-.br0,-.ob0)
   
-  ##v <-  v  %>% distinct(x, y)
-  ##bXv <- bXv  %>% semi_join(v)
   ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
   o <-
     as_data_frame(lapply(o, function(x) {
@@ -359,8 +361,6 @@ bld2 <- function(x, normalize_verts = TRUE, ...) {
     obj$v <- obj0$v
     obj$bXv <- obj0$bXv
   }
-  # print(nrow(obj$v))
-  # print(range(obj$bXv$.vx0))
   obj
 }
 
