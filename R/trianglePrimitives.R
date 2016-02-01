@@ -1,3 +1,7 @@
+
+## boundaryEdges and cycles
+## functions not used, but may be
+## to regenerate branches from new triangulations
 boundaryEdges <- function(x) {
   x$E[x$EB > 0, ]
 }
@@ -69,8 +73,8 @@ triangulate.gris <- function(x, ...) {
                                                 .tr0 = oX$.tr0)
     
     tXv <- bind_rows(tXv, tX)
-    maxtr <- maxtr + nrow(tr$T)
-    maxvt <- maxvt + nrow(tr$P) 
+    maxtr <- maxtr + nrow(tri$T)
+    maxvt <- maxvt + nrow(tri$P) 
   }
   x$tXv <- tXv
   x$oXt <- oXt

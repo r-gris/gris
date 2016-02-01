@@ -55,7 +55,7 @@ gris.full <- function(o,  b, bXv, v, georef = NULL) {
   bXv$.br_order <- as.integer(bXv$.br_order)
   bXv$.br0 <- as.integer(bXv$.br0)
   b$.br0 <- as.integer(b$.br0)
-  b$.h0 <- as.integer(b$.h0)
+  if (".h0" %in% names(b)) b$.h0 <- as.integer(b$.h0)
   b$.ob0 <- as.integer(b$.ob0)
   o$.ob0 <- as.integer(o$.ob0)
   x <- list(
@@ -336,9 +336,12 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
   
   ## original gris method
   ## need to find out why this had more vertices?
+  ## it's because raster is not removing the closing vertex on polygons, but I was
   #fhttps://github.com/mdsumner/gris/issues/15
   # v <- exall(x)
   
+  ## a <- t(raster::geom(x))
+##  setNames(split(t(a),seq(ncol(a))), colnames(a))
   ## leverage raster::geom
   if (inherits(x, "SpatialPolygons")) {
     rg <- .polysGeom(x)
@@ -347,6 +350,10 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
                     .ob0 = rg[,"object"], 
                     .h0 = rg[,"hole"],  
                     .vx0 = seq(nrow(rg)))
+    v$redundant <- c(diff(v$.br0), 0)
+    #print(v)
+    v <- v %>% dplyr::filter(redundant < 1) %>% select(-redundant)
+    #print(v)
   }
   if (inherits(x, "SpatialLines")) {
     rg <- .linesGeom(x)
@@ -362,6 +369,7 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
                     .ob0 = rg[,"object"], 
                     .vx0 = seq(nrow(rg)))
  }
+  
   ## original vertex order within a branch
   v$.br_order <- unlist(lapply(dplyr::group_size(group_by(v, .br0)), seq))
   
