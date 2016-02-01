@@ -28,6 +28,16 @@ The gris package provides a relational geometry/topology model for spatial data 
 * system of naming somehow for vertices in order to generalize away from x/y 
 * analogue to the vector case for raster data, to provide n-dimensional curvilinear grids with rectilinear and affine dimensions as special cases
 
+### Storage of triangles and branches together
+
+This is a valuable feature to have, but it's not yet obvious what is the best way to go. Complicating factors are: 
+
+* storage of end coordinate for polygons (gris doesn't do this, though the method used keeps them at first so this needs review)
+* object triangulation for minimum area or angle - this needs vertices inserted so updating IDs per object is more complicated
+* normalization of vertices by branch is possible by triangulating twice, first the holes and then the rest, or by matching original IDs as the vertices are re-collated
+* it may make sense to build the triangular mesh, with holes removed, then find cycles and rebuild the branches - but this has to happen on a per object basis, unless we somehow carry the line segment indexes through
+
+
 # Topology
 
 Currently in gris, traditional GIS-like objects are decomposed into a set of relational tables. These are Vertices and Objects, and these two tables may be linked via the *Branches model* with intermediate tables `Vertex-Link-Branches` (bXv) and `Branches` (b), or via the *Primitives model* with intermediate tables  `Vertex-Link-Triangles` (tXv) and `Object-Link-Triangles` (oXt). 
