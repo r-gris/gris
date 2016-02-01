@@ -50,6 +50,14 @@ gris <- function(x, ...) {
 }
 
 gris.full <- function(o,  b, bXv, v, georef = NULL) {
+  v$.vx0 <- as.integer(v$.vx0)
+  bXv$.vx0 <- as.integer(bXv$.vx0)
+  bXv$.br_order <- as.integer(bXv$.br_order)
+  bXv$.br0 <- as.integer(bXv$.br0)
+  b$.br0 <- as.integer(b$.br0)
+  b$.h0 <- as.integer(b$.h0)
+  b$.ob0 <- as.integer(b$.ob0)
+  o$.ob0 <- as.integer(o$.ob0)
   x <- list(
     o = o,  b = b, bXv = bXv, v = v, 
     georef = georef
@@ -361,7 +369,7 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
   b <- v  %>% distinct(.br0) 
   bXv <- b %>% dplyr::select_(".br0", ".ob0") %>% 
     dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% 
-    dplyr::select(.br0, .vx0, .ob0)
+    dplyr::select(.br0, .vx0, .ob0, .br_order)
   
   ## clean up
   b <- b %>% dplyr::select(-x, -y, -.vx0, -.br_order)
@@ -384,7 +392,9 @@ obj <- gris.full(v = v, bXv = bXv, b = b, o = o, georef = .georeference(proj4 = 
   } else {
     bXv <- v %>% select(.vx0, .br0, .br_order)
   }
+#bXv <- bXv %>% select(-.br_order)
   v <- v %>% select(-.br0, -.ob0, -.br_order)
+  v$.h0 <- NULL
   obj <- gris.full(v = v, bXv = bXv, b = b, o = o, georef = .georeference(proj4 = proj))
   
   if (triangulate) {
