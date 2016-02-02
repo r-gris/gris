@@ -35,24 +35,6 @@ pp <- c_poly(list(p, m))
 gg <- gris(pp)
 gt <- triangulate(gg)
 
-v3ToLong <- function(x) data_frame(.vx0 = as.vector(t(as.matrix(x[,1:3]))), .tr0 = rep(x$.tr0, each = 3))
-tricentroids <- function(x) {
-  x$tXv %>% dplyr::select(.vx1, .vx2, .vx3, .tr0) %>% v3ToLong %>% inner_join(gt$v) %>% 
-  group_by(.tr0) %>% summarize(x = mean(x), y = mean(y)) %>% dplyr::select(x, y, .tr0)
-}
-
-tribbox <- function(x) {
-  x$tXv %>% dplyr::select(.vx1, .vx2, .vx3, .tr0) %>% v3ToLong %>% inner_join(gt$v) %>% 
-    group_by(.tr0) %>% summarize(xmin = min(x), xmax = max(x), ymin = min(y), ymax = max(y))
-}
-
- vcrossp <- function( a, b ) {
-  result <- matrix( NA, nrow( a ), 3 )
-  result[,1] <- a[,2] * b[,3] - a[,3] * b[,2]
-  result[,2] <- a[,3] * b[,1] - a[,1] * b[,3]
-  result[,3] <- a[,1] * b[,2] - a[,2] * b[,1]
-result
-}
 
 
  pts <-  structure(c(114.005980431693, 114.53341808864, -12.6058410644529, 
@@ -104,11 +86,15 @@ pit <- function(x, xy) {
  df
 }
 
-res <- pit(gt, xy)
-
 gt$centroids <- tricentroids(gt)
 xy <- gt$centroids  %>% transmute(x, y, z = 0)  %>% as.matrix
 
-bbetween(gt, gt$centroids)
+system.time(res <- pit(gt, xy))
+rg <- gris:::grisTri2rgl(gt)
 
+pc <- t(rg$vb[1:2, ])
+tc <- t(rg$it)
 
+## abandon this, use geometry::tsearch
+library(geometry)
+system.time(res2 <- tsearch(pc[,1], pc[,2], tc, xy[,1], xy[,2], bary = FALSE))

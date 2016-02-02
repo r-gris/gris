@@ -11,6 +11,7 @@ ByteCompile: Yes
 LazyData: TRUE
 Imports:
     dplyr,
+    geometry,
     RTriangle,
     raster,
     rgl,
