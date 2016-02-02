@@ -1,12 +1,12 @@
 v3ToLong <- function(x) data_frame(.vx0 = as.vector(t(as.matrix(x[,1:3]))), .tr0 = rep(x$.tr0, each = 3))
 tricentroids <- function(x) {
-  x$tXv %>% dplyr::select(.vx1, .vx2, .vx3, .tr0) %>% v3ToLong %>% inner_join(gt$v) %>% 
-    group_by(.tr0) %>% summarize(x = mean(x), y = mean(y)) %>% dplyr::select(x, y, .tr0)
+  x$tXv %>% dplyr::select_('.vx1', '.vx2', '.vx3', '.tr0') %>% v3ToLong %>% inner_join(x$v) %>% 
+    group_by_('.tr0') %>% summarize(x = mean(x), y = mean(y)) %>% dplyr::select_('x', 'y', '.tr0')
 }
 
 tribbox <- function(x) {
-  x$tXv %>% dplyr::select(.vx1, .vx2, .vx3, .tr0) %>% v3ToLong %>% inner_join(gt$v) %>% 
-    group_by(.tr0) %>% summarize(xmin = min(x), xmax = max(x), ymin = min(y), ymax = max(y))
+  x$tXv %>% dplyr::select('.vx1', '.vx2', '.vx3', '.tr0') %>% v3ToLong %>% inner_join(x$v) %>% 
+    group_by('.tr0') %>% summarize(xmin = min(x), xmax = max(x), ymin = min(y), ymax = max(y))
 }
 
 vcrossp <- function( a, b ) {
