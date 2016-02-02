@@ -20,12 +20,12 @@ The gris package provides a relational geometry/topology model for spatial data 
 ## What we need
 
 * Primitives model is currently only triangles, this needs generalization for line segments, for representation and plotting, and some resolution of whether "wide" (v1, v2, v3) or "long" (v0, p0) format is preferable (the former is like the structural form in OpenGL, the latter more relational)
-* need point-in-poly tests, independent of sp for determining holes and filtering out triangles
+* need point-in-poly tests independent of sp for determining holes and filtering out triangles (currently using geometry::tsearch)
 * invalidation, i.e. if we manipulate the mesh of triangles either the branches get removed or re-calculated
 * need to fix how gris objects are created, with a proper set of constructor methods, not that  g[i, ] duplicates .ob0 for repeated i values - but maybe it's nonsense to allow repeats anyway?
-* control over coordinate system (crs) for triangulation independent of input crs
+* control over coordinate system (crs) metadata (PROJ.4 is not enough, need to be flexible to change, proj4 rather than rgdal etc.)
 * ability to explode and union objects arbitrarily, and general access to lower level tools (tools in sp/rgeos should be decoupled from the Spatial classes, for example)
-* system of naming somehow for vertices in order to generalize away from x/y 
+* system of naming for vertices in order to generalize away from x/y 
 * analogue to the vector case for raster data, to provide n-dimensional curvilinear grids with rectilinear and affine dimensions as special cases
 
 ### Storage of triangles and branches together
@@ -36,6 +36,12 @@ This is a valuable feature to have, but it's not yet obvious what is the best wa
 * object triangulation for minimum area or angle - this needs vertices inserted so updating IDs per object is more complicated
 * normalization of vertices by branch is possible by triangulating twice, first the holes and then the rest, or by matching original IDs as the vertices are re-collated
 * it may make sense to build the triangular mesh, with holes removed, then find cycles and rebuild the branches - but this has to happen on a per object basis, unless we somehow carry the line segment indexes through
+
+
+### Links to source data
+
+Triangle meshes can be combined and re-triangulated fairly simply, this means we can work with the union of two or more layers (the Identity intersection etc.). We need a system of recording these links to inputs. 
+
 
 
 # Topology
