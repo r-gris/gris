@@ -27,40 +27,40 @@ cycles <- function(aa) {
 }
 
 
-#' 
-#' #' Point in triangle test. 
-#' #'
-#' #' @param x gris object with triangulation
-#' #' @param pt matrix of xy coordinates
-#' #'
-#' #' @return 
-#' #' for PointInTriangle, the index of triangle for each point, in .vx0 form
-#' #' for PointBary, the table of barycentric coordinates and .vx0 index
-#' #' @importFrom geometry tsearch 
-#' #' @export 
-#' pointInTriangle <- function(x, pt) {
-#'   a <- gris2Structural(x)
-#'   triangle <- a$triangle %>% select(.tr1, .tr2, .tr3) %>% as.matrix
-#'   a$triangle$.tr0[geometry::tsearch(a$vert$x, a$vert$y, triangle, xy[,1], xy[,2], bary = FALSE)]
-#' }
-#' 
-#' 
-#' #' @rdname pointInTriangle
-#' pointBary <- function(x, pt) {
-#'   a <- gris2Structural(x)
-#'   triangle <- a$triangle %>% select(.tr1, .tr2, .tr3) %>% as.matrix
-#'   r <- geometry::tsearch(a$vert$x, a$vert$y, triangle, xy[,1], xy[,2], bary = TRUE)
-#'   data_frame(.vx0 = a$vert$.vx0[r$idx], .bary1 = r$p[,1], .bary2 = r$p[,2], .bary3 = r$p[,3])
-#' }
-#' 
-#' gris2Structural <- function(x) {
-#'   rg <- grisTri2rgl(x)
-#'   v <- t(rg$vb[1:2, ])
-#'   t <- t(rg$it)
-#'   .vx0 <- x$v$.vx0
-#'   list(vert = data_frame(x = v[,1], y = v[,2], .vx0 = .vx0), 
-#'        triangle = data_frame(.tr0 = x$tXv$.tr0, .tr1 = t[,1], .tr2 = t[,2], .tr3 = t[,3]))
-#' }
+
+#' Point in triangle test.
+#'
+#' @param x gris object with triangulation
+#' @param pt matrix of xy coordinates
+#'
+#' @return
+#' for PointInTriangle, the index of triangle for each point, in .vx0 form
+#' for PointBary, the table of barycentric coordinates and .vx0 index
+#' @importFrom geometry tsearch
+#' @export
+pointInTriangle <- function(x, pt) {
+  a <- gris:::gris2Structural(x)
+  triangle <- a$triangle %>% select(.tr1, .tr2, .tr3) %>% as.matrix
+  a$triangle$.tr0[geometry::tsearch(a$vert$x, a$vert$y, triangle, pt[,1], pt[,2], bary = FALSE)]
+}
+
+
+#' @rdname pointInTriangle
+pointBary <- function(x, pt) {
+  a <- gris2Structural(x)
+  triangle <- a$triangle %>% select(.tr1, .tr2, .tr3) %>% as.matrix
+  r <- geometry::tsearch(a$vert$x, a$vert$y, triangle, pt[,1], pt[,2], bary = TRUE)
+  data_frame(.vx0 = a$vert$.vx0[r$idx], .bary1 = r$p[,1], .bary2 = r$p[,2], .bary3 = r$p[,3])
+}
+
+gris2Structural <- function(x) {
+  rg <- grisTri2rgl(x)
+  v <- t(rg$vb[1:2, ])
+  t <- t(rg$it)
+  .vx0 <- x$v$.vx0
+  list(vert = data_frame(x = v[,1], y = v[,2], .vx0 = .vx0),
+       triangle = data_frame(.tr0 = x$tXv$.tr0, .tr1 = t[,1], .tr2 = t[,2], .tr3 = t[,3]))
+}
 
 #' Add triangle primitives
 #'
