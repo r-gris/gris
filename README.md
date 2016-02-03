@@ -11,6 +11,33 @@ The gris package provides a relational geometry/topology model for spatial data 
 3. provide a flexible basis for conversion between other formats.
 4. (a similar generalization for raster data)
 
+## Installation
+
+```R
+devtools::install_github("mdsumner/gris")
+```
+
+## Quick example
+
+Convert `SpatialPolygonsDataFrame` to `gris`. 
+
+```R
+library(gris)
+library(maptools);data(wrld_simpl)
+gg <- gris(wrld_simpl)
+plot(gg)
+str(gg)
+```
+Convert `gris` to rgl and plot in XYZ. 
+
+```R
+gt <- triangulate(gg)
+library(dplyr)
+str(gt[c("tXv", "oXt")])
+library(rgl)
+plot3d(gt)
+```
+
 ## What we have 
  
 *  build relational table structures representing vector GIS and conversion to network models and visualization models
