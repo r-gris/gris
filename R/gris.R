@@ -272,7 +272,7 @@ as.gris.triangulation <- function(x, ...) {
   data_frame(.vx0 = as.vector(t(xx$T)), .br0 = rep(seq(nrow(xx$T)), each = 3))
   # o$oXb <-
   #   data_frame(.ob0 = rep(1, nrow(xx$T)), .br0 = seq(nrow(xx$T)))
-  o$o <- data_frame(.ob0 = 1)
+ 
  class(o) <- c("gris", "list")
   o
 }
