@@ -214,7 +214,7 @@ plotT <- function(x, ...) {
 }
 
 
-grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE, objid) {
+grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE, objid = NULL) {
   if (!length(verts) %in% c(2, 3)) stop("named vertices must be 2- or 3- in length")
   v <- x$v
   v$structural_index <- seq(nrow(v))
@@ -226,15 +226,15 @@ grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE, objid) {
   o <- x$o %>% dplyr::select_(".ob0")
   o$structural_index <- seq(nrow(o))
   if (is.null(objid)) {
-    cols <- sample(grey(seq(0, 1, length = x$tXv)), replace = FALSE)
+    cols <- sample(grey(seq(0, 1, length = nrow(x$tXv))), replace = FALSE)
     
   } else {
     cols <- sample(grey(seq(0.1, .9, length = length(unique(objid)))))[factor(objid)]
   }
   
   cols <- cols[(x$tXv %>% inner_join(x$oXt, ".tr0") %>% inner_join(o, ".ob0"))$structural_index]
+ t_3d$vb <- v[, verts]
   
-  t_3d$vb <- v[, verts]
   if (ncol(t_3d$vb) == 1L) stop("vertex attributes not found", setdiff(verts, names(v[, verts])))
   if (ncol(t_3d$vb) < 1L) stop("vertex attributes not found", verts)
   if (ncol(t_3d$vb) == 2) t_3d$vb <- cbind(t_3d$vb, z = 0)
