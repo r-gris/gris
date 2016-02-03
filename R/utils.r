@@ -16,3 +16,44 @@ vcrossp <- function( a, b ) {
   result[,3] <- a[,1] * b[,2] - a[,2] * b[,1]
   result
 }
+
+
+# 
+# 
+# SameSide <- function(p1,p2, a,b) {
+#   cp2 = vcrossp(b-a, p2-a)
+#   a <- mkm(a, nrow(p1))
+#   b <- mkm(b, nrow(p1))
+#   p2 <- mkm(p2, nrow(p1))
+#   cp1 = vcrossp(b-a, p1- a)
+#   c(cp1 %*% t(cp2)) >=0 
+# }
+# 
+# PointInTriangle <- function(p, triangle) {
+#   a <- triangle[1L,,drop=FALSE]
+#   b <- triangle[2L,,drop=FALSE]
+#   c <- triangle[3L,,drop=FALSE]
+#   SameSide(p,a, b,c) & SameSide(p,b, a,c) & SameSide(p,c, a,b)
+# }
+# 
+# #PointInTriangle(pts[,,drop=FALSE], triangle)
+# 
+# 
+# pit <- function(x, xy) {
+#   tbbox <- tribbox(x)
+#   df <- NULL
+#   ##ibox <- vector("list", nrow(tbbox))
+#   for (i in seq(nrow(tbbox))) {
+#     testme <- which(xy[,1] >= tbbox$xmin[i] & xy[,1] <= tbbox$xmax[i] &
+#                       xy[,2] >= tbbox$ymin[i] & xy[,2] <= tbbox$ymax[i])
+#     if (length(testme) > 0) {
+#       triangle <- x$tXv[i, ] %>% v3ToLong %>% inner_join(x$v, ".vx0") %>% distinct(.vx0) %>% 
+#         dplyr::transmute(x, y, z = 0) %>% as.matrix
+#       test <-  PointInTriangle(xy[testme,,drop = FALSE ], triangle)
+#       #  print(i)
+#       if (any(test)) df <- bind_rows(df, data_frame(.xy0 = testme[test], .tr0 = rep(x$oXt$.tr0[i], sum(test))))
+#     }
+#   }
+#   df
+# }
+

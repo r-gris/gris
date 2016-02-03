@@ -142,6 +142,11 @@ llh2xyz <- function(lonlatheight, rad = 6378137.0, exag = 1) {
   cbind(x, y, z)
 }
 
+rasterPal2RGB <- function(x) {
+  setValues(brick(x, x, x), t(col2rgb(x@legend@colortable))[values(x) + 1, ])
+}
+
+
 #' @importFrom raster ncell ncol nrow
 brick2rgl <- function(x) {
   as.vector(matrix(seq(ncell(x)), ncol(x))[, nrow(x):1])

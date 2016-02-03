@@ -214,7 +214,7 @@ plotT <- function(x, ...) {
 }
 
 
-grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE) {
+grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE, objid = NULL) {
   if (!length(verts) %in% c(2, 3)) stop("named vertices must be 2- or 3- in length")
   v <- x$v
   v$structural_index <- seq(nrow(v))
@@ -225,15 +225,21 @@ grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE) {
   
   o <- x$o %>% dplyr::select_(".ob0")
   o$structural_index <- seq(nrow(o))
-  cols <- sample(grey(seq(0, 1, length = nrow(o))), replace = FALSE)
-  cols <- cols[(x$tXv %>% inner_join(x$oXt, ".tr0") %>% inner_join(o, ".ob0"))$structural_index]
+  if (is.null(objid)) {
+    cols <- sample(grey(seq(0, 1, length = nrow(x$tXv))), replace = FALSE)
+    
+  } else {
+    cols <- sample(grey(seq(0.1, .9, length = length(unique(objid)))))[factor(objid)]
+  }
   
-  t_3d$vb <- v[, verts]
+  cols <- cols[(x$tXv %>% inner_join(x$oXt, ".tr0") %>% inner_join(o, ".ob0"))$structural_index]
+ t_3d$vb <- v[, verts]
+  
   if (ncol(t_3d$vb) == 1L) stop("vertex attributes not found", setdiff(verts, names(v[, verts])))
   if (ncol(t_3d$vb) < 1L) stop("vertex attributes not found", verts)
   if (ncol(t_3d$vb) == 2) t_3d$vb <- cbind(t_3d$vb, z = 0)
   t_3d$vb <- t(cbind(t_3d$vb, w = 1))
-  if (globe & length(verts) == 2L) t_3d$vb[1:3, ] <- t(llh2xyz(t(t_3d$vb[1:3, ])))
+  if (globe) t_3d$vb[1:3, ] <- t(llh2xyz(t(t_3d$vb[1:3, ])))
   t_3d$material$color <- rep(cols, each = 3)
     #rep(sample(grey(seq(0, 1, length = ncol(t_3d$it)))), each = 3)
   t_3d
@@ -244,10 +250,11 @@ grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE) {
 #' importFrom("rgl",  plot3d)
 #' }
 #' @export
-plot3d.gris <- function(x, globe = TRUE, ...) {
+plot3d.gris <- function(x, globe = TRUE, verts = c("x", "y"), objname = NULL, ...) {
   if (requireNamespace("rgl", quietly = TRUE)) {
-    gx <- grisTri2rgl(x, globe = globe)
-    rgl::plot3d(gx)
+    gx <- grisTri2rgl(x, globe = globe, verts = verts, 
+                      objid = if(is.null(objname)) NULL else x$o[[objname]])
+    rgl::plot3d(gx, ...)
   } else {
     ## persp somesuch
     stop("cannot plot in 3d")
