@@ -50,11 +50,11 @@ vertsToPoint <- function(v) {
 }
 
 
-#' Return a list of Polygon, Line or matrix
+#' Return a list of Polygon, Line or matrix from gris
 #'
 #' @export
-#' @param x gris
-#' @param type pp-oly, l-ine, p-oints
+#' @param x gris object
+#' @param type return type:  pp-oly, l-ine, p-oints
 grisToSPbase <- function(x, type = "pp") {
   conv <- switch(type, pp = vertsToPoly, l = vertsToLine, p = vertsToPoint)
     branches <- x$v %>% 
@@ -73,8 +73,9 @@ as.SpatialPolygonsDataFrame <- function(x, ...) {
 }
 
 
-#' Convert to Spatial
+#' Convert gris to Spatial
 #'
+#' Spatial classes are defined in the \link{sp} package. 
 #' @param x gris object
 #' @param ... ignored
 #'

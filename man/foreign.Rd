@@ -3,7 +3,7 @@
 \name{as.SpatialPolygonsDataFrame}
 \alias{as.SpatialPolygonsDataFrame}
 \alias{as.SpatialPolygonsDataFrame.gris}
-\title{Convert to Spatial}
+\title{Convert gris to Spatial}
 \usage{
 as.SpatialPolygonsDataFrame(x, ...)
 
@@ -15,6 +15,6 @@ as.SpatialPolygonsDataFrame(x, ...)
 \item{...}{ignored}
 }
 \description{
-Convert to Spatial
+Spatial classes are defined in the \link{sp} package.
 }
 
