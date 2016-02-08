@@ -19,7 +19,7 @@ devtools::install_github("mdsumner/gris")
 
 ## Quick example
 
-Convert `SpatialPolygonsDataFrame` to `gris`. 
+Convert `SpatialPolygonsDataFrame` to `gris`.  This shows the basics, that we can store Spatial-structures without loss of information. 
 
 ```R
 library(gris)
@@ -33,7 +33,7 @@ Convert `gris` to rgl and plot in XYZ.
 ```R
 gt <- triangulate(gg)
 library(dplyr)
-str(gt[c("tXv", "oXt")])
+str(gt)
 library(rgl)
 plot3d(gt)
 ```
