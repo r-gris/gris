@@ -138,10 +138,10 @@ trigris <- function(x) {
   tXv <- bind_rows(tXv0, do.call(bind_rows, tXvList))
   oXt <- tXv %>% 
     dplyr::select(.br0, .tr0) %>% 
-    dplyr::inner_join(b %>% dplyr::select(.br0, .ob0)) %>% 
-    dplyr::select(.br0, .ob0) %>% transmute(.tr0 = .br0, .ob0) %>% 
+    dplyr::inner_join(b %>% dplyr::select(.br0, .ob0), ".br0") %>% 
+    dplyr::select(.tr0, .ob0) %>% #transmute(.tr0 = .tr0, .ob0) %>% 
     dplyr::distinct(.tr0)
-  x$tXv <- tXv %>% dplyr::select(-.br0)
+  x$tXv <- tXv #%>% dplyr::select(-.br0)
   x$oXt <- oXt
   x
 }
