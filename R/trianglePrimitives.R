@@ -111,8 +111,11 @@ triangulate.gris <- function(x, ...) {
   }
   x$tXv <- tXv
   x$oXt <- oXt
-  x$v <- bXv %>% select(-.br0, -.br_order)
+  v <- bXv %>% select(-.br0, -.br_order)
   x$bXv <- bXv %>% select(.vx0, .br0, .br_order)
+ # rr <- gris:::normVerts(bXv)
+#  x$v <- rr$v %>% select(x, y, .vx0)
+#  x$bXv <- rr$bXv
   x 
 }
   ## find edges and pull out all segments that trace a border
