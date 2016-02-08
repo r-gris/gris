@@ -115,10 +115,10 @@ dfn <- function(x) {
   if (do_tri) {
     oXt <- x$oXt %>% semi_join(o, by = ".ob0")
     tXv <- x$tXv %>% semi_join(oXt, by = ".tr0")
-    v <- bind_rows(x$v %>% semi_join(tXv, c(".vx0" = ".vx1")),
-                    x$v %>% semi_join(tXv, c(".vx0" = ".vx2")),
-                    x$v %>% semi_join(tXv, c(".vx0" = ".vx3"))) %>%
-      distinct_(".vx0")
+  #  v <- bind_rows(x$v %>% semi_join(tXv, c(".vx0" = ".vx1")),
+  #                  x$v %>% semi_join(tXv, c(".vx0" = ".vx2")),
+  #                  x$v %>% semi_join(tXv, c(".vx0" = ".vx3"))) %>%
+  #    distinct_(".vx0")
 
   } else {
     v <- x$v %>% semi_join(bXv, by = ".vx0")

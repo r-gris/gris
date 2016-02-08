@@ -87,34 +87,102 @@ triangulate <- function(x, ...) UseMethod("triangulate")
 #' @export
 #' @importFrom dplyr filter
 triangulate.gris <- function(x, ...) {
-  nobject <- nrow(x$o)
-  
- bXv <- tXv <-  oXt <- NULL
-  maxtr <- 0
-  maxvt <- 0
-  
-  for (i in seq(nobject)) {
-    g0 <- x[i, ]
-    bXv0 <- g0$bXv %>% inner_join(g0$v, ".vx0")
-    ps <- mkpslg(g0)
-    tri <- RTriangle::triangulate(ps)  #;plot(tri)
-    oX <- data_frame(.ob0 = rep(g0$o$.ob0[1L], nrow(tri$T)), .tr0 = seq(nrow(tri$T)) + maxtr)
-    oXt <- bind_rows(oXt, oX)
-     
-    bXv <- bind_rows(bXv, bXv0) 
-    tX <-  data_frame(.vx1 = bXv0$.vx0[tri$T[,1]], .vx2 = bXv0$.vx0[tri$T[,2]], .vx3 = bXv0$.vx0[tri$T[,3]],
-                                                .tr0 = oX$.tr0)
-    
-    tXv <- bind_rows(tXv, tX)
-    maxtr <- maxtr + nrow(tri$T)
-    maxvt <- maxvt + nrow(tri$P) 
-  }
-  x$tXv <- tXv
-  x$oXt <- oXt
-  x$v <- bXv %>% select(-.br0, -.br_order)
-  x$bXv <- bXv %>% select(.vx0, .br0, .br_order)
-  x 
+  trigris(x)
 }
+
+
+
+
+
+
+branchAsObject <- function(x, branchID) {
+  b <- x$b %>% filter(.br0 == branchID)
+  o <- x$o %>% filter(.ob0 == b$.ob0)
+  bXv <- x$bXv %>% filter(.br0 == branchID)
+  v <- x$v %>% filter(.vx0 %in% bXv$.vx0)
+  x$v <- v
+  x$bXv <- bXv
+  x$o <- o
+  x$b <- b
+  x
+}
+
+
+
+trigris <- function(x) {
+  b <- x$b
+  bXv <- x$bXv
+  ## we don't touch the objects
+  ## first scan for tri-branches and flag as done
+  vertsPerBranch <- b %>% inner_join(bXv) %>% group_by(.br0) %>% summarize(nverts = n()) 
+  branchTri <- vertsPerBranch %>% filter(nverts == 3)
+  branch <- vertsPerBranch %>% filter(nverts > 3)
+  ## then visit remaining branches and triangulate 
+  tXvList <- vector('list', nrow(vertsPerBranch)-1)
+  tXvNoTrineed <- bXv %>% filter(.br0 %in% branchTri$.br0) %>% transmute(.vx0, .tr0 = .br0, .br0 = .br0)
+  structTri <- matrix(tXvNoTrineed$.vx0 , ncol = 3, byrow = TRUE)
+  tXv0 <- data_frame(.vx1 = structTri[,1], .vx2 = structTri[,2], .vx3 = structTri[,3], .tr0 = seq(nrow(structTri)), 
+                     .br0 = tXvNoTrineed$.br0[seq(1, nrow(tXvNoTrineed), by = 3)])
+  maxtr <- nrow(tXvNoTrineed)
+  for (ibranch in seq(1, nrow(branch))) {
+    obj0 <- branchAsObject(x, branch$.br0[ibranch])
+    tri <- RTriangle::triangulate(mkpslg(obj0))
+    tXvList[[ibranch]] <- data_frame(.vx1 = obj0$v$.vx0[tri$T[,1]], 
+                       .vx2 = obj0$v$.vx0[tri$T[,2]], 
+                       .vx3 = obj0$v$.vx0[tri$T[,3]], 
+                       .tr0 = maxtr + seq(nrow(tri$T)), 
+                       .br0 = rep(branch$.br0[ibranch], nrow(tri$T))
+                       )
+    maxtr <- maxtr + nrow(tri$T)
+  }
+  tXv <- bind_rows(tXv0, do.call(bind_rows, tXvList))
+  oXt <- tXv %>% 
+    dplyr::select(.br0, .tr0) %>% 
+    dplyr::inner_join(b %>% dplyr::select(.br0, .ob0), ".br0") %>% 
+    dplyr::select(.tr0, .ob0) %>% #transmute(.tr0 = .tr0, .ob0) %>% 
+    dplyr::distinct(.tr0)
+  x$tXv <- tXv #%>% dplyr::select(-.br0)
+  x$oXt <- oXt
+  x
+}
+
+
+# 
+# 
+# triangulate.gris_defunct <- function(x, ...) {
+#   nobject <- nrow(x$o)
+#   
+#   bXv <- tXv <-  oXt <- NULL
+#   maxtr <- 0
+#   maxvt <- 0
+#   
+#   for (i in seq(nobject)) {
+#     g0 <- x[i, ]
+#     bXv0 <- g0$bXv %>% inner_join(g0$v, ".vx0")
+#     ps <- mkpslg(g0)
+#     tri <- RTriangle::triangulate(ps)  #;plot(tri)
+#     oX <- data_frame(.ob0 = rep(g0$o$.ob0[1L], nrow(tri$T)), .tr0 = seq(nrow(tri$T)) + maxtr)
+#     oXt <- bind_rows(oXt, oX)
+#     
+#     bXv <- bind_rows(bXv, bXv0) 
+#     tX <-  data_frame(.vx1 = bXv0$.vx0[tri$T[,1]], .vx2 = bXv0$.vx0[tri$T[,2]], .vx3 = bXv0$.vx0[tri$T[,3]],
+#                       .tr0 = oX$.tr0)
+#     
+#     tXv <- bind_rows(tXv, tX)
+#     maxtr <- maxtr + nrow(tri$T)
+#     maxvt <- maxvt + nrow(tri$P) 
+#   }
+#   x$tXv <- tXv
+#   x$oXt <- oXt
+#   v <- bXv %>% select(-.br0, -.br_order)
+#   x$bXv <- bXv %>% select(.vx0, .br0, .br_order)
+#   # rr <- gris:::normVerts(bXv)
+#   #  x$v <- rr$v %>% select(x, y, .vx0)
+#   #  x$bXv <- rr$bXv
+#   x 
+# }
+
+
   ## find edges and pull out all segments that trace a border
   # bounds <- cycles(boundaryEdges(tri))
   

@@ -2,16 +2,16 @@
 % Please edit documentation in R/foreign.R
 \name{grisToSPbase}
 \alias{grisToSPbase}
-\title{Return a list of Polygon, Line or matrix}
+\title{Return a list of Polygon, Line or matrix from gris}
 \usage{
 grisToSPbase(x, type = "pp")
 }
 \arguments{
-\item{x}{gris}
+\item{x}{gris object}
 
-\item{type}{pp-oly, l-ine, p-oints}
+\item{type}{return type:  pp-oly, l-ine, p-oints}
 }
 \description{
-Return a list of Polygon, Line or matrix
+Return a list of Polygon, Line or matrix from gris
 }
 
