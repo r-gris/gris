@@ -151,7 +151,7 @@ print.gris <- function(x, ..., n = NULL, width = NULL) {
 
 #' @rdname gris
 #' @export
-#' @importFrom dplyr do
+#' @importFrom dplyr do ungroup
 plot.gris <- function(x, y,  triangles  = FALSE, ...) {
   xrange <- range(x$v$x, na.rm = TRUE)
   yrange <- range(x$v$y, na.rm = TRUE)
@@ -190,19 +190,22 @@ plot.gris <- function(x, y,  triangles  = FALSE, ...) {
   ## do all of this upfront, add the NAs in loop
   a1 <- 
     x$o %>% select(.ob0) %>% inner_join(x$b, '.ob0') %>% inner_join(x$bXv, '.br0') %>% inner_join(x$v, ".vx0") %>% 
-    group_by(.br0) %>% select(x, y, .br0, .ob0) 
+    #group_by(.br0) %>% 
+    select(x, y, .br0, .ob0)  
+  #%>% ungroup ## ungroup to speed up filter
   
   for (i in seq(length(uoid))) {
     largs$col <- col[i]
-  
-    ## why is filter so much slower?
-    #a <- a1 %>% filter(.ob0 == uoid[i])
-    a <- a1[a1$.ob0 == uoid[i], ]
-    if (length(unique(a$.br0)) > 1) {
+    a <- a1 %>% filter(.ob0 == uoid[i])
+  if (length(unique(a$.br0)) > 1) {
       a <- do.call(bind_rows, lapply(split(a[, c("x", "y")], a$.br0), function(x) bind_rows(x, dNA)))
-      a <- a[-nrow(a), ]
-    } 
-    largs$x <- a[,  c("x", "y")]
+     # a <- a[-nrow(a), ]
+      largs$x <- head(a$x, -1)
+      largs$y <- head(a$y, -1)
+    } else {
+    largs$x <- a$x
+    largs$y <- a$y
+    }
     if (type == "pp") {
       do.call(polypath, largs)
     }
