@@ -153,61 +153,59 @@ print.gris <- function(x, ..., n = NULL, width = NULL) {
 #' @export
 #' @importFrom dplyr do
 plot.gris <- function(x, y,  triangles  = FALSE, ...) {
-  ## forget y
-  largs <- list(x = x$v %>% dplyr::select(x, y),   ...)
-  if (is.null(largs$type))
-    largs$type <- "pp"  ## default to polygon for now
+  xrange <- range(x$v$x, na.rm = TRUE)
+  yrange <- range(x$v$y, na.rm = TRUE)
+  largs <- list(...)
+  if (is.null(largs$type)) {
+    type <- "pp"  ## default to polygon for now
+  }
   rule <- "evenodd"
   if (!is.null(largs$rule)) {
     if (largs$type != "pp") warning("argument 'rule' ignored for non polygon plot")
     rule <- largs$rule 
-    largs$rule <- NULL
   }
-  
+  # type, rule
   if (is.null(largs$add) || !largs$add) {
-    otype <- largs$type
+    #otype <- largs$type
     largs$type <- "n"
     largs$add <- NULL
-    
+    largs$x <- xrange
+    largs$y <- yrange
     do.call(plot, largs)
-    largs$type <- otype
+    largs$type <- NULL
   }
   if(triangles) {
     plotT(x ,border = "black")
     return(invisible(x))
   }
-  if (largs$type == "pp") largs$rule <- rule
+  if (type == "pp") largs$rule <- rule
   uoid <- unique(x$o$.ob0)
   if (is.null(largs$col))
     largs$col <- sample(grey(seq_along(uoid) / (length(uoid) + 1)))
   col <- rep(largs$col, length(uoid))
-  type <- largs$type
-  largs$type <- NULL
+  dNA <- data_frame(x = NA_real_, y = NA_real_)
+
+  largs$y <- NULL
+  
+  ## do all of this upfront, add the NAs in loop
+  a1 <- 
+    x$o %>% select(.ob0) %>% inner_join(x$b, '.ob0') %>% inner_join(x$bXv, '.br0') %>% inner_join(x$v, ".vx0") %>% 
+    group_by(.br0) %>% select(x, y, .br0, .ob0) 
   
   for (i in seq(length(uoid))) {
-    ##asub <- x %>% dplyr::filter(.ob0 == uoid[i]) %>% dplyr::select(x, y, .ob0, .br0)
-    asub <-
-      x$o %>% dplyr::select(.ob0) %>%  filter(.ob0 == uoid[i]) %>%
-      ##inner_join(x$oXb, by = c(".ob0" = ".ob0")) %>%
-      inner_join(x$b, by = c(".ob0" = ".ob0")) %>%
-      inner_join(x$bXv, by = c(".br0" = ".br0")) %>%
-      inner_join(x$v, by = c(".vx0" = ".vx0")) %>%
-      dplyr::select(x, y, .br0)
-    
     largs$col <- col[i]
-    
-    
-    x1 <-
-      asub %>% mutate(mg = .br0) %>%  group_by(mg) %>% do(rbind(., NA_real_))
-    largs$x <- x1[-nrow(x1),]
-    largs$y <- NULL
-    
-    
+  
+    ## why is filter so much slower?
+    #a <- a1 %>% filter(.ob0 == uoid[i])
+    a <- a1[a1$.ob0 == uoid[i], ]
+    if (length(unique(a$.br0)) > 1) {
+      a <- do.call(bind_rows, lapply(split(a[, c("x", "y")], a$.br0), function(x) bind_rows(x, dNA)))
+      a <- a[-nrow(a), ]
+    } 
+    largs$x <- a[,  c("x", "y")]
     if (type == "pp") {
-      
       do.call(polypath, largs)
     }
-    
     if (type == "l") {
       do.call(lines, largs)
     }
