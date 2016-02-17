@@ -333,9 +333,10 @@ gris.SpatialMultiPointsDataFrame <- function(x, ...) {
 #'
 #' @examples
 #' \dontrun{
-#'  data(wrld_simpl)
-#'  g <- gris(wrld_simpl)
-#'  sp <- as.SpatialPolygonsDataFrame(g)
+#'  data(cmu)
+#'  
+#'  
+#'  sp <- as.SpatialPolygonsDataFrame(cmu)
 #'  gm <- raster::geom(sp)
 #' }
 grisFromFortify <- function(x) {

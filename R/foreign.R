@@ -38,7 +38,7 @@ map2gris <- function(x, orphans = TRUE) {
 }
 
 
-
+#' @importFrom sp Polygon Line Polygons SpatialPolygons Lines SpatialLines
 vertsToPoly <- function(v) {
   Polygon(as.matrix(v[, dfn(1:2)]))
 }
