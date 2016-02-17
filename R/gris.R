@@ -433,10 +433,10 @@ obj <- gris.full(v = v, bXv = bXv, b = b, o = o, georef = .georeference(proj4 = 
     v <- obj0$v 
     bXv <- obj0$bXv
   } else {
-    bXv <- v %>% select(.vx0, .br0, .br_order)
+    bXv <- v %>% dplyr::select(.vx0, .br0, .br_order)
   }
 #bXv <- bXv %>% select(-.br_order)
-  v <- v %>% select(-.br0, -.ob0, -.br_order)
+  v <- v %>% dplyr::select(-.br0, -.ob0, -.br_order)
   v$.h0 <- NULL
   obj <- gris.full(v = v, bXv = bXv, b = b, o = o, georef = .georeference(proj4 = proj))
   
