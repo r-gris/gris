@@ -1,0 +1,16 @@
+---
+title: "Branches vs. Primitives"
+author: "Michael D. Sumner"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Branches vs. Primitives}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Branches are the traditional rings and line-strings of coordinates for polygon parts and lines. A multi-point may have one or more vertices etc. 
+
+Primitives are the simplicial complex - polygons are decomposed to triangles, lines to line segments, and points to vertices. 
+
+
