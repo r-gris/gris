@@ -1,15 +1,15 @@
 
 
-#' pquads
-#'
-#' pquads
-#'
-#' @param x mesh object
-#' @param texture path to PNG file
-#' @param subset option index (on ib)
-#' @param ... arguments pass to \code{\link[rgl]{rgl.quads}}
-#' @param texcoords texture coordinates
-#' @export
+# pquads
+#
+# pquads
+#
+# @param x mesh object
+# @param texture path to PNG file
+# @param subset option index (on ib)
+# @param ... arguments pass to \code{\link[rgl]{rgl.quads}}
+# @param texcoords texture coordinates
+# @export
 pquads <- function(x, texture = NULL, texcoords = NULL, subset = NULL, ...) {
   
  
@@ -56,6 +56,7 @@ p4 <- function(xp, nc) {
   (xp + c(0, 0, rep(nc, 2)))[c(1, 2, 4, 3)]
 }
 
+
 bgl <- function(x, ...) {
   .Defunct("quadmeshFromRaster")
 }
@@ -95,13 +96,13 @@ quadmeshFromRaster <- function(x, z = NULL, na.rm = FALSE) {
   ob
 }
 
-#' Raster to gris object
-#'
-#' @param x RasterLayer
-#' @param z RasterLayer to extract Z value from
-#'
-#' @return gris
-#' @export
+# Raster to gris object
+#
+# @param x RasterLayer
+# @param z RasterLayer to extract Z value from
+#
+# @return gris
+# @export
 ras2gris <- function(x, z = NULL) {
   ##exy <- as.matrix(expand.grid(edges(x), edges(x, "y")))
   exy <- edgesXY(x)

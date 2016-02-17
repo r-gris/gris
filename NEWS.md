@@ -4,4 +4,6 @@
 
 * renamed `bgl` to `quadmeshFromRaster`
 
+* added detail to help topic `gris-package`
 
+* cleaned up some functions not needed to be exported 

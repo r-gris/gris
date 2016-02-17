@@ -16,37 +16,51 @@ The gris package provides a relational table model for \bold{spatial vector} dat
  \item allow multiple topological types in individual layers (i.e. Manifold or MapInfo drawings)
  \item provide a flexible basis for conversion between other formats and domain-specific structures
 }
-
-plotting
-subsetting
-building
-transforming
-Conversion
 }
 
 \section{I. Creation}{
  
-coercion from Spatial, triangulation
-}
-
-\section{II. Manipulation}{
- 
-subset
-}
-
-\section{III. Conversion to other types}{
- 
 \tabular{ll}{
- \code{\link{as.SpatialPolygonsDataFrame.gris}} coerce to SpatialPolygonsDataFrame, SpatialLinesDataFrame, SpatialPointsDataFrame, SpatialMultiPointsDataFrame
- \code{\link{triangulate.gris}} 
+ \code{\link{gris.SpatialPolygonsDataFrame}} coerce to SpatialPolygonsDataFrame, SpatialLinesDataFrame, SpatialPointsDataFrame, SpatialMultiPointsDataFrame
+ \code{\link{gris.full}} create from raw object, branch, and vertex tables
+ \code{\link{grisFromRasterGeom}} create from \code{\link[raster]{geom}} format
+ \code{\link{grisFromFortify}} create from \code{\link[ggplot2]{fortify}} format
+ \code{\link{as.gris.triangulation}} create from \code{\link[rgl]{triangulation}}
  }
 }
 
-\section{IV. Miscellaneous}{
+\section{II. Plotting}{
+ 
+\tabular{ll}{
+ \code{\link{plot.gris}} plot a gris object as polypath, lines, points, or triangles
+ \code{\link{plot3d.gris}} plot a gris object in 3d
+}
+}
+
+\section{III. Manipulation}{
+ 
+\tabular{ll}{
+ \code{\link{[.gris}} extract a subset of a gris object
+ \code{\link{pointInTriangle}} identify which triangle points fall in
+}
+}
+
+\section{IV. Conversion to other types}{
+ 
+\tabular{ll}{
+ \code{\link{as.SpatialPolygonsDataFrame.gris}} coerce to SpatialPolygonsDataFrame, SpatialLinesDataFrame, SpatialPointsDataFrame, SpatialMultiPointsDataFrame
+ \code{\link{triangulate.gris}} add triangle primitives to a gris object
+ }
+}
+
+\section{V. Miscellaneous}{
  
 \tabular{ll}{
  \code{\link{quadmeshFromRaster}} create a \code{\link[rgl]{quads3d}} object from a \code{\link[raster]{RasterLayer}}
- \code{\link{brick2col}} 
+ \code{\link{brick2col}} create hex value colours from an RGB \code{\link[raster]{RasterBrick}}
+ \code{\link{llh2xyz}} calculate XYZ coordinates of the Earth from longitude,latitude,height
+ \code{\link{mkpslg}} create a Planar Straight Line Graph \code{\link[RTriangle]{pslg}} object from gris
+ 
  }
 }
 

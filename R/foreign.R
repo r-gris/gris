@@ -50,11 +50,7 @@ vertsToPoint <- function(v) {
 }
 
 
-#' Return a list of Polygon, Line or matrix from gris
-#'
-#' @export
-#' @param x gris object
-#' @param type return type:  pp-oly, l-ine, p-oints
+
 grisToSPbase <- function(x, type = "pp") {
   conv <- switch(type, pp = vertsToPoly, l = vertsToLine, p = vertsToPoint)
     branches <- x$v %>% 
@@ -64,9 +60,13 @@ grisToSPbase <- function(x, type = "pp") {
 }
 
 grisToSpatialPolygons <- function(x) 
-  SpatialPolygons(lapply(x$o$.ob0, function(obid) Polygons(grisToSPbase(x[x$o$.ob0 == obid, ]), obid)))
+  SpatialPolygons(lapply(x$o$.ob0, function(obid) Polygons(grisToSPbase(x[which(x$o$.ob0 == obid), ]), obid)))
 
-
+#' Return a list of Polygon, Line or matrix from gris
+#'
+#' @export
+#' @param x gris object
+#' @param type return type:  pp-oly, l-ine, p-oints
 #' @rdname foreign
 as.SpatialPolygonsDataFrame <- function(x, ...) {
   UseMethod("as.SpatialPolygonsDataFrame")

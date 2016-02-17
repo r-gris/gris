@@ -321,6 +321,34 @@ gris.SpatialMultiPointsDataFrame <- function(x, ...) {
   x
 }
 
+#' Not yet implemented
+#'
+#' @param x 
+#'
+#' @return gris
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  data(cmu)
+#'  sp <- as.SpatialPolygonsDataFrame(cmu)
+#'  raster::geom
+#' }
+grisFromFortify <- function(x) {
+  stop("not yet implemented")
+}
+
+#' Not yet implemented
+#'
+#' @param x 
+#'
+#' @return gris
+#' @export
+#'
+#' @examples
+grisFromRasterGeom <- function(x) {
+  stop("not yet implemented")
+}
 
 topotype <- function(x) {
   "basic gris"

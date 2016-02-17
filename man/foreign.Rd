@@ -3,7 +3,7 @@
 \name{as.SpatialPolygonsDataFrame}
 \alias{as.SpatialPolygonsDataFrame}
 \alias{as.SpatialPolygonsDataFrame.gris}
-\title{Convert gris to Spatial}
+\title{Return a list of Polygon, Line or matrix from gris}
 \usage{
 as.SpatialPolygonsDataFrame(x, ...)
 
@@ -13,8 +13,14 @@ as.SpatialPolygonsDataFrame(x, ...)
 \item{x}{gris object}
 
 \item{...}{ignored}
+
+\item{type}{return type:  pp-oly, l-ine, p-oints}
+
+\item{x}{gris object}
 }
 \description{
+Return a list of Polygon, Line or matrix from gris
+
 Spatial classes are defined in the \link{sp} package.
 }
 
