@@ -67,6 +67,7 @@ gris2Structural <- function(x) {
 #' @param x gris object
 #' @param ... passed on to \code{\link[Rtriangle]{triangulate}}, as arguments after the input \code{\link[Rtriangle]{pslg}}
 #' @details only \code{a} has been extensively explored, this is the minimum triangle area in the units of the coordinates
+#' @aliases triangulate.gris
 #' @examples
 #' \donttest{
 #' \dontrun{

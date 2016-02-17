@@ -56,9 +56,13 @@ p4 <- function(xp, nc) {
   (xp + c(0, 0, rep(nc, 2)))[c(1, 2, 4, 3)]
 }
 
+bgl <- function(x, ...) {
+  .Defunct("quadmeshFromRaster")
+}
 
-#' Title
+#' Create a quad-type mesh for use in rgl
 #'
+#' Convert a \code{\link[raster]{RasterLayer}} to a \code{\link[rgl]{mesh3d}} quad-mesh. 
 #' @param x raster object for mesh structure
 #' @param z raster object for height values
 #' @param na.rm remove quads where missing values?
@@ -66,7 +70,7 @@ p4 <- function(xp, nc) {
 #' @export
 #' @importFrom raster extract extent
 #' @importFrom dplyr  bind_rows  distinct  group_by  inner_join  mutate row_number transmute
-bgl <- function(x, z = NULL, na.rm = FALSE) {
+quadmeshFromRaster <- function(x, z = NULL, na.rm = FALSE) {
   x <- x[[1]]  ## just the oneth raster for now
   ##exy <- as.matrix(expand.grid(edges(x), edges(x, "y")))
   exy <- edgesXY(x)

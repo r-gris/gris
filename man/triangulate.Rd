@@ -2,6 +2,7 @@
 % Please edit documentation in R/trianglePrimitives.R
 \name{triangulate}
 \alias{triangulate}
+\alias{triangulate.gris}
 \title{Add triangle primitives}
 \usage{
 triangulate(x, ...)

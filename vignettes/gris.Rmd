@@ -251,7 +251,7 @@ texture <- writeGDAL(as(paletteim2RGB(gm), "SpatialGridDataFrame"), "texture.png
 library(gris)
 library(rgl)
 library(rglwidget)
-b <- bgl(r, r)
+b <- quadmeshFromRaster(r, r)
 tcoords <- xyFromCell(setExtent(gm, c(0, 1, 0, 1)), cellFromXY(gm, project(t(b$vb[1:2, ]), projection(gm))))
 aspect3d(1, 1, 0.0001)
 #shade3d(b, col = "white", texture= texture, texcoords = tcoords[b$ib, ])
