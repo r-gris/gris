@@ -39,7 +39,7 @@ cycles <- function(aa) {
 #' @importFrom geometry tsearch
 #' @export
 pointInTriangle <- function(x, pt) {
-  a <- gris:::gris2Structural(x)
+  a <- gris2Structural(x)
   triangle <- a$triangle %>% select(.tr1, .tr2, .tr3) %>% as.matrix
   a$triangle$.tr0[geometry::tsearch(a$vert$x, a$vert$y, triangle, pt[,1], pt[,2], bary = FALSE)]
 }
