@@ -122,9 +122,13 @@ trigris <- function(x) {
   tXvList <- vector('list', nrow(vertsPerBranch)-1)
   tXvNoTrineed <- bXv %>% filter(.br0 %in% branchTri$.br0) %>% transmute(.vx0, .tr0 = .br0, .br0 = .br0)
   structTri <- matrix(tXvNoTrineed$.vx0 , ncol = 3, byrow = TRUE)
+  maxtr <- nrow(tXvNoTrineed)
+  tXv0 <- NULL  ## might be 0-rows in this case
+  if (maxtr > 0) {
   tXv0 <- data_frame(.vx1 = structTri[,1], .vx2 = structTri[,2], .vx3 = structTri[,3], .tr0 = seq(nrow(structTri)), 
                      .br0 = tXvNoTrineed$.br0[seq(1, nrow(tXvNoTrineed), by = 3)])
-  maxtr <- nrow(tXvNoTrineed)
+                     }
+  
   for (ibranch in seq(1, nrow(branch))) {
     obj0 <- branchAsObject(x, branch$.br0[ibranch])
     tri <- RTriangle::triangulate(mkpslg(obj0))
