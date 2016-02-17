@@ -17,9 +17,10 @@ Not yet implemented
 }
 \examples{
 \dontrun{
- data(cmu)
- sp <- as.SpatialPolygonsDataFrame(cmu)
- raster::geom
+ data(wrld_simpl)
+ g <- gris(wrld_simpl)
+ sp <- as.SpatialPolygonsDataFrame(g)
+ gm <- raster::geom(sp)
 }
 }
 

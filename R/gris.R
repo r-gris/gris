@@ -282,14 +282,15 @@ as.gris.triangulation <- function(x, ...) {
 
 
 
-#' Convert Spatial* objects to gris
+#' Convert Spatial*DataFrame objects to gris
 #'
-#' Description of it
-#'
-#' Details are
+#' All availables Spatial*DataFrame types are supported, and are interpreted via the Branch model. 
+#' The gris function can ingest \code{\link[sp]{SpatialPolygonsDataFrame}}, \code{\link[sp]{SpatialLinesDataFrame}}, \code{\link[sp]{SpatialPointsDataFrame}}, and \code{\link[sp]{SpatialMultiPointsDataFrame}} objects. 
+#' 
+#' See  \code{vignette("branch-vs-primitives")}
 #' @param x Spatial* object
 #' @param ... not used
-#'
+#' @aliases gris.Spatial
 #' @return gris
 #' @export
 #' @rdname sp2gris
