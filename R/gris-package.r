@@ -42,7 +42,6 @@
 #'  \code{\link{quadmeshFromRaster}} create a \code{\link[rgl]{quads3d}} object from a \code{\link[raster]{RasterLayer}}
 #'  \code{\link{brick2col}} create hex value colours from an RGB \code{\link[raster]{RasterBrick}}
 #'  \code{\link{llh2xyz}} calculate XYZ coordinates of the Earth from longitude,latitude,height
-#'  \code{\link{mkpslg}} create a Planar Straight Line Graph \code{\link[RTriangle]{pslg}} object from gris
 #'  
 #'  }
 #'  

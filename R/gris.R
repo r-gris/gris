@@ -4,21 +4,23 @@ prs1 <- function(x) {
   rbind(x1, c(x1[length(x1)], x1[1]))
 }
 
-#' Make a Planar Straight Line Graph from gris.
-#'
-#'
-#' @param x  gris object
-#'
-#' @return pslg object from RTriangle
-#' @export
-#' @importFrom RTriangle pslg
-#' @importFrom dplyr select %>% 
+
+# Planar Straight Line Graph
+# 
+# Constrained triangulation requires a Planar Straight Line Graph consisting of
+# unique vertices and an index matrix for each line segment edge. This function builds that object.
+# @param x  gris object
+# 
+# @return \code{\link[RTriangle]{pslg}} Planar Straight Line Graph object
+# @importFrom RTriangle pslg
+# @importFrom dplyr select %>%
+# @export
 mkpslg <- function(x) {
   ## remap vertices
   x$v$remap <- seq(nrow(x$v))
   x$bXv$.vx0 <- x$v$remap[match(x$bXv$.vx0, x$v$.vx0)]
-  pslg(
-    P = x$v %>% dplyr::select(x, y) %>% as.matrix(),
+  pslg.default(
+    x = x$v %>% dplyr::select(x, y) %>% as.matrix(),
     S = do.call(rbind, lapply(split(
       x$bXv$.vx0, x$bXv$.br0
     ), prs1))
@@ -330,9 +332,10 @@ gris.SpatialMultiPointsDataFrame <- function(x, ...) {
 #'
 #' @examples
 #' \dontrun{
-#'  data(cmu)
-#'  sp <- as.SpatialPolygonsDataFrame(cmu)
-#'  raster::geom
+#'  data(wrld_simpl)
+#'  g <- gris(wrld_simpl)
+#'  sp <- as.SpatialPolygonsDataFrame(g)
+#'  gm <- raster::geom(sp)
 #' }
 grisFromFortify <- function(x) {
   stop("not yet implemented")
@@ -356,7 +359,7 @@ topotype <- function(x) {
 
 
 
-#' @importFrom dplyr %>%  group_size summarize
+#' @importFrom dplyr %>%  group_size summarize group_by_
 #' @importFrom sp proj4string
 bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
  proj <- proj4string(x)
@@ -381,7 +384,8 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
                     .vx0 = seq(nrow(rg)))
     v$redundant <- c(diff(v$.br0), 0)
     #print(v)
-    v <- v %>% dplyr::filter(redundant < 1) %>% select(-redundant)
+    v <- v %>% dplyr::filter_("redundant < 1") 
+    v$redundant <- NULL
     #print(v)
   }
   if (inherits(x, "SpatialLines")) {
@@ -400,7 +404,7 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
  }
   
   ## original vertex order within a branch
-  v$.br_order <- unlist(lapply(dplyr::group_size(group_by(v, .br0)), seq))
+  v$.br_order <- unlist(lapply(dplyr::group_size(group_by_(v, ".br0")), seq))
   
   
   b <- v  %>% distinct(.br0) 
