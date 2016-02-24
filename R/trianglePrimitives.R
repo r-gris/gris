@@ -318,6 +318,8 @@ grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE, objid = NULL) {
   t_3d
 }
 
+#' @export
+plot3d <- function(x, ...) UseMethod("plot3d")
 #' @rawNamespace 
 #' if ( requireNamespace("rgl", quietly = TRUE)) {
 #' importFrom("rgl",  plot3d)
