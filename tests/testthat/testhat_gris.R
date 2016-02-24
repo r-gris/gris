@@ -9,8 +9,8 @@ test_that("we can ingest complex objects from sp", {
   expect_that(gris(wrld_simpl), is_a("gris"))
   expect_that(gris(wrld_simpl, normalize = FALSE), is_a("gris"))
   expect_that(gris(subset(wrld_simpl, NAME == "Australia"), triangulate = TRUE), is_a("gris"))
-  
-  
+  expect_silent(plot(gris(subset(wrld_simpl, NAME == "Australia")))) 
+
 })
 test_that("we can ingest a line object from sp", {
   x <- c(1:9, 8:1)

@@ -153,7 +153,7 @@ print.gris <- function(x, ..., n = NULL, width = NULL) {
 
 #' @rdname gris
 #' @export
-#' @importFrom dplyr do ungroup
+#' @importFrom dplyr do ungroup select
 plot.gris <- function(x, y,  triangles  = FALSE, ...) {
   xrange <- range(x$v$x, na.rm = TRUE)
   yrange <- range(x$v$y, na.rm = TRUE)
