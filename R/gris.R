@@ -5,6 +5,23 @@ prs1 <- function(x) {
 }
 
 
+## simpler version of mkpslg, to only make edges from branches
+
+mkedges <- function(x) {
+  v <- x$v
+  bXv <- x$bXv
+  v$remap <- seq(nrow(v))
+  bXv$.vx0 <- v$remap[match(bXv$.vx0, v$.vx0)]
+  E <- do.call(rbind, lapply(split(
+    bXv$.vx0, bXv$.br0
+  ), prs1))
+  ## this is structural for now, needs to store the vertex index
+  x$e <- data_frame(s0 = E[,1], s1 = E[,2])
+  x
+}
+  
+  
+
 # Planar Straight Line Graph
 # 
 # Constrained triangulation requires a Planar Straight Line Graph consisting of
