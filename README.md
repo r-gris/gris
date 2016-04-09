@@ -14,6 +14,7 @@ The gris package provides a relational geometry/topology model for spatial data 
 
 ## Installation
 
+
 ```R
 devtools::install_github("mdsumner/gris")
 ```
