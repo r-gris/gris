@@ -11,7 +11,9 @@ The gris package provides a relational geometry/topology model for spatial data 
 3. provide a flexible basis for conversion between other formats.
 4. (a similar generalization for raster data)
 
+
 ## Installation
+
 
 ```R
 devtools::install_github("mdsumner/gris")
