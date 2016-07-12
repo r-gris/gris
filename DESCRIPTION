@@ -16,6 +16,7 @@ Imports:
     raster,
     rgl,
     sp, 
+    spbabel,
     tibble
 Suggests:
     knitr,

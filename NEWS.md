@@ -1,5 +1,7 @@
 # gris 0.1.0.9001
 
+* many updates to align to spbabel
+
 * updated dplyr::distinct usage
 
 
