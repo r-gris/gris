@@ -14,7 +14,8 @@ Sp <- SpatialPolygonsDataFrame( SpatialPolygons(list(Srs1,Srs2,Srs3), 1:3), data
 context("test 3d")
 
 test_that("we can triangulate", {
-  expect_that(x1 <- gris(Sp, triangulate = TRUE), is_a("gris"))
+  expect_that(x1 <- gris(Sp), is_a("gris"))
+  expect_that(x1 <- triangulate(x1), is_a("gris"))
   expect_that(x1$tXv, is_a("tbl"))
   expect_that(x1$oXt, is_a("tbl"))
   
@@ -28,7 +29,7 @@ test_that("we can triangulate", {
   
 })
 
-x1 <- gris(Sp, triangulate = TRUE)
+
 library(rgl)
 test_that("we can plot without error", {
   expect_silent(plot3d(x1, globe = FALSE))

@@ -37,7 +37,7 @@ mkpslg <- function(x) {
   x$v$remap <- seq(nrow(x$v))
   x$bXv$vertex_ <- x$v$remap[match(x$bXv$vertex_, x$v$vertex_)]
   RTriangle::pslg(
-    P = x$v %>% dplyr::select(x, y) %>% as.matrix(),
+    P = x$v %>% dplyr::select_(.dots = c("x_", "y_")) %>% as.matrix(),
     S = do.call(rbind, lapply(split(
       x$bXv$vertex_, x$bXv$branch_
     ), prs1))

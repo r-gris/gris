@@ -18,7 +18,8 @@ test_that("we can ingest a line object from sp", {
   y <- c(1, 2*(5:3), 2, -1, 17, 9, 8, 2:9)
   df <- data.frame(x = x, y = y, g = rep(c("a", "b", "c"), c(5, 4, 8)))
   mklinelist <- function(yy, fg) lapply(split(yy, fg), function(x) Line(as.matrix(x[,1:2])))
-  line <- SpatialLinesDataFrame(SpatialLines(list(Lines(mklinelist(df, df$g), "1"), Lines(mklinelist(df %>% mutate(x = y, y = rev(x) * 4) %>% as.data.frame, df$g), "16"))), 
+  line <- SpatialLinesDataFrame(SpatialLines(list(Lines(mklinelist(df, df$g), "1"), 
+                                                  Lines(mklinelist(df %>% dplyr::mutate(x = y, y = rev(x) * 4) %>% as.data.frame, df$g), "16"))), 
                                 df[c(1, 16),])
   gline <- gris(line)
   expect_that(gline, is_a("gris"))
@@ -34,7 +35,10 @@ test_that("we can ingest a line object from rasterToContour", {
   expect_that(nrow(g$o), equals(4))
   #expect_that(nrow(g$v %>% inner_join(g$bXv) %>% inner_join(g$b) %>% inner_join(g$o)), equals(703))
   ## why did this change? 2015-11-06
-  expect_that(nrow(g$v %>% inner_join(g$bXv) %>% inner_join(g$b) %>% inner_join(g$o)), equals(707))
+  expect_that(nrow(g$v %>% 
+                     dplyr::inner_join(g$bXv) %>% 
+                     dplyr::inner_join(g$b) %>% 
+                     dplyr::inner_join(g$o)), equals(707))
 })
 
 test_that("build from scratch", {

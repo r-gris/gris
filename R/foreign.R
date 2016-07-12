@@ -86,10 +86,10 @@ as.SpatialPolygonsDataFrame <- function(x, ...) {
 #' @importFrom sp Polygons SpatialPolygons SpatialPolygonsDataFrame
 as.SpatialPolygonsDataFrame.gris <- function(x, ...) {
   geom <- grisToSpatialPolygons(x)
-  dat <- x$o
+  dat <- as.data.frame(x$o)
   rownames(dat) <- dat$object_
   dat$object_ <- NULL
-  SpatialPolygonsDataFrame(geom, as.data.frame(dat))
+  SpatialPolygonsDataFrame(geom, dat)
 }
 
 

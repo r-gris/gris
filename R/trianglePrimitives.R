@@ -41,7 +41,7 @@ cycles <- function(aa) {
 pointInTriangle <- function(x, pt) {
   a <- gris2Structural(x)
   triangle <- a$triangle %>% select(.tr1, .tr2, .tr3) %>% as.matrix
-  a$triangle$.tr0[geometry::tsearch(a$vert$x_, a$vert$y_, triangle, pt[,1], pt[,2], bary = FALSE)]
+  a$triangle$.tr0[geometry::tsearch(a$vert$x, a$vert$y, triangle, pt[,1], pt[,2], bary = FALSE)]
 }
 
 
@@ -109,13 +109,13 @@ branchAsObject <- function(x, branchID) {
 }
 
 
-
+#' @importFrom dplyr %>% group_by summarize transmute
 trigris <- function(x) {
   b <- x$b
   bXv <- x$bXv
   ## we don't touch the objects
   ## first scan for tri-branches and flag as done
-  vertsPerBranch <- b %>% inner_join(bXv) %>% group_by(branch_) %>% summarize(nverts = n()) 
+  vertsPerBranch <- b %>% inner_join(bXv) %>% group_by(branch_) %>% dplyr::summarize(nverts = n()) 
   branchTri <- vertsPerBranch %>% filter(nverts == 3)
   branch <- vertsPerBranch %>% filter(nverts > 3)
   ## then visit remaining branches and triangulate 
@@ -183,7 +183,7 @@ plotT <- function(x, ...) {
 }
 
 
-grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE, objid = NULL) {
+grisTri2rgl <- function(x, verts = c("x_", "y_"), globe = FALSE, objid = NULL) {
   if (!length(verts) %in% c(2, 3)) stop("named vertices must be 2- or 3- in length")
   v <- x$v
   v$structural_index <- seq(nrow(v))
@@ -221,7 +221,7 @@ plot3d <- function(x, ...) UseMethod("plot3d")
 #' importFrom("rgl",  plot3d)
 #' }
 #' @export
-plot3d.gris <- function(x, globe = TRUE, verts = c("x", "y"), objname = NULL, ...) {
+plot3d.gris <- function(x, globe = TRUE, verts = c("x_", "y_"), objname = NULL, ...) {
   if (requireNamespace("rgl", quietly = TRUE)) {
     gx <- grisTri2rgl(x, globe = globe, verts = verts, 
                       objid = if(is.null(objname)) NULL else x$o[[objname]])

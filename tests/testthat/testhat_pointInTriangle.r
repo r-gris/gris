@@ -1,7 +1,8 @@
 test_that("point in triangle works", {
   library(maptools)
   data(wrld_simpl)
-  g <- gris(wrld_simpl, triangulate = TRUE)
+  g <- gris(wrld_simpl)
+  g <- triangulate(g)
   xy <- coordinates(wrld_simpl)
   pit <- pointInTriangle(g, xy)
   spoints <- SpatialPoints(coordinates(wrld_simpl), proj4string = CRS(proj4string(wrld_simpl)))
