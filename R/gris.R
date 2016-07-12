@@ -425,8 +425,8 @@ bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
   ## original vertex order within a branch
   v$.br_order <- unlist(lapply(dplyr::group_size(group_by_(v, ".br0")), seq))
   
-  
-  b <- v  %>% distinct(.br0) 
+
+  b <- v  %>% dplyr::distinct(.br0, .keep_all = TRUE) 
   bXv <- b %>% dplyr::select_(".br0", ".ob0") %>% 
     dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% 
     dplyr::select(.br0, .vx0, .ob0, .br_order)
@@ -466,7 +466,7 @@ obj <- gris.full(v = v, bXv = bXv, b = b, o = o, georef = .georeference(proj4 = 
 normVerts <- function(v, nam) {
   v$.vx0 <- as.integer(factor(do.call("paste", c(v[,nam], sep = "\r"))))
   bXv <- v %>% dplyr::select(.vx0, .br0, .br_order)
-  v <- v %>% distinct(.vx0) 
+  v <- v %>% dplyr::distinct(.vx0, .keep_all = TRUE) 
   list(v = v, bXv = bXv)
 }
 
