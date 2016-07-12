@@ -19,6 +19,7 @@ knitr::opts_chunk$set(
 [![CRAN RStudio mirror downloads](http://cranlogs.r-pkg.org/badges/gris)](http://cran.r-project.org/web/packages/gris/index.html)
 [![Coverage Status](https://img.shields.io/codecov/c/github/mdsumner/gris/master.svg)](https://codecov.io/github/mdsumner/gris?branch=master)
 
+
 # gris
 
 A database table model for storing geometry in R. 
