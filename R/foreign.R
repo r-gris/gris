@@ -26,7 +26,8 @@ map2gris <- function(x, orphans = TRUE) {
   bXv <- v %>% select(.br0, .vx0)
   v <- v %>% select(x, y, .vx0)
   o <- normalizeVerts2(v, bXv, c("x", "y"))
-  o$b <- bXv %>% distinct(.br0) %>% select(.br0) 
+  # #may need keep_all here
+  o$b <- bXv %>% dplyr::distinct(.br0) %>% select(.br0) 
   dif <- length(nms) - nrow(o$b)
   if (dif < 0) {
     nms <- c(nms, paste("orphan", seq(-dif)))

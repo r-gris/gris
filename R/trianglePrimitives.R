@@ -145,7 +145,7 @@ trigris <- function(x) {
     dplyr::select(.br0, .tr0) %>% 
     dplyr::inner_join(b %>% dplyr::select(.br0, .ob0), ".br0") %>% 
     dplyr::select(.tr0, .ob0) %>% #transmute(.tr0 = .tr0, .ob0) %>% 
-    dplyr::distinct(.tr0)
+    dplyr::distinct(.tr0, .keep_all = TRUE)
   x$tXv <- tXv #%>% dplyr::select(-.br0)
   x$oXt <- oXt
   x
