@@ -21,6 +21,7 @@ Suggests:
     maptools,
     rworldmap,
     testthat,
-    rmarkdown
+    rmarkdown,
+    covr
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
