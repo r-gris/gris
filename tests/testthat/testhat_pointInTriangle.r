@@ -28,7 +28,7 @@ test_that("point in triangle works", {
 #   abline(v = coordinates(spoints)[nover[i],1], h = coordinates(spoints)[nover[i], 2])
 #   points(xy[nover[i], , drop = FALSE], pch = 1, cex = 2, col = "firebrick")
 #   plot(g[nover[i], ], add = TRUE, triangles = TRUE)
-#   vv <- (g$oXt %>% filter(.ob0 == nover[i]) %>% inner_join(g$tXv, ".tr0") %>% gris:::v3ToLong())$.vx0
+#   vv <- (g$oXt %>% filter(object_ == nover[i]) %>% inner_join(g$tXv, ".tr0") %>% gris:::v3ToLong())$.vx0
 #   points(g$v %>% filter(.vx0 %in% vv) %>% select(x, y))
 #  
 # }

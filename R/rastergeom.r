@@ -92,38 +92,3 @@
             return(xy)
           }
 
-
-#  older method, was much slower and not working for MultiPoints
-# exall <- function(x) {  
-#   g <- sp::geometry(x)
-#   proj <- proj4string(x)
-#   if (inherits(x, "SpatialPoints"))
-#     mcoords <- coordinates(g)
-#   xx <- vector("list", nrow(x))
-#   for (i in seq_along(x)) {
-#     if (inherits(x, "SpatialPolygons"))
-#       rawcoords <-
-#         lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
-#           m <- head(g@polygons[[i]]@Polygons[[xi]]@coords,-1)
-#           dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
-#         })
-#     
-#     if (inherits(x, "SpatialLines"))
-#       rawcoords <- lapply(seq_along(g@lines[[i]]@Lines), function(xi) {
-#         m <- g@lines[[i]]@Lines[[xi]]@coords
-#         dplyr::data_frame(x = m[,1], y = m[,2], .br0 = xi)
-#       })
-#     ## obviously this could be much faster without the loop
-#     if (inherits(x, "SpatialPoints"))
-#       rawcoords <-
-#         list(dplyr::data_frame(x = mcoords[i,1], y = mcoords[i,2], .br0 = i))
-#     
-#     ## d$nbranches[i] <- length(rawcoords)
-#     l <- do.call(bind_rows, rawcoords)
-#     if (i > 1)
-#       l$.br0 <- l$.br0 + max(xx[[i - 1]]$.br0)
-#     l <- l %>% dplyr::mutate(.ob0 = i)
-#     xx[[i]] <- l
-#   }
-#   do.call(bind_rows, xx) %>% mutate(.vx0 = row_number())
-# }

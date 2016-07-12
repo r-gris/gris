@@ -7,3 +7,4 @@
 ^figures$
 ^codecov\.yml$
 ^appveyor\.yml$
+^notes_links.md$

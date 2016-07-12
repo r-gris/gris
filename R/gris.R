@@ -11,9 +11,9 @@ mkedges <- function(x) {
   v <- x$v
   bXv <- x$bXv
   v$remap <- seq(nrow(v))
-  bXv$.vx0 <- v$remap[match(bXv$.vx0, v$.vx0)]
+  bXv$vertex_ <- v$remap[match(bXv$vertex_, v$vertex_)]
   E <- do.call(rbind, lapply(split(
-    bXv$.vx0, bXv$.br0
+    bXv$vertex_, bXv$branch_
   ), prs1))
   ## this is structural for now, needs to store the vertex index
   x$e <- data_frame(s0 = E[,1], s1 = E[,2])
@@ -35,11 +35,11 @@ mkedges <- function(x) {
 mkpslg <- function(x) {
   ## remap vertices
   x$v$remap <- seq(nrow(x$v))
-  x$bXv$.vx0 <- x$v$remap[match(x$bXv$.vx0, x$v$.vx0)]
+  x$bXv$vertex_ <- x$v$remap[match(x$bXv$vertex_, x$v$vertex_)]
   RTriangle::pslg(
     P = x$v %>% dplyr::select(x, y) %>% as.matrix(),
     S = do.call(rbind, lapply(split(
-      x$bXv$.vx0, x$bXv$.br0
+      x$bXv$vertex_, x$bXv$branch_
     ), prs1))
   )
   
@@ -69,14 +69,14 @@ gris <- function(x, ...) {
 }
 
 gris.full <- function(o,  b, bXv, v, georef = NULL) {
-  v$.vx0 <- as.integer(v$.vx0)
-  bXv$.vx0 <- as.integer(bXv$.vx0)
-  bXv$.br_order <- as.integer(bXv$.br_order)
-  bXv$.br0 <- as.integer(bXv$.br0)
-  b$.br0 <- as.integer(b$.br0)
-  if (".h0" %in% names(b)) b$.h0 <- as.integer(b$.h0)
-  b$.ob0 <- as.integer(b$.ob0)
-  o$.ob0 <- as.integer(o$.ob0)
+  v$vertex_ <- as.integer(v$vertex_)
+  bXv$vertex_ <- as.integer(bXv$vertex_)
+  bXv$order_ <- as.integer(bXv$order_)
+  bXv$branch_ <- as.integer(bXv$branch_)
+  b$branch_ <- as.integer(b$branch_)
+  if ("island_" %in% names(b)) b$island_ <- as.integer(b$island_)
+  b$object_ <- as.integer(b$object_)
+  o$object_ <- as.integer(o$object_)
   x <- list(
     o = o,  b = b, bXv = bXv, v = v, 
     georef = georef
@@ -87,10 +87,10 @@ gris.full <- function(o,  b, bXv, v, georef = NULL) {
 
 ## vectors of (possibly named) arguments in ... or in a list
 #' @export
-#' @importFrom dplyr as_data_frame
+#' @importFrom tibble as_tibble
 gris.default <- function(..., topotype = "p") {
   x <- list(...)
-  as_data_frame(setNames(x, buildnames(x)))
+  as_tibble(setNames(x, buildnames(x)))
 }
 
 # build names as required, but preserve any that are input
@@ -113,7 +113,7 @@ dfn <- function(x) {
   ind <- c(24, 25, 26, 20)
   first <-
     rep_len(c(letters[ind], letters[-ind], letters), length.out = length(x))
-  make.unique(first, sep = "")
+  make.unique(sprintf("%s_", first, sep = ""))
 }
 
 #' @rdname gris
@@ -125,22 +125,20 @@ dfn <- function(x) {
 `[.gris` <- function (x, i, j, drop = FALSE) {
   do_tri <- "tXv" %in% names(x)  
   o <- x$o[i,j,drop = drop]
-  ## TODO: what if i is repeated? we need to make unique
-  ## o$.ob0 <- update dupes somehow
-  # oXb <- x$oXb %>% semi_join(o, by = ".ob0")
-  b <- x$b %>% semi_join(o, by = ".ob0")
-  bXv <- x$bXv %>% semi_join(b, by = ".br0")
-  v <- x$v %>% semi_join(bXv, by = ".vx0")
+
+  b <- x$b %>% semi_join(o, by = "object_")
+  bXv <- x$bXv %>% semi_join(b, by = "branch_")
+  v <- x$v %>% semi_join(bXv, by = "vertex_")
   if (do_tri) {
-    oXt <- x$oXt %>% semi_join(o, by = ".ob0")
+    oXt <- x$oXt %>% semi_join(o, by = "object_")
     tXv <- x$tXv %>% semi_join(oXt, by = ".tr0")
-  #  v <- bind_rows(x$v %>% semi_join(tXv, c(".vx0" = ".vx1")),
-  #                  x$v %>% semi_join(tXv, c(".vx0" = ".vx2")),
-  #                  x$v %>% semi_join(tXv, c(".vx0" = ".vx3"))) %>%
-  #    distinct_(".vx0")
+  #  v <- bind_rows(x$v %>% semi_join(tXv, c("vertex_" = ".vx1")),
+  #                  x$v %>% semi_join(tXv, c("vertex_" = ".vx2")),
+  #                  x$v %>% semi_join(tXv, c("vertex_" = ".vx3"))) %>%
+  #    distinct_("vertex_")
 
   } else {
-    v <- x$v %>% semi_join(bXv, by = ".vx0")
+    v <- x$v %>% semi_join(bXv, by = "vertex_")
   }
   #gris.full(o, oXb, b, bXv, v)
   x <- gris.full(o,  b, bXv, v)
@@ -172,8 +170,8 @@ print.gris <- function(x, ..., n = NULL, width = NULL) {
 #' @export
 #' @importFrom dplyr do ungroup select
 plot.gris <- function(x, y,  triangles  = FALSE, ...) {
-  xrange <- range(x$v$x, na.rm = TRUE)
-  yrange <- range(x$v$y, na.rm = TRUE)
+  xrange <- range(x$v$x_, na.rm = TRUE)
+  yrange <- range(x$v$y_, na.rm = TRUE)
   largs <- list(...)
   if (is.null(largs$type)) {
     type <- "pp"  ## default to polygon for now
@@ -198,32 +196,34 @@ plot.gris <- function(x, y,  triangles  = FALSE, ...) {
     return(invisible(x))
   }
   if (type == "pp") largs$rule <- rule
-  uoid <- unique(x$o$.ob0)
+  uoid <- unique(x$o$object_)
   if (is.null(largs$col))
     largs$col <- sample(grey(seq_along(uoid) / (length(uoid) + 1)))
   col <- rep(largs$col, length(uoid))
-  dNA <- data_frame(x = NA_real_, y = NA_real_)
+  dNA <- data_frame(x_ = NA_real_, y_ = NA_real_)
 
   largs$y <- NULL
   
   ## do all of this upfront, add the NAs in loop
   a1 <- 
-    x$o %>% select(.ob0) %>% inner_join(x$b, '.ob0') %>% inner_join(x$bXv, '.br0') %>% inner_join(x$v, ".vx0") %>% 
-    #group_by(.br0) %>% 
-    select(x, y, .br0, .ob0)  
+    x$o %>% dplyr::select(object_) %>% 
+    inner_join(x$b, 'object_') %>% 
+    inner_join(x$bXv, 'branch_') %>% 
+    inner_join(x$v, "vertex_") %>% 
+    select(x_, y_, branch_, object_)  
   #%>% ungroup ## ungroup to speed up filter
   
   for (i in seq(length(uoid))) {
     largs$col <- col[i]
-    a <- a1 %>% filter(.ob0 == uoid[i])
-  if (length(unique(a$.br0)) > 1) {
-      a <- do.call(bind_rows, lapply(split(a[, c("x", "y")], a$.br0), function(x) bind_rows(x, dNA)))
+    a <- a1 %>% filter(object_ == uoid[i])
+  if (length(unique(a$branch_)) > 1) {
+      a <- do.call(bind_rows, lapply(split(a[, c("x_", "y_")], a$branch_), function(x) bind_rows(x, dNA)))
      # a <- a[-nrow(a), ]
-      largs$x <- head(a$x, -1)
-      largs$y <- head(a$y, -1)
+      largs$x <- head(a$x_, -1)
+      largs$y <- head(a$y_, -1)
     } else {
-    largs$x <- a$x
-    largs$y <- a$y
+    largs$x <- a$x_
+    largs$y <- a$y_
     }
     if (type == "pp") {
       do.call(polypath, largs)
@@ -263,7 +263,7 @@ as.gris.triangulation <- function(x, ...) {
 .tri2gris <- function(xx, type) {
   o <-
     list(v = data_frame(
-      x = xx$P[,1], y = xx$P[,2], .vx0 = seq(nrow(xx$P))
+      x = xx$P[,1], y = xx$P[,2], vertex_ = seq(nrow(xx$P))
     ))
   
   multi <- !type == "mesh"
@@ -275,24 +275,22 @@ as.gris.triangulation <- function(x, ...) {
     prims <- xx$T
     primNVerts <- 3
   }
-  o$b <- data_frame(.br0 = seq(nrow(prims)))
+  o$b <- data_frame(branch_ = seq(nrow(prims)))
   
   
   if (multi) {
     #prims <- xx$T
-    o$b$.ob0 <- seq(nrow(o$b))
-    o$o <- data_frame(.ob0 = seq(nrow(o$b)))
+    o$b$object_ <- seq(nrow(o$b))
+    o$o <- data_frame(object_ = seq(nrow(o$b)))
   } else {
-    o$b$.ob0 <- rep(1, nrow(o$b))
-    o$o <- data_frame(.ob0 = 1)
+    o$b$object_ <- rep(1, nrow(o$b))
+    o$o <- data_frame(object_ = 1)
   }
   
   o$bXv <-
-#    data_frame(.vx0 = as.vector(t(prims)), .br0 = rep(seq(nrow(prims)), each = primNVerts))
-  data_frame(.vx0 = as.vector(t(xx$T)), .br0 = rep(seq(nrow(xx$T)), each = 3))
-  # o$oXb <-
-  #   data_frame(.ob0 = rep(1, nrow(xx$T)), .br0 = seq(nrow(xx$T)))
- 
+#    data_frame(vertex_ = as.vector(t(prims)), branch_ = rep(seq(nrow(prims)), each = primNVerts))
+  tibble(vertex_ = as.vector(t(xx$T)), branch_ = rep(seq(nrow(xx$T)), each = 3))
+
  class(o) <- c("gris", "list")
   o
 }
@@ -312,7 +310,7 @@ as.gris.triangulation <- function(x, ...) {
 #' @export
 #' @rdname sp2gris
 gris.SpatialPolygonsDataFrame <- function(x, ...) {
-  x <- bld2(x, ...)
+  x <- bld3(x, ...)
   class(x) <- c("gris", "list")
   x
 }
@@ -321,7 +319,7 @@ gris.SpatialPolygonsDataFrame <- function(x, ...) {
 #' @rdname sp2gris
 #' @export
 gris.SpatialLinesDataFrame <- function(x, ...) {
-  x <- bld2(x, ...)
+  x <- bld3(x, ...)
   class(x) <- c("gris", "list")
   x
 }
@@ -329,14 +327,14 @@ gris.SpatialLinesDataFrame <- function(x, ...) {
 #' @rdname sp2gris
 #' @export
 gris.SpatialPointsDataFrame <- function(x, ...) {
-  x <- bld2(x, ...)
+  x <- bld3(x, ...)
   class(x) <- c("gris", "list")
   x
 }
 #' @rdname sp2gris
 #' @export
 gris.SpatialMultiPointsDataFrame <- function(x, ...) {
-  x <- bld2(x, ...)
+  x <- bld3(x, ...)
   class(x) <- c("gris", "list")
   x
 }
@@ -377,98 +375,39 @@ topotype <- function(x) {
 }
 
 
-
-#' @importFrom dplyr %>%  group_size summarize group_by_
-#' @importFrom sp proj4string
-bld2 <- function(x, normalize_verts = TRUE, triangulate = FALSE, ...) {
- proj <- proj4string(x)
-  o <- as_data_frame(x@data)  ## as.data.frame doesn't work for multi-points
-  o <- o %>% mutate(.ob0 = row_number())
-  
-  ## original gris method
-  ## need to find out why this had more vertices?
-  ## it's because raster is not removing the closing vertex on polygons, but I was
-  #fhttps://github.com/mdsumner/gris/issues/15
-  # v <- exall(x)
-  
-  ## a <- t(raster::geom(x))
-##  setNames(split(t(a),seq(ncol(a))), colnames(a))
-  ## leverage raster::geom
-  if (inherits(x, "SpatialPolygons")) {
-    rg <- .polysGeom(x)
-    v <- data_frame(x = rg[,"x"], y = rg[,"y"], 
-                    .br0 = rg[,"cump"], 
-                    .ob0 = rg[,"object"], 
-                    .h0 = rg[,"hole"],  
-                    .vx0 = seq(nrow(rg)))
-    v$redundant <- c(diff(v$.br0), 0)
-    #print(v)
-    v <- v %>% dplyr::filter_("redundant < 1") 
-    v$redundant <- NULL
-    #print(v)
-  }
-  if (inherits(x, "SpatialLines")) {
-    rg <- .linesGeom(x)
-    v <- data_frame(x = rg[,"x"], y = rg[,"y"], 
-                    .br0 = rg[,"cump"], 
-                    .ob0 = rg[,"object"], 
-                    .vx0 = seq(nrow(rg)))
-  }
- if (inherits(x, "SpatialPoints") | inherits(x, "SpatialMultiPoints")) {
-    rg <- .pointsGeom(x)
-    v <- data_frame(x = rg[,"x"], y = rg[,"y"],  
-                    .br0 = rg[,"cump"], 
-                    .ob0 = rg[,"object"], 
-                    .vx0 = seq(nrow(rg)))
- }
-  
-  ## original vertex order within a branch
-  v$.br_order <- unlist(lapply(dplyr::group_size(group_by_(v, ".br0")), seq))
-  
-
-  b <- v  %>% dplyr::distinct(.br0, .keep_all = TRUE) 
-  bXv <- b %>% dplyr::select_(".br0", ".ob0") %>% 
-    dplyr::inner_join(v, by = c(".br0", ".ob0")) %>% 
-    dplyr::select(.br0, .vx0, .ob0, .br_order)
-  
-  ## clean up
-  b <- b %>% dplyr::select(-x, -y, -.vx0, -.br_order)
-  #v <- v %>% dplyr::select(-.ob0)
-  
-  ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
- o <-
-    as_data_frame(lapply(o, function(x) {
-      if (isTRUE(all.equal(attr(x, 'levels'), character(0)))) {
-        attr(x, 'levels') <- NULL
-      }; x
-    }))
-obj <- gris.full(v = v, bXv = bXv, b = b, o = o, georef = .georeference(proj4 = proj))
-  
- # print(nrow(obj$v))
- if (normalize_verts) {
-    obj0 <- normVerts(v, c("x", "y"))
-    v <- obj0$v 
-    bXv <- obj0$bXv
-  } else {
-    bXv <- v %>% dplyr::select(.vx0, .br0, .br_order)
-  }
-#bXv <- bXv %>% select(-.br_order)
-  v <- v %>% dplyr::select(-.br0, -.ob0, -.br_order)
-  v$.h0 <- NULL
-  obj <- gris.full(v = v, bXv = bXv, b = b, o = o, georef = .georeference(proj4 = proj))
-  
-  if (triangulate) {
-    obj <- triangulate.gris(obj)
-  }
-  obj
+#' @importFrom tibble as_tibble
+bld3 <- function(x, ...) {
+  tabmap <- spbabel::sptable(x)
+  tabdat <- tibble::as_tibble(x)
+  tabdat$object_ <- seq(nrow(tabdat))
+  grasp(tabdat, tabmap)
 }
 
-normVerts <- function(v, nam) {
-  v$.vx0 <- as.integer(factor(do.call("paste", c(v[,nam], sep = "\r"))))
-  bXv <- v %>% dplyr::select(.vx0, .br0, .br_order)
-  v <- v %>% dplyr::distinct(.vx0, .keep_all = TRUE) 
-  list(v = v, bXv = bXv)
+#' convert from spbabel sptable to gris
+#' @importFrom dplyr %>% bind_rows distinct_ mutate select select_
+#' @importFrom tibble tibble
+#' @importFrom spbabel sptable
+grasp <- function(dat1, map1) {
+  ## we expect that these attributes, taken together are "unique vertices" potentially shared by neighbours
+  v_atts <- c("x_", "y_")
+  o_atts <- setdiff(names(map1), v_atts)
+  b_atts <- setdiff(o_atts, c("order_", "vertex_"))
+  bxv_atts <- c(setdiff(names(map1), c("object_", "island_", v_atts)), "vertex_")
+  ## classify unique vertices by unique index
+  map1 <- map1 %>%
+    mutate(vertex_  = as.integer(factor(do.call(paste, select_(map1, .dots = v_atts)))))
+  ## branches, owner object and island status
+ b <- map1 %>% distinct_(.dots = b_atts) 
+  #b <- map1 %>% dplyr::select(-object_, -island_)
+  
+  ## four tables (dat1, map2, map4, map5)
+  bXv <- map1 %>% dplyr::select_(.dots = bxv_atts)
+  v <- map1 %>% distinct_(.dots = c(v_atts, "vertex_"))
+
+  list(o = dat1, b = b, bXv = bXv, v = v)
+  
 }
+
 
 
 
@@ -477,199 +416,3 @@ normVerts <- function(v, nam) {
   class(gg) <- c("georef", "list")
   gg
 }
-
-
-#' #' Title
-#' #'
-#' #' @param v vertices *with* branch ID .br0
-#' #' @param nam 
-#' normVerts <- function(v, nam){
-#'   text1 <- do.call("paste", c(v[, nam], sep = "\r"))
-#' #ord <- order(text1)
-#'   
-#'   dupes <- duplicated(text1)
-#'   these <- which(dupes)
-#'   vx0 <- v$.vx0
-#'   cnt <- 0
-#'   # while(any(dupes)) {
-#'   #  # cnt <- cnt + 1
-#'   #   this <- these[1L]
-#'   #   
-#'   #   ind <-  which(text1 == text1[this]) 
-#'   #   vx0[ind] <- vx0[this]
-#'   #   dupes[ind] <- FALSE
-#'   #   these <- which(dupes)
-#'   # }
-#'  while(any(dupes)) {
-#'     cnt <- cnt + 1
-#'     this <- these[cnt]
-#' 
-#'     ind <-  which(text1 == text1[this])
-#'     vx0[ind] <- vx0[this]
-#'     dupes[ind] <- FALSE
-#'   }
-#'   v$.vx0 <- vx0
-#'   bXv <- v %>% select(.vx0, .br0, .br_order)
-#'   v <- v %>% distinct(.vx0)  
-#'   list(v = v, bXv = bXv)
-#' }
-
-# 
-# 
-# library(dplyr)
-# ## one object, two branches
-# v1 <- data_frame(x = c(0, 1, 0.5), y = c(0, 0, 1), .br0 = 1, .ob0 = 1)
-# v2 <- data_frame(x = c(1, 1, 0.5), y = c(0, 1, 1), .br0 = 2, .ob0 = 1)
-# 
-# ## another object two branches
-# v3 <- v1 %>% mutate(x = x + 2, .br0 = 4, .ob0 = 2)
-# v4 <- v2 %>% mutate(x = x + 2, .br0 = 5, .ob0 = 2)
-# ## modify one to have concavity
-# v4 <- bind_rows(v4[1,], data_frame(x = 2.9, y = 0.6, .br0 = 5, .ob0 = 1), v4[2:3, ])
-# ## third branch in first  object
-# v0 <- data_frame(x = c(0.1,  0.4, 0.5, 0.3), y = c(0.05,  0.05,  0.12, 0.2), .br0 = 3, .ob0 = 1)
-# v <- bind_rows(v1,  v2, v0,  v3, v4) %>% mutate(.vx0 = seq(n())) 
-# v$.br_order <- unlist(lapply(dplyr::group_size(group_by(v, .br0)), seq))
-# 
-# plot(v %>% select(x, y))
-# lapply(split(v, v$.br0), function(x) polypath(x$x, x$y, col = "grey"))
-#' 
-#' #' @importFrom dplyr arrange
-#' normalizeVerts2 <- function(v, bXv, nam) {
-#'   bXv$original <- v$original <- seq(nrow(v))
-#'   ord <- do.call(order, v[nam])
-#'   v <- v[ord, ]
-#'   bXv <- bXv[ord, ]
-#'   dupes <- duplicated(v[, nam])
-#'   v$.vx0 <- bXv$.vx0 <- cumsum(!dupes)
-#'   v <- v[!dupes, ]
-#'   x <- list()
-#'   x$v <- v %>% arrange(original) %>% select(-original)
-#'   x$bXv <- bXv %>% arrange(original) %>% select(-original)
-#'   x
-#' }
-
-
-# normalizeVerts <- function(v, bXv, nam) {
-#   #v <- x$v
-#   #bXv <- x$bXv
-#   v$badge <- as.character(v$.vx0)
-#   vx0 <- v$.vx0
-#   EPS <- sqrt(.Machine$double.eps)
-#
-#   dupes <- duplicated(v[, nam], fromLast = TRUE)
-#   #index <- which(dupes)[1]
-#   #dupes <- abs(rep(v[[nam[1L]]][index], nn) - v[[nam[1L]]])  < EPS &
-#   #  abs(rep(v[[nam[2L]]][index], nn) - v[[nam[2L]]])  < EPS
-#
-#   nn <- nrow(v)
-#   while (any(dupes)) {
-#     dupeindex <- which(dupes)
-#     index <- dupeindex[1L]
-#     bad <-
-#       abs(rep(v[[nam[1L]]][index], nn) - v[[nam[1L]]])  < EPS &
-#       abs(rep(v[[nam[2L]]][index], nn) - v[[nam[2L]]])  < EPS
-#     sb <- sum(bad)
-#     vx0[bad] <- rep(index, sb)
-#     dupes[bad] <- rep(FALSE, sb)
-#
-#   }
-#
-#   v$.vx0 <- vx0
-#   bXv$badge <- v$badge[vx0]
-#   v <- v %>% distinct(.vx0)
-#   v$.vx0 <- seq(nrow(v))
-#   bXv$.vx0 <- v$.vx0[match(bXv$badge, v$badge)]
-#   v <- v %>% dplyr::select(-badge)
-#   bXv <- bXv %>% dplyr::select(-badge)
-#   x <- list()
-#   x$v <- v
-#   x$bXv <- bXv
-#   x
-# }
-
-# library(dplyr)
-# v <- data_frame(x = rep(1, 10), y = c(1, 2, 3, 2, 5, 6, 2, 8, 9, 2), .vx0 = 1:10)
-# nam <- c("x", "y")
-# bXv <- data_frame(.vx0 = seq(nrow(v)))
-#
-# normalizeVerts(v, bXv, nam)
-
-
-# #' Subset for a vertex/branch/object object
-# #'
-# #' @param x list of \code{v} vertex, \code{b} branch and \code{o} object tables
-# #' @param subset a subset of the \code{o} object
-# #' @param ... ignored
-# #' @return list of \code{v} vertex, \code{b} branch and \code{o} object tables
-# #' @export
-# sbs <- function(x, subset, ...) {
-#   o <- subset
-#   b <- x$b %>% semi_join(o, by = c(".ob0" = "id"))
-#   v <- x$v %>%  semi_join(b, by = c(".br0" = ".br0"))
-#   list(o = o, b = b, v = v)
-# }
-
-#
-# #' Generate a vertex/branch/object table from Spatial polygons
-# #'
-# #' @param x SpatialPolygonsDataFrame
-# #' @param ... ignored
-# #' @return vertex/branch/object table suitable for \code{pl}
-# dv <- function(x, ...) {
-#   g <- geometry(x)
-#   d <- as.data.frame(x)
-#   x <- NULL
-#   for (i in seq(nrow(d))) {
-#     l <- do.call(bind_rows, lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
-#       m <- g@polygons[[i]]@Polygons[[xi]]@coords
-#       data_frame(x = m[,1], y = m[,2], .br0 = xi)
-#     }))
-#     l$.ob0 <- i
-#     x <- bind_rows(x, l)
-#   }
-#   x$id <- seq(nrow(x))
-#   x
-# }
-#
-# #' Generate a vertex/branch/object table from Spatial polygons
-# #'
-# #' @param x SpatialPolygonsDataFrame
-# #' @param ... ignored
-# #' @return list of \code{v} vertex, \code{b} branch and \code{o} object tables
-# #' @export
-# #' @importFrom sp geometry
-# bld <- function(x, ...) {
-#   g <- sp::geometry(x)
-#   d <- as.data.frame(x)
-#   x <- vector("list", nrow(d))
-#   d <- d %>% dplyr::mutate(nbranches = 0)
-#   for (i in seq(nrow(d))) {
-#
-#     rawcoords <- lapply(seq_along(g@polygons[[i]]@Polygons), function(xi) {
-#       m <- g@polygons[[i]]@Polygons[[xi]]@coords
-#       data_frame(x = m[,1], y = m[,2], .br0 = xi)
-#     })
-#     d$nbranches[i] <- length(rawcoords)
-#     l <- do.call(bind_rows, rawcoords)
-#     if (i > 1) l$.br0 <- l$.br0 + max(x[[i-1]]$.br0)
-#     l$.ob0 <- i
-#     x[[i]] <- l
-#   }
-#   x <- do.call(bind_rows, x)
-#   x$id <- seq(nrow(x))
-#   b <- x %>% dplyr::distinct(.br0) %>% dplyr::select(.br0, .ob0)
-#   ## watch out for bad levels https://github.com/hadley/dplyr/issues/859
-#   d <-  as_data_frame(lapply(d, function(x) {if(isTRUE(all.equal(attr(x, 'levels'), character(0)))) {attr(x, 'levels') <- NULL}; x}))
-#   d <- d %>% dplyr::mutate(id = row_number())
-#   list(v = x, b = b, o = d)
-# }
-
-#   getCoords <- function(xi) {
-#     m <- g@polygons[[i]]@Polygons[[xi]]@coords
-#     data_frame(x = m[,1], y = m[,2])
-#   }
-#   getBranchs <- function(xi) {
-#     obj <- g@polygons[[i]]@Polygons[[xi]]
-#     data_frame(labptx = obj@labpt[1], labpty = obj@labpt[2], area = obj@area, hole = obj@hole, ringDir = obj@ringDir)
-#   }

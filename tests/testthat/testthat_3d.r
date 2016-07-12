@@ -24,7 +24,7 @@ test_that("we can triangulate", {
   
   expect_that(all(c(".vx1", ".vx2", ".vx3", ".tr0") %in% names(x2$tXv)), is_true())
   
-  expect_that(all(c(".ob0", ".tr0") %in% names(x2$oXt)), is_true())
+  expect_that(all(c("object_", ".tr0") %in% names(x2$oXt)), is_true())
   
 })
 

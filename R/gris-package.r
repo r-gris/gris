@@ -17,7 +17,6 @@
 #' @section I. Creation: 
 #' \tabular{ll}{
 #'  \code{\link{gris.Spatial}} \tab create from Spatial*DataFrame  \cr
-#'  \code{\link{gris.full}} \tab create from raw object, branch, and vertex tables \cr
 #'  \code{\link{grisFromRasterGeom}} \tab create from \code{\link[raster]{geom}} format  \cr
 #'  \code{\link{grisFromFortify}} \tab create from \code{\link[ggplot2]{fortify}} format \cr
 #'  \code{\link{as.gris.triangulation}} \tab  create from \code{\link[rgl]{triangulation}} \cr
