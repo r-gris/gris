@@ -38,7 +38,7 @@ gg <- gris(wrld_simpl)
 plot(gg)
 ```
 
-![](README-unnamed-chunk-3-1.png)
+![](figures/README-unnamed-chunk-3-1.png)
 
 ``` r
 str(gg)
