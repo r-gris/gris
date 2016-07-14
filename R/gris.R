@@ -309,35 +309,13 @@ as.gris.triangulation <- function(x, ...) {
 #' @return gris
 #' @export
 #' @rdname sp2gris
-gris.SpatialPolygonsDataFrame <- function(x, ...) {
+gris.Spatial <- function(x, ...) {
+  ## one method for all sp (need to dummify if doesn't have a dataframe)
   x <- bld3(x, ...)
   class(x) <- c("gris", "list")
   x
 }
 
-
-#' @rdname sp2gris
-#' @export
-gris.SpatialLinesDataFrame <- function(x, ...) {
-  x <- bld3(x, ...)
-  class(x) <- c("gris", "list")
-  x
-}
-
-#' @rdname sp2gris
-#' @export
-gris.SpatialPointsDataFrame <- function(x, ...) {
-  x <- bld3(x, ...)
-  class(x) <- c("gris", "list")
-  x
-}
-#' @rdname sp2gris
-#' @export
-gris.SpatialMultiPointsDataFrame <- function(x, ...) {
-  x <- bld3(x, ...)
-  class(x) <- c("gris", "list")
-  x
-}
 
 #' Not yet implemented
 #'
