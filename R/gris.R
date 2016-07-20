@@ -316,6 +316,12 @@ gris.Spatial <- function(x, ...) {
   x
 }
 
+gris.SpatialPolygonsDataFrame <- gris.Spatial
+gris.SpatialLinesDataFrame <- gris.Spatial
+gris.SpatialMultiPointsDataFrame <- gris.Spatial
+gris.SpatialPointsDataFrame <- gris.Spatial
+
+
 
 #' Not yet implemented
 #'
