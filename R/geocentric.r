@@ -1,21 +1,15 @@
-#' Title
+#' Geocentric coordinates. 
+#' 
+#' Transform to geocentric coordinates. 
 #'
-#' @param lonlatheight matrix or data.frame of lon,lat,height values
-#' @param rad radius of sphere
+#' @param x table of long, lat, and optionally "height"
+#' @param crs 
 #' @param exag exaggeration to apply to height values (added to radius)
 #'
-#' @return matrix
+#' @return tibble
 #' @export
-llh2xyz <- function(lonlatheight, rad = 6378137.0, exag = 1) {
-  cosLat = cos(lonlatheight[,2] * pi / 180.0)
-  sinLat = sin(lonlatheight[,2] * pi / 180.0)
-  cosLon = cos(lonlatheight[,1] * pi / 180.0)
-  sinLon = sin(lonlatheight[,1] * pi / 180.0)
-  
-  rad <- (exag * lonlatheight[,3] + rad)
-  x = rad * cosLat * cosLon
-  y = rad * cosLat * sinLon
-  z = rad * sinLat
-  
-  cbind(x, y, z)
+geocentric <- function(x, 
+                    crs = "+proj=geocent +ellps=WGS84") {
+  as_tibble(proj4::ptransform(x, "+proj=longlat +ellps=WGS84", 
+                    crs))
 }

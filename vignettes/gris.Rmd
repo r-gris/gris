@@ -92,22 +92,8 @@ rgl.close()
 Plotting in the plane is one thing, but more striking is to convert the vertices from planar longitude-latitude to Cartesizan XYZ. Define an R function to take "longitude-latitude-height" and return spherical coordinates (we can leave WGS84 for another day). 
 
 ```{r}
-llh2xyz <- 
-function (lonlatheight, rad = 6378137, exag = 1) 
-{
-    cosLat = cos(lonlatheight[, 2] * pi/180)
-    sinLat = sin(lonlatheight[, 2] * pi/180)
-    cosLon = cos(lonlatheight[, 1] * pi/180)
-    sinLon = sin(lonlatheight[, 1] * pi/180)
-    rad <- (exag * lonlatheight[, 3] + rad)
-    x = rad * cosLat * cosLon
-    y = rad * cosLat * sinLon
-    z = rad * sinLat
-    cbind(x, y, z)
-}
-
 ## deploy our custom function on the longitude-latitude values
-xyzcoords <- llh2xyz(allcoords)
+xyzcoords <- geocentric(allcoords)
 ```
 
 Now we can visualize these XYZ coordinates in a more natural setting, and even add a blue sphere for visual effect. 

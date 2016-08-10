@@ -60,9 +60,7 @@ These kinds of data are defined in many different ways in various R packages, bu
 \section{V. Miscellaneous}{
  
 \tabular{ll}{
- \code{\link{quadmeshFromRaster}} \tab create a \code{\link[rgl]{quads3d}} object from a \code{\link[raster]{RasterLayer}} \cr
  \code{\link{brick2col}} \tab create hex value colours from an RGB \code{\link[raster]{RasterBrick}} \cr
- \code{\link{llh2xyz}} \tab calculate XYZ coordinates of the Earth from longitude,latitude,height \cr
  
  }
 }

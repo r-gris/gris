@@ -312,26 +312,9 @@ grisTri2rgl <- function(x, verts = c("x", "y"), globe = FALSE, objid = NULL) {
   if (ncol(t_3d$vb) < 1L) stop("vertex attributes not found", verts)
   if (ncol(t_3d$vb) == 2) t_3d$vb <- cbind(t_3d$vb, z = 0)
   t_3d$vb <- t(cbind(t_3d$vb, w = 1))
-  if (globe) t_3d$vb[1:3, ] <- t(llh2xyz(t(t_3d$vb[1:3, ])))
+  if (globe) t_3d$vb[1:3, ] <- t(geocentric(t(t_3d$vb[1:3, ])))
   t_3d$material$color <- rep(cols, each = 3)
     #rep(sample(grey(seq(0, 1, length = ncol(t_3d$it)))), each = 3)
   t_3d
 }
 
-#' @export
-plot3d <- function(x, ...) UseMethod("plot3d")
-#' @rawNamespace 
-#' if ( requireNamespace("rgl", quietly = TRUE)) {
-#' importFrom("rgl",  plot3d)
-#' }
-#' @export
-plot3d.gris <- function(x, globe = TRUE, verts = c("x", "y"), objname = NULL, ...) {
-  if (requireNamespace("rgl", quietly = TRUE)) {
-    gx <- grisTri2rgl(x, globe = globe, verts = verts, 
-                      objid = if(is.null(objname)) NULL else x$o[[objname]])
-    rgl::plot3d(gx, ...)
-  } else {
-    ## persp somesuch
-    stop("cannot plot in 3d")
-  }
-}
