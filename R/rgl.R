@@ -84,11 +84,11 @@ ras2gris <- function(x, z = NULL) {
   
  
   if (!is.null(z)) z <- extract(z, exy, method = "bilinear") else z <- 0
-  v <- data_frame(x = exy[,1], y = exy[,2], z = z, .vx0 = seq(nrow(exy)))
-  bXv <- data_frame(.br0 = rep(seq(length(ind0)/4), each = 4), .vx0 = ind0)
-  b <- bXv %>% dplyr::select(.br0) %>% dplyr::distinct(.br0, .keep_all = TRUE)
-  oXb <- b %>% dplyr::mutate(.ob0 = .br0)
-  o <- oXb %>% dplyr::select(.ob0)
+  v <- data_frame(x = exy[,1], y = exy[,2], z = z, vertex_ = seq(nrow(exy)))
+  bXv <- data_frame(branch_ = rep(seq(length(ind0)/4), each = 4), vertex_ = ind0)
+  b <- bXv %>% dplyr::select(branch_) %>% dplyr::distinct(branch_, .keep_all = TRUE)
+  oXb <- b %>% dplyr::mutate(object_ = branch_)
+  o <- oXb %>% dplyr::select(object_)
   gris.full(o,  b, bXv, v)
 #   ob$vb <- t(cbind(exy, z, 1))
 #   ob$ib <- matrix(ind0, nrow = 4)

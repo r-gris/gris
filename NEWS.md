@@ -1,8 +1,14 @@
-# gris 0.07
+
+# gris 0.1.0
 
 * replace llh2xyz with geocentric, driving proj4 'geocent'
 
 * removed quadmeshFromRaster (see quadmesh package on CRAN)
+
+* many updates to align to spbabel
+
+* updated dplyr::distinct usage
+
 
 # gris 0.0.6.9001
 

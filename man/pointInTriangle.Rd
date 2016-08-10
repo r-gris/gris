@@ -15,8 +15,8 @@ pointBary(x, pt)
 \item{pt}{matrix of xy coordinates}
 }
 \value{
-for PointInTriangle, the index of triangle for each point, in .vx0 form
-for PointBary, the table of barycentric coordinates and .vx0 index
+for PointInTriangle, the index of triangle for each point, in vertex_ form
+for PointBary, the table of barycentric coordinates and vertex_ index
 }
 \description{
 Point in triangle test.

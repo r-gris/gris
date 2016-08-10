@@ -1,7 +1,7 @@
 Package: gris
 Type: Package
 Title: A Flexible Geometry and Topology Model for Spatial Data in R
-Version: 0.0.7
+Version: 0.1.0
 Author: Michael D. Sumner
 Maintainer: Michael D. Sumner <mdsumner@gmail.com>
 Description: A flexible geometry data model for R.
@@ -14,12 +14,15 @@ Imports:
     RTriangle,
     raster,
     rgl,
-    sp
+    sp, 
+    spbabel,
+    tibble
 Suggests:
     knitr,
     maptools,
     rworldmap,
     testthat,
-    rmarkdown
+    rmarkdown,
+    covr
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1

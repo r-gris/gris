@@ -1,5 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+[![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active) [![Linux Build Status](https://travis-ci.org/mdsumner/gris.svg?branch=master)](https://travis-ci.org/mdsumner/gris) [![Windows Build status](https://ci.appveyor.com/api/projects/status/github/mdsumner/gris?svg=true)](https://ci.appveyor.com/project/mdsumner/gris) [![](http://www.r-pkg.org/badges/version/gris)](http://cran.rstudio.com/web/packages/gris/index.html) [![CRAN RStudio mirror downloads](http://cranlogs.r-pkg.org/badges/gris)](http://cran.r-project.org/web/packages/gris/index.html) [![Coverage Status](https://img.shields.io/codecov/c/github/mdsumner/gris/master.svg)](https://codecov.io/github/mdsumner/gris?branch=master)
+
 gris
 ====
 
@@ -36,7 +38,7 @@ gg <- gris(wrld_simpl)
 plot(gg)
 ```
 
-![](README-unnamed-chunk-3-1.png)
+![](figures/README-unnamed-chunk-3-1.png)
 
 ``` r
 str(gg)

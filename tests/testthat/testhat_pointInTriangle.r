@@ -1,7 +1,8 @@
 test_that("point in triangle works", {
   library(maptools)
   data(wrld_simpl)
-  g <- gris(wrld_simpl, triangulate = TRUE)
+  g <- gris(wrld_simpl)
+  g <- triangulate(g)
   xy <- coordinates(wrld_simpl)
   pit <- pointInTriangle(g, xy)
   spoints <- SpatialPoints(coordinates(wrld_simpl), proj4string = CRS(proj4string(wrld_simpl)))
@@ -28,7 +29,7 @@ test_that("point in triangle works", {
 #   abline(v = coordinates(spoints)[nover[i],1], h = coordinates(spoints)[nover[i], 2])
 #   points(xy[nover[i], , drop = FALSE], pch = 1, cex = 2, col = "firebrick")
 #   plot(g[nover[i], ], add = TRUE, triangles = TRUE)
-#   vv <- (g$oXt %>% filter(.ob0 == nover[i]) %>% inner_join(g$tXv, ".tr0") %>% gris:::v3ToLong())$.vx0
+#   vv <- (g$oXt %>% filter(object_ == nover[i]) %>% inner_join(g$tXv, ".tr0") %>% gris:::v3ToLong())$.vx0
 #   points(g$v %>% filter(.vx0 %in% vv) %>% select(x, y))
 #  
 # }

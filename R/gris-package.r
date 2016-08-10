@@ -17,7 +17,6 @@
 #' @section I. Creation: 
 #' \tabular{ll}{
 #'  \code{\link{gris.Spatial}} \tab create from Spatial*DataFrame  \cr
-#'  \code{\link{gris.full}} \tab create from raw object, branch, and vertex tables \cr
 #'  \code{\link{grisFromRasterGeom}} \tab create from \code{\link[raster]{geom}} format  \cr
 #'  \code{\link{grisFromFortify}} \tab create from \code{\link[ggplot2]{fortify}} format \cr
 #'  \code{\link{as.gris.triangulation}} \tab  create from \code{\link[rgl]{triangulation}} \cr
@@ -63,6 +62,10 @@
 #' Note that certain degeneracies are possible and may be important. 
 #' A time series of point estimates in space may not have any sensible geometric values at all, but the topological description provided by that time series is a real structure. 
 #'
+#' @importFrom grDevices col2rgb grey rgb xy.coords 
+#' @importFrom graphics lines plot points polypath 
+#' @importFrom stats na.omit setNames 
+#' @importFrom utils head tail 
 #'
 #' @name gris-package
 #' @docType package

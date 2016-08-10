@@ -1,5 +1,5 @@
 library(raster)
-
+library(testthat)
 context("basic building")
 
 test_that("we can ingest complex objects from sp", {
@@ -12,12 +12,14 @@ test_that("we can ingest complex objects from sp", {
   expect_silent(plot(gris(subset(wrld_simpl, NAME == "Australia")))) 
 
 })
+
 test_that("we can ingest a line object from sp", {
   x <- c(1:9, 8:1)
   y <- c(1, 2*(5:3), 2, -1, 17, 9, 8, 2:9)
   df <- data.frame(x = x, y = y, g = rep(c("a", "b", "c"), c(5, 4, 8)))
   mklinelist <- function(yy, fg) lapply(split(yy, fg), function(x) Line(as.matrix(x[,1:2])))
-  line <- SpatialLinesDataFrame(SpatialLines(list(Lines(mklinelist(df, df$g), "1"), Lines(mklinelist(df %>% mutate(x = y, y = rev(x) * 4) %>% as.data.frame, df$g), "16"))), 
+  line <- SpatialLinesDataFrame(SpatialLines(list(Lines(mklinelist(df, df$g), "1"), 
+                                                  Lines(mklinelist(df %>% dplyr::mutate(x = y, y = rev(x) * 4) %>% as.data.frame, df$g), "16"))), 
                                 df[c(1, 16),])
   gline <- gris(line)
   expect_that(gline, is_a("gris"))
@@ -33,10 +35,13 @@ test_that("we can ingest a line object from rasterToContour", {
   expect_that(nrow(g$o), equals(4))
   #expect_that(nrow(g$v %>% inner_join(g$bXv) %>% inner_join(g$b) %>% inner_join(g$o)), equals(703))
   ## why did this change? 2015-11-06
-  expect_that(nrow(g$v %>% inner_join(g$bXv) %>% inner_join(g$b) %>% inner_join(g$o)), equals(707))
+  expect_that(nrow(g$v %>% 
+                     dplyr::inner_join(g$bXv) %>% 
+                     dplyr::inner_join(g$b) %>% 
+                     dplyr::inner_join(g$o)), equals(707))
 })
 
-test_that("build from scratch, and triangulate", {
+test_that("build from scratch", {
 library(gris)
 
 library(sp)
@@ -50,9 +55,9 @@ Srs1 = Polygons(list(Sr1), "s1")
 Srs2 = Polygons(list(Sr2), "s2")
 Srs3 = Polygons(list(Sr3, Sr4), "s3/4")
 Sp <- SpatialPolygonsDataFrame( SpatialPolygons(list(Srs1,Srs2,Srs3), 1:3), data.frame(x = 1:3, row.names = c("s1", "s2", "s3/4")))
-g <- gris(Sp, triangulate = TRUE)
+g <- gris(Sp)
 plot(g)
-plot(g, triangles = TRUE, add = TRUE,  lwd = 2)
+#plot(g, triangles = TRUE, add = TRUE,  lwd = 2)
 })
 
 
