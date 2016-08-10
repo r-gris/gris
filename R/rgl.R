@@ -1,4 +1,20 @@
-
+#' @export
+plot3d <- function(x, ...) UseMethod("plot3d")
+#' @rawNamespace 
+#' if ( requireNamespace("rgl", quietly = TRUE)) {
+#' importFrom("rgl",  plot3d)
+#' }
+#' @export
+plot3d.gris <- function(x, globe = TRUE, verts = c("x", "y"), objname = NULL, ...) {
+  if (requireNamespace("rgl", quietly = TRUE)) {
+    gx <- grisTri2rgl(x, globe = globe, verts = verts, 
+                      objid = if(is.null(objname)) NULL else x$o[[objname]])
+    rgl::plot3d(gx, ...)
+  } else {
+    ## persp somesuch
+    stop("cannot plot in 3d")
+  }
+}
 
 # pquads
 #
@@ -30,13 +46,6 @@ pquads <- function(x, texture = NULL, texcoords = NULL, subset = NULL, ...) {
 ## OR, so we get this in raster-native order
 #' @importFrom sp coordinates
 #' @importFrom raster extend res shift xmin xmax ymin ymax
-# edgesXY <- function(x) {
-#   coordinates(shift(
-#     extend(x, 
-#            extent(xmin(x), xmax(x) + res(x)[1], ymin(x), ymax(x) + res(x)[2])), 
-#     x = -res(x)[1]/2, y = -res(x)[2]/2))
-# }
-
 edgesXY <- function(x) {
   ## report to Hijmans 2015-11-06
   #extract(r, expand.grid(c(xmin(r), xmax(r)), c(ymin(r), ymax(r))), method = "bilinear")
@@ -57,44 +66,6 @@ p4 <- function(xp, nc) {
 }
 
 
-bgl <- function(x, ...) {
-  .Defunct("quadmeshFromRaster")
-}
-
-#' Create a quad-type mesh for use in rgl
-#'
-#' Convert a \code{\link[raster]{RasterLayer}} to a \code{\link[rgl]{mesh3d}} quad-mesh. 
-#' @param x raster object for mesh structure
-#' @param z raster object for height values
-#' @param na.rm remove quads where missing values?
-#' @return mesh3d
-#' @export
-#' @importFrom raster extract extent
-#' @importFrom dplyr  bind_rows  distinct  group_by  inner_join  mutate row_number transmute
-quadmeshFromRaster <- function(x, z = NULL, na.rm = FALSE) {
-  x <- x[[1]]  ## just the oneth raster for now
-  ##exy <- as.matrix(expand.grid(edges(x), edges(x, "y")))
-  exy <- edgesXY(x)
-  ind <- apply(prs(seq(ncol(x) + 1)), 1, p4, nc = ncol(x) + 1)
-  
- 
-  ## all face indexes
-  ind0 <- as.vector(ind) + 
-    rep(seq(0, length = nrow(x), by = ncol(x) + 1), each = 4 * ncol(x))
- 
-  
-  ## need to consider normalizing vertices here
-  if (na.rm) {
-    ind1 <- matrix(ind0, nrow = 4)
-    ind0 <- ind1[,!is.na(values(x))]
-  }
-  ob <- gris::q3d
-  
-  if (!is.null(z)) z <- extract(z, exy, method = "bilinear") else z <- 0
-  ob$vb <- t(cbind(exy, z, 1))
-  ob$ib <- matrix(ind0, nrow = 4)
-  ob
-}
 
 # Raster to gris object
 #
@@ -125,27 +96,6 @@ ras2gris <- function(x, z = NULL) {
 }
 
 
-#' Title
-#'
-#' @param lonlatheight matrix or data.frame of lon,lat,height values
-#' @param rad radius of sphere
-#' @param exag exaggeration to apply to height values (added to radius)
-#'
-#' @return matrix
-#' @export
-llh2xyz <- function(lonlatheight, rad = 6378137.0, exag = 1) {
-  cosLat = cos(lonlatheight[,2] * pi / 180.0)
-  sinLat = sin(lonlatheight[,2] * pi / 180.0)
-  cosLon = cos(lonlatheight[,1] * pi / 180.0)
-  sinLon = sin(lonlatheight[,1] * pi / 180.0)
-  
-  rad <- (exag * lonlatheight[,3] + rad)
-  x = rad * cosLat * cosLon
-  y = rad * cosLat * sinLon
-  z = rad * sinLat
-  
-  cbind(x, y, z)
-}
 
 rasterPal2RGB <- function(x) {
   setValues(brick(x, x, x), t(col2rgb(x@legend@colortable))[values(x) + 1, ])
